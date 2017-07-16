@@ -89,7 +89,7 @@ class DataDownloader:
                 pickle.dump(gameData, open(file_path, 'wb'))
 
                 self.downloadedGames.append(gameID)
-                print(self.region, self.patch, gameID)
+                print(self.patch, self.region, gameID)
                 with open(self.downloadedGamesPath, 'a+') as f:
                     f.write(gameID + '\n')
         return False  # No data left to download

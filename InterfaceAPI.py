@@ -9,7 +9,7 @@ import sys
 import time
 
 DEBUG = False
-OFFSET = 1  # avoid 429 Rate-limit
+OFFSET = 0  # To avoid error 429. Normally not necessary
 
 
 class ApiError(Exception):
@@ -33,6 +33,16 @@ class InterfaceAPI:
         self.last_reset = {}
 
     def getData(self, uri, data=None):
+        # need to wait?
+        for t in self.count:
+            if self.count[t] >= self.rate_limits[t] - OFFSET:  # need a window reset
+                waiting_time = t - (time.time() - self.last_reset[t])  # time left until the end of the window
+                if waiting_time > 0:
+                    print('Too many requests, waiting', waiting_time, file=sys.stderr)
+                    time.sleep(waiting_time)
+                    self.count[t] = 0
+                    self.last_reset[t] = time.time()
+
         uri += '?api_key=' + self.API_KEY
         if data:
             for key, value in data.items():
@@ -41,6 +51,9 @@ class InterfaceAPI:
 
         if resp.status_code != 200:
             # This means something went wrong.
+            for key in self.count: # a request was made anyway
+                self.count[key] += 1
+
             if resp.status_code == 403:
                 raise ApiError('API-KEY has EXPIRED. Please set the new one in config.ini (https://developer.riotgames.com/)')
             elif resp.status_code == 404:
@@ -64,14 +77,6 @@ class InterfaceAPI:
             for r in resp.headers['X-App-Rate-Limit-Count'].split(','):  # we use the api value to be precise
                 [c, t] = r.split(':')
                 self.count[int(t)] = int(c)
-            for t in self.count:
-                if self.count[t] >= self.rate_limits[t] - OFFSET:  # need a window reset
-                    waiting_time = t - (time.time() - self.last_reset[t])  # time left until the end of the window
-                    if waiting_time > 0:
-                        print('Too many requests, waiting', waiting_time, file=sys.stderr)
-                        time.sleep(waiting_time)
-                        self.count[t] = 0
-                        self.last_reset[t] = time.time()
 
         return json.loads(resp.content.decode('utf-8'))
 
