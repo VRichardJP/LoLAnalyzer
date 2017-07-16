@@ -78,6 +78,7 @@ class ValueNetwork:
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
+
 class dataCollector:
     def __init__(self, dataFile, config, netType, batchSize):
         if netType == 'Value':
@@ -97,7 +98,8 @@ class dataCollector:
                 sample = sample.reset_index(drop=True)
                 if DEBUG:
                     print(sample, file=sys.stderr)
-                self.miniCollectors.append(multiprocessing.Process(target=dataCollector.miniCollectorValue, args=(sample, batchSize, self.q_batch, CHAMPIONS_LABEL, CHAMPION_STATUS)))
+                self.miniCollectors.append(
+                    multiprocessing.Process(target=dataCollector.miniCollectorValue, args=(sample, batchSize, self.q_batch, CHAMPIONS_LABEL, CHAMPION_STATUS)))
                 self.miniCollectors[-1].start()
         else:
             raise Exception('unknown netType', netType)
@@ -137,7 +139,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
     mappingType = {
         'Value': ValueNetwork,
-        }
+    }
     if netType not in mappingType:
         raise Exception('Unknown network', netType)
     network = mappingType[netType]
@@ -233,4 +235,4 @@ if __name__ == '__main__':
 
     X = len(CHAMPIONS_LABEL)
     Nfeat = 8  # Nb of feature per champ (average)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': X*Nfeat}, batchSize=200, checkpoint=100, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': X * Nfeat}, batchSize=200, checkpoint=100, lr=1e-4)

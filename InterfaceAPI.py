@@ -12,6 +12,7 @@ import time
 class ApiError(Exception):
     pass
 
+
 class InterfaceAPI:
     def __init__(self, API_KEY=None):
         self.API_KEY = API_KEY
@@ -64,6 +65,7 @@ class InterfaceAPI:
                         self.last_reset[t] = time.time()
 
         return json.loads(resp.content.decode('utf-8'))
+
 
 if __name__ == '__main__':
     interfaceAPI = InterfaceAPI()

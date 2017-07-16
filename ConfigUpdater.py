@@ -18,6 +18,7 @@ else:
                 return data
             print('Incorrect value. Only', validAns, 'are accepted')
 
+
     config.add_section('CONFIG')
     config.add_section('LEAGUE')
     config.add_section('REGIONS')
@@ -28,7 +29,7 @@ else:
     config['CONFIG']['api-key'] = API_KEY
     config['CONFIG']['database'] = input('Database location (eg C:\LoLAnalyzerDB): ')
     print('Leagues you want to download games from (y/n): ')
-    config['LEAGUE']['challenger'] = 'yes' if validationInput('challenger: ', ['y','n']) == 'y' else 'no'
+    config['LEAGUE']['challenger'] = 'yes' if validationInput('challenger: ', ['y', 'n']) == 'y' else 'no'
     config['LEAGUE']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
     config['LEAGUE']['diamond'] = 'yes' if validationInput('diamond: ', ['y', 'n']) == 'y' else 'no'
     config['LEAGUE']['platinum'] = 'yes' if validationInput('platinum: ', ['y', 'n']) == 'y' else 'no'
@@ -51,12 +52,12 @@ else:
 # Update to current patch & champions list
 # euw1 is used as reference
 api = InterfaceAPI(API_KEY)
-json_data = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/champions', data={'locale': 'en_US','dataById':'true'})
+json_data = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/champions', data={'locale': 'en_US', 'dataById': 'true'})
 PATCH = json_data['version']
 config['CONFIG']['patch'] = PATCH
 CHAMPIONS = json_data['data']
 for champ_id, champ_info in CHAMPIONS.items():
-    config['CHAMPIONS'][champ_info['name'].replace('\'','_').replace('.','').replace(' ','_')] = champ_id
+    config['CHAMPIONS'][champ_info['name'].replace('\'', '_').replace('.', '').replace(' ', '_')] = champ_id
 
 with open('config.ini', 'w') as configfile:
     config.write(configfile)
