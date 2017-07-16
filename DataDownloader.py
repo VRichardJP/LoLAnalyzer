@@ -10,6 +10,7 @@ import sys
 import time
 
 from InterfaceAPI import InterfaceAPI, ApiError
+from distutils.version import StrictVersion
 
 
 class DataDownloader:
@@ -67,8 +68,11 @@ class DataDownloader:
                     break
                 gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
                 # Game too old ?
-                if gameData['gameVersion'][:len(self.patch)] != self.patch:  # too old history
+                gameVersion = gameData['gameVersion'][:len(self.patch)]
+                if StrictVersion(gameVersion) < StrictVersion(self.patch):  # too old history
                     break
+                if StrictVersion(gameVersion) > StrictVersion(self.patch):  # too recent history
+                    continue
 
                 file_path = os.path.join(self.db, gameID)
                 pickle.dump(gameData, open(file_path, 'wb'))
