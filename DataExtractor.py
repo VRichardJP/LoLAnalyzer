@@ -13,7 +13,7 @@ from collections import Counter
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['CONFIG']['database']
-PATCH = config['CONFIG']['patch']
+PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
 LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUE'].items()}
 CHAMPIONS = config['CHAMPIONS'] # need to convert id: str -> int
 CHAMPIONS = {champ_name: int(champ_id) for (champ_name, champ_id) in CHAMPIONS.items()}
@@ -21,10 +21,11 @@ regions_list = config['REGIONS']
 gamesPath = []
 for region, enabled in regions_list.items():
     if enabled == 'yes':
-        gamesPath.extend([os.path.join(DATABASE, PATCH, region, f) for f in os.listdir(os.path.join(DATABASE, PATCH, region))])
+        for patch in PATCHES:
+            gamesPath.extend([os.path.join(DATABASE, 'patches', patch, region, f) for f in os.listdir(os.path.join(DATABASE, 'patches', patch, region))])
 print('%d game files found' % len(gamesPath))
 
-extracted_file = os.path.join(DATABASE, PATCH, 'extracted.txt')
+extracted_file = os.path.join(DATABASE, 'extracted.txt')
 if os.path.isfile(extracted_file):
     with open(extracted_file, 'r') as f:
         extracted_list = [x.strip() for x in f.readlines()]
@@ -34,14 +35,13 @@ else:
 gamesPath = list(set(gamesPath) - set(extracted_list))
 print('%d new games to extract' % len(gamesPath))
 
-csv_file = os.path.join(DATABASE, PATCH, 'data.csv')
+csv_file = os.path.join(DATABASE, 'data.csv')
 writeheader = not os.path.isfile(csv_file)
 fieldsnames = [champ_name for champ_name in CHAMPIONS]
 fieldsnames.append('blue_win')
 writer = csv.DictWriter(open(csv_file, 'a+'), fieldnames=fieldsnames)
 if writeheader:
     writer.writeheader()
-
 
 # Champion state:
 # Available, Banned, Opponent, Top, Jungle, Middle, Carry, Support
@@ -58,7 +58,6 @@ def getRoleIndex(lane, role):
         return 'S'
     else:
         raise Exception(lane, role)
-
 
 for gamePath in gamesPath:
     print(gamePath)

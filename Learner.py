@@ -134,8 +134,8 @@ class dataCollector:
 
 
 def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
-    ckpt_dir = os.path.join(DATABASE, 'models', PATCH, netType + netArchi)
-    dataFile = os.path.join(DATABASE, PATCH, 'data.csv')
+    ckpt_dir = os.path.join(DATABASE, 'models', netType + netArchi)
+    dataFile = os.path.join(DATABASE, 'data.csv')
 
     mappingType = {
         'Value': ValueNetwork,
@@ -228,7 +228,6 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('config.ini')
     DATABASE = config['CONFIG']['database']
-    PATCH = config['CONFIG']['patch']
     CHAMPIONS_LABEL = list(config['CHAMPIONS'])
     CHAMPION_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
     Y = len(CHAMPION_STATUS)

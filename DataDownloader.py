@@ -19,12 +19,12 @@ class DataDownloader:
         self.database = database
         self.region = region
         self.patch = patch
-        self.db = os.path.join(self.database, self.patch, self.region)
+        self.db = os.path.join(self.database, 'patches', self.patch, self.region)
         if not os.path.exists(self.db):
             os.makedirs(self.db)
 
         downloadedFile_name = self.region + '.txt'
-        self.downloadedGamesPath = os.path.join(self.database, self.patch, downloadedFile_name)
+        self.downloadedGamesPath = os.path.join(self.database, 'patches', self.patch, downloadedFile_name)
         if os.path.isfile(self.downloadedGamesPath):
             with open(self.downloadedGamesPath, 'r') as f:
                 self.downloadedGames = [x.strip() for x in f.readlines()]
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     kdprocs = []
     for region, enabled in REGIONS.items():
         if enabled == 'yes':
-            kdprocs.append(multiprocessing.Process(target=keepDownloading, args=(DATABASE, PATCH, region, LEAGUES)))
+            kdprocs.append(multiprocessing.Process(target=keepDownloading, args=(DATABASE, 'patches', PATCH, region, LEAGUES)))
             kdprocs[-1].start()
 
     for kdproc in kdprocs:
