@@ -14,7 +14,7 @@ from InterfaceAPI import InterfaceAPI
 config = configparser.ConfigParser()
 if os.path.isfile('config.ini'):
     config.read('config.ini')
-    API_KEY = config['CONFIG']['api-key']
+    API_KEY = config['PARAMS']['api-key']
 else:
     def validationInput(msg, validAns):
         while True:
@@ -23,15 +23,15 @@ else:
                 return data
             print('Incorrect value. Only', validAns, 'are accepted')
 
-    config.add_section('CONFIG')
-    config.add_section('LEAGUE')
+    config.add_section('PARAMS')
+    config.add_section('LEAGUES')
     config.add_section('REGIONS')
     config.add_section('CHAMPIONS')
 
     print("No config file found. Let's set up a few parameters (you may change them anytime by manually editing config.ini).")
     API_KEY = input('API-KEY (https://developer.riotgames.com/): ')
-    config['CONFIG']['api-key'] = API_KEY
-    config['CONFIG']['database'] = input('Database location (eg. C:\LoLAnalyzerDB): ')
+    config['PARAMS']['api-key'] = API_KEY
+    config['PARAMS']['database'] = input('Database location (eg. C:\LoLAnalyzerDB): ')
     print('Leagues you want to download games from (y/n): ')
     config['LEAGUE']['challenger'] = 'yes' if validationInput('challenger: ', ['y', 'n']) == 'y' else 'no'
     config['LEAGUE']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
@@ -57,10 +57,10 @@ else:
 # euw1 is used as reference
 api = InterfaceAPI(API_KEY)
 PATCHES = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/versions')
-config['CONFIG']['patch'] = PATCHES[0]
-print('Current batch set to:', config['CONFIG']['patch'])
+config['PARAMS']['download_patches'] = PATCHES[0]
+print('Current patch set to:', config['PARAMS']['download_patches'])
 PATCHES = ','.join([s for s in reversed(PATCHES)])
-config['CONFIG']['patches'] = PATCHES
+config['PARAMS']['patches'] = PATCHES
 print('Patch list updated')
 json_data = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/champions', data={'locale': 'en_US', 'dataById': 'true'})
 CHAMPIONS = json_data['data']
@@ -81,7 +81,7 @@ for champ in data['champions']:
     date = date[:10]  # solve a problem on aatrox
     champ_date[slugify(champ['name'], separator='')] = datetime.strptime(date, '%Y-%m-%d')
 sortedChamps.sort(key=lambda x: (champ_date[x], x)) # sorted by date and then abc order (eg. annie/yi or xhaya/rakan)
-config['CONFIG']['sortedChamps'] = ','.join(sortedChamps)
+config['PARAMS']['sortedChamps'] = ','.join(sortedChamps)
 print('Champions list updated')
 
 with open('config.ini', 'w') as configfile:

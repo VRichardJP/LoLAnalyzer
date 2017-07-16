@@ -19,7 +19,7 @@ class InterfaceAPI:
         if not self.API_KEY:  # from config.ini
             config = configparser.ConfigParser()
             config.read('config.ini')
-            self.API_KEY = config['CONFIG']['api-key']
+            self.API_KEY = config['PARAMS']['api-key']
 
         self.rate_limits = {}
         self.count = {}

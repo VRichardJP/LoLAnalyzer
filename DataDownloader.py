@@ -84,38 +84,40 @@ class DataDownloader:
         return False  # No data left to download
 
 
-def keepDownloading(database, patch, region, leagues):
-    print('Starting data collection for', patch, region, file=sys.stderr)
+def keepDownloading(database, patches, region, leagues):
+    print('Starting data collection for', patches, region, file=sys.stderr)
     dd = None
-    while True:
-        if not dd:
+    for patch in patches:
+        while True:
+            if not dd:
+                try:
+                    dd = DataDownloader(database, patch, region, leagues)
+                except ApiError as e:
+                    print(e, file=sys.stderr)
+                    print(region, 'initial connection failed. Retrying in 2 minutes', file=sys.stderr)
+                    time.sleep(120)
+                    continue
             try:
-                dd = DataDownloader(database, patch, region, leagues)
+                if not dd.downloadData():
+                    print(region, patch, 'all games downloaded', file=sys.stderr)
+                    break
             except ApiError as e:
                 print(e, file=sys.stderr)
-                print(region, 'initial connection failed. Retrying in 2 minutes', file=sys.stderr)
-                time.sleep(120)
                 continue
-        try:
-            if not dd.downloadData():
-                print(region, 'all games downloaded', file=sys.stderr)
-                return
-        except ApiError as e:
-            print(e, file=sys.stderr)
-            continue
+    print(region, 'download complete')
 
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('config.ini')
-    DATABASE = config['CONFIG']['database']
-    PATCH = config['CONFIG']['patch']
-    LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUE'].items()}
+    DATABASE = config['PARAMS']['database']
+    PATCHES_TO_DOWNLOAD = config['PARAMS']['download_patches'].split(',')
+    LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUES'].items()}
     REGIONS = config['REGIONS']
     kdprocs = []
     for region, enabled in REGIONS.items():
         if enabled == 'yes':
-            kdprocs.append(multiprocessing.Process(target=keepDownloading, args=(DATABASE, PATCH, region, LEAGUES)))
+            kdprocs.append(multiprocessing.Process(target=keepDownloading, args=(DATABASE, PATCHES_TO_DOWNLOAD, region, LEAGUES)))
             kdprocs[-1].start()
 
     for kdproc in kdprocs:

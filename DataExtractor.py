@@ -12,7 +12,7 @@ from collections import Counter
 
 config = configparser.ConfigParser()
 config.read('config.ini')
-DATABASE = config['CONFIG']['database']
+DATABASE = config['PARAMS']['database']
 PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
 LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUE'].items()}
 CHAMPIONS = config['CHAMPIONS'] # need to convert id: str -> int

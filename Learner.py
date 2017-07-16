@@ -17,7 +17,7 @@ from multiprocessing import Manager
 # 7.14.1: champions 137, patches: 170
 config = configparser.ConfigParser()
 config.read('config.ini')
-DATABASE = config['CONFIG']['database']
+DATABASE = config['PARAMS']['database']
 PATCHES = config['patches'].split(',')
 CHAMPIONS_LABEL = config['sortedChamps'].split(',')
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
