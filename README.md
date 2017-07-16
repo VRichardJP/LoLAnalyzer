@@ -5,13 +5,14 @@ Under construction
 
 ## How to use
 
-You need a developer API-KEY from https://developer.riotgames.com/. If you're API-KEY has expired at some point, just update the config.ini file.
+You need a developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just update the config.ini file.
 You need also Python 3 and Tensorflow.
 
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit.
 2. DataDownloader.py : download raw game files according to the parameters in config.ini (patches, regions, leagues).
 3. DataExtractor.py : pre-process all the downloaded data (all patch, all regions).
 4. Learner.py: train a neural network on all the downloaded data.
+5. BestPick.py: under construction
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
