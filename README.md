@@ -1,5 +1,5 @@
 
-# Using machine learning to evaluate the best pick in a draft
+# Using machine learning to evaluate the best pick in a draft (League of Legends)
 
 Under construction
 
