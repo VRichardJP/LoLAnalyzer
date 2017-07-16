@@ -13,6 +13,18 @@ import tensorflow as tf
 import numpy as np
 from multiprocessing import Manager
 
+# In order to have compatible models between patches, the input size is bigger than necessary
+# 7.14.1: champions 137, patches: 170
+config = configparser.ConfigParser()
+config.read('config.ini')
+DATABASE = config['CONFIG']['database']
+PATCHES = config['patches'].split(',')
+CHAMPIONS_LABEL = config['sortedChamps'].split(',')
+CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+CHAMPIONS_SIZE = 200
+PATCHES_SIZE = 300
+INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
+
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
 
@@ -35,8 +47,8 @@ def maybe_restore_from_checkpoint(sess, saver, ckpt_dir):
 
 class ValueNetwork:
     @staticmethod
-    def placeholders(X, Y):
-        x = tf.placeholder(tf.float32, shape=[None, X, Y])
+    def placeholders():
+        x = tf.placeholder(tf.float32, shape=[None, INPUT_SIZE])
         y_true = tf.placeholder(tf.float32, shape=[None])
         return x, y_true
 
@@ -58,20 +70,18 @@ class ValueNetwork:
 
     # Architectures
     @staticmethod
-    def dense2Arch(x, X, Y, **kwargs):
+    def dense2Arch(x, **kwargs):
         NN = kwargs.pop('NN')
-        x_flat = tf.reshape(x, [-1, X * Y])
-        dense1 = tf.layers.dense(x_flat, NN, activation=tf.nn.relu)
+        dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
         dense2 = tf.layers.dense(dense1, NN // 2, activation=tf.nn.relu)
         y_pred = tf.layers.dense(dense2, 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
     @staticmethod
-    def dense3Arch(x, X, Y, **kwargs):
+    def dense3Arch(x, **kwargs):
         NN = kwargs.pop('NN')
-        x_flat = tf.reshape(x, [-1, X * Y])
-        dense1 = tf.layers.dense(x_flat, NN, activation=tf.nn.relu)
+        dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
         dense2 = tf.layers.dense(dense1, NN // 2, activation=tf.nn.relu)
         dense3 = tf.layers.dense(dense2, NN // 4, activation=tf.nn.relu)
         y_pred = tf.layers.dense(dense3, 1, activation=tf.sigmoid)
@@ -80,12 +90,11 @@ class ValueNetwork:
 
 
 class dataCollector:
-    def __init__(self, dataFile, config, netType, batchSize):
+    def __init__(self, dataFile, netType, batchSize):
         if netType == 'Value':
-            CHAMPIONS_LABEL = list(config['CHAMPIONS'])
-            CHAMPION_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
             names = CHAMPIONS_LABEL[:]
-            names.append('blue_win')
+            names.append('patch')
+            names.append('win')
             df = pd.read_csv(dataFile, names=names, skiprows=1).sample(frac=1).reset_index(drop=True)
 
             # Multi-processing to collect the data faster
@@ -99,7 +108,7 @@ class dataCollector:
                 if DEBUG:
                     print(sample, file=sys.stderr)
                 self.miniCollectors.append(
-                    multiprocessing.Process(target=dataCollector.miniCollectorValue, args=(sample, batchSize, self.q_batch, CHAMPIONS_LABEL, CHAMPION_STATUS)))
+                    multiprocessing.Process(target=dataCollector.miniCollectorValue, args=(sample, batchSize, self.q_batch, CHAMPIONS_LABEL, CHAMPIONS_STATUS)))
                 self.miniCollectors[-1].start()
         else:
             raise Exception('unknown netType', netType)
@@ -116,7 +125,7 @@ class dataCollector:
                 continue
 
     @staticmethod
-    def miniCollectorValue(df, batchSize, q_batch, CHAMPIONS_LABEL, CHAMPION_STATUS):
+    def miniCollectorValue(df, batchSize, q_batch):
         print(os.getpid(), 'miniCollectorValue starting', file=sys.stderr)
         end = df.shape[0]
         i = 0
@@ -125,9 +134,14 @@ class dataCollector:
                 break
             j = i + batchSize
             batch = [[], []]
-            batch[0] = [[[1 if row[champ] == s else 0 for s in CHAMPION_STATUS] for champ in CHAMPIONS_LABEL] for _, row in
-                        df.iloc[i:min(j, end)].iterrows()]
-            batch[1] = [v for v in df.iloc[i: min(j, end), df.columns.get_loc('blue_win')]]
+            # input: patch + champions status
+            for _, row in df.iloc[i:min(j, end)].iterrows():
+                row_input = []
+                row_input.extend([1 if k == PATCHES.index(row['patch']) else 0 for k in range(PATCHES_SIZE)])
+                row_input.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE)])
+                batch[0].append(row_input)
+                # batch[0] = [[[1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS] for champ in CHAMPIONS_LABEL] for _, row in df.iloc[i:min(j, end)].iterrows()]
+            batch[1] = [v for v in df.iloc[i: min(j, end), df.columns.get_loc('win')]]
             q_batch.put(batch)
             i = j
         print(os.getpid(), 'miniCollectorValue end', file=sys.stderr)
@@ -153,10 +167,10 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
     architecture = mappingArchi[netArchi]
 
     with tf.Graph().as_default() as g:
-        with tf.Session() as sess:
+        with tf.Session(graph=g) as sess:
             # Network building
-            x, y_true = network.placeholders(X, Y)
-            y_pred = architecture(x, X, Y, **archi_kwargs)
+            x, y_true = network.placeholders()
+            y_pred = architecture(x, **archi_kwargs)
             acc_ph = network.accuracy(y_pred, y_true)
             loss_ph = network.loss(y_pred, y_true)
             train_op = network.train_op(loss_ph, lr)
@@ -164,7 +178,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
             w_loss = []
 
             # Data collector
-            collector = dataCollector(dataFile, config, netType, batchSize)
+            collector = dataCollector(dataFile, netType, batchSize)
 
             # Restoring last session
             saver = tf.train.Saver(tf.trainable_variables())
@@ -187,9 +201,10 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
                 # Training
                 step += 1
-                feed_dict = {}
-                feed_dict[x] = batch[0]
-                feed_dict[y_true] = batch[1]
+                feed_dict = {
+                    x: batch[0],
+                    y_true: batch[1]
+                }
                 train_start = time.time()
                 _, pred_values, real_values, loss, acc = sess.run([train_op, y_pred, y_true, loss_ph, acc_ph], feed_dict=feed_dict)
                 train_time = time.time() - train_start
@@ -225,13 +240,4 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
 
 if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    DATABASE = config['CONFIG']['database']
-    CHAMPIONS_LABEL = list(config['CHAMPIONS'])
-    CHAMPION_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-    Y = len(CHAMPION_STATUS)
-
-    X = len(CHAMPIONS_LABEL)
-    Nfeat = 8  # Nb of feature per champ (average)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': X * Nfeat}, batchSize=200, checkpoint=100, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 1024}, batchSize=200, checkpoint=100, lr=1e-4)

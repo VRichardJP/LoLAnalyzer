@@ -3,7 +3,12 @@
 # Update the working patch and champions list
 
 import configparser
+import json
 import os
+import urllib.request
+from datetime import datetime
+from slugify import slugify
+
 from InterfaceAPI import InterfaceAPI
 
 config = configparser.ConfigParser()
@@ -18,7 +23,6 @@ else:
                 return data
             print('Incorrect value. Only', validAns, 'are accepted')
 
-
     config.add_section('CONFIG')
     config.add_section('LEAGUE')
     config.add_section('REGIONS')
@@ -27,7 +31,7 @@ else:
     print("No config file found. Let's set up a few parameters (you may change them anytime by manually editing config.ini).")
     API_KEY = input('API-KEY (https://developer.riotgames.com/): ')
     config['CONFIG']['api-key'] = API_KEY
-    config['CONFIG']['database'] = input('Database location (eg C:\LoLAnalyzerDB): ')
+    config['CONFIG']['database'] = input('Database location (eg. C:\LoLAnalyzerDB): ')
     print('Leagues you want to download games from (y/n): ')
     config['LEAGUE']['challenger'] = 'yes' if validationInput('challenger: ', ['y', 'n']) == 'y' else 'no'
     config['LEAGUE']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
@@ -52,14 +56,35 @@ else:
 # Update to current patch & champions list
 # euw1 is used as reference
 api = InterfaceAPI(API_KEY)
+PATCHES = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/versions')
+config['CONFIG']['patch'] = PATCHES[0]
+print('Current batch set to:', config['CONFIG']['patch'])
+PATCHES = ','.join([s for s in reversed(PATCHES)])
+config['CONFIG']['patches'] = PATCHES
+print('Patch list updated')
 json_data = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/champions', data={'locale': 'en_US', 'dataById': 'true'})
-PATCH = json_data['version']
-config['CONFIG']['patch'] = PATCH
 CHAMPIONS = json_data['data']
+sortedChamps = []
 for champ_id, champ_info in CHAMPIONS.items():
-    config['CHAMPIONS'][champ_info['name'].replace('\'', '_').replace('.', '').replace(' ', '_')] = champ_id
+    slugname = slugify(champ_info['name'], separator='')
+    config['CHAMPIONS'][slugname] = champ_id
+    sortedChamps.append(slugname)
+# We need to sort champions by release for the neural network
+# This is really important for the compatibility of the system over the patches
+# Unfortunately the API doesn't give this information, so we use: http://universe-meeps.leagueoflegends.com/v1/en_us/champion-browse/index.json
+response = urllib.request.urlopen('http://universe-meeps.leagueoflegends.com/v1/en_us/champion-browse/index.json')
+data = json.loads(response.read().decode())
+champ_date = {}
+for champ in data['champions']:
+    date = champ['release-date']
+    date = date[1:] if date[0] == ' ' else date  # solve a problem on annie
+    date = date[:10]  # solve a problem on aatrox
+    champ_date[slugify(champ['name'], separator='')] = datetime.strptime(date, '%Y-%m-%d')
+sortedChamps.sort(key=lambda x: (champ_date[x], x)) # sorted by date and then abc order (eg. annie/yi or xhaya/rakan)
+config['CONFIG']['sortedChamps'] = ','.join(sortedChamps)
+print('Champions list updated')
 
 with open('config.ini', 'w') as configfile:
     config.write(configfile)
 
-print('Update complete')
+print('-- Update complete --')

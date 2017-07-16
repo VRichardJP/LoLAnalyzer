@@ -85,7 +85,7 @@ class DataDownloader:
 
 
 def keepDownloading(database, patch, region, leagues):
-    print('Starting data collection for', region, file=sys.stderr)
+    print('Starting data collection for', patch, region, file=sys.stderr)
     dd = None
     while True:
         if not dd:
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     kdprocs = []
     for region, enabled in REGIONS.items():
         if enabled == 'yes':
-            kdprocs.append(multiprocessing.Process(target=keepDownloading, args=(DATABASE, 'patches', PATCH, region, LEAGUES)))
+            kdprocs.append(multiprocessing.Process(target=keepDownloading, args=(DATABASE, PATCH, region, LEAGUES)))
             kdprocs[-1].start()
 
     for kdproc in kdprocs:

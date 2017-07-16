@@ -14,7 +14,8 @@ You need also Python 3 and Tensorflow.
 4. Learner.py: under development
 
 ## Miscellaneous
-- You can delete config.ini to start with a clean config. Just re-run ConfigUpdater.py.
-- The downloaded files are located under DATABASE/patches/PATCH/REGION/. Pre-processed data location is DATABASE/ (data.cvs and extracted.txt)
-- DataDownloader.py uses the patch  written in config.ini. It is updated to the lastest patch everytime ConfigUpdater.py is run. If you want to work on a specific patch, just edit config.ini.
-(the list of patches is available at https://developer.riotgames.com/api-methods/#lol-static-data-v3/GET_getVersions)
+- When there's a new patch, run ConfigUpdater.py
+- You can delete config.ini to start with a clean config but it's easier to simply edit the file
+- The downloaded games are located under DATABASE_ROOT/patches/PATCH/REGION/. You can change the patch/regions you're downloading games from by simply editing config.ini. 
+- Pre-processed data location is DATABASE_ROOT/ (data.cvs and extracted.txt) and contains all the data you've downloaded (all patches/all regions)
+- The models you train are located under DATABASE_ROOT/model.
