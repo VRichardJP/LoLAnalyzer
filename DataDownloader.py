@@ -23,8 +23,8 @@ class DataDownloader:
         if not os.path.exists(self.db):
             os.makedirs(self.db)
 
-        downloadedFile_name = self.patch.replace('.', '_') + '_' + self.region + '.txt'
-        self.downloadedGamesPath = os.path.join(self.database, downloadedFile_name)
+        downloadedFile_name = self.region + '.txt'
+        self.downloadedGamesPath = os.path.join(self.database, self.patch, downloadedFile_name)
         if os.path.isfile(self.downloadedGamesPath):
             with open(self.downloadedGamesPath, 'r') as f:
                 self.downloadedGames = [x.strip() for x in f.readlines()]
@@ -61,7 +61,7 @@ class DataDownloader:
             sumID = self.summonerIDs.pop()
             accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
             games = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})['matches']
-            for game in games: # from most recent to oldest
+            for game in games:  # from most recent to oldest
                 gameID = str(game['gameId'])
                 # Already downloaded ?
                 if gameID in self.downloadedGames:
