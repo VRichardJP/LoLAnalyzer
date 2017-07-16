@@ -8,6 +8,7 @@ import requests
 import sys
 import time
 
+DEBUG = False
 
 class ApiError(Exception):
     pass
@@ -37,7 +38,7 @@ class InterfaceAPI:
             if resp.status_code == 403:
                 raise ApiError('API-KEY has EXPIRED. Please set the new one in config.ini (https://developer.riotgames.com/)')
             raise ApiError('Error %d - GET %s' % (resp.status_code, uri))
-        else:
+        elif DEBUG:
             print(uri, file=sys.stderr)
 
         # Set the time limits on the first call

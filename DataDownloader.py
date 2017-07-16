@@ -94,8 +94,8 @@ def keepDownloading(database, patches, region, leagues):
                     dd = DataDownloader(database, patch, region, leagues)
                 except ApiError as e:
                     print(e, file=sys.stderr)
-                    print(region, 'initial connection failed. Retrying in 2 minutes', file=sys.stderr)
-                    time.sleep(120)
+                    print(region, 'initial connection failed. Retrying in 10 minutes', file=sys.stderr)
+                    time.sleep(600)
                     continue
             try:
                 if not dd.downloadData():
