@@ -135,21 +135,20 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
     ckpt_dir = os.path.join(DATABASE, 'models', PATCH, netType + netArchi)
     dataFile = os.path.join(DATABASE, PATCH, 'data.csv')
 
-    # Network config
-    mapType = {
+    mappingType = {
         'Value': ValueNetwork,
         }
-    if netType == 'Value':
-        network = ValueNetwork
+    if netType not in mappingType:
+        raise Exception('Unknown network', netType)
+    network = mappingType[netType]
 
-    else:
-        raise Exception('Unknown netType', netType)
-    if netArchi == 'Dense2':
-        architecture = network.dense2Arch
-    elif netArchi == 'Dense3':
-        architecture = network.dense3Arch
-    else:
+    mappingArchi = {
+        'Dense2': network.dense2Arch,
+        'Dense3': network.dense3Arch,
+    }
+    if netArchi not in mappingArchi:
         raise Exception('Unknown netArchi', netArchi)
+    architecture = mappingArchi[netArchi]
 
     with tf.Graph().as_default() as g:
         with tf.Session() as sess:
