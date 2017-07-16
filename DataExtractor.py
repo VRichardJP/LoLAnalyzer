@@ -15,7 +15,7 @@ config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
 LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUE'].items()}
-CHAMPIONS = config['CHAMPIONS'] # need to convert id: str -> int
+CHAMPIONS = config['CHAMPIONS']  # need to convert id: str -> int
 CHAMPIONS = {champ_name: int(champ_id) for (champ_name, champ_id) in CHAMPIONS.items()}
 regions_list = config['REGIONS']
 gamesPath = []
@@ -44,6 +44,7 @@ for patch in PATCHES:
     if writeheader:
         writer.writeheader()
 
+
     # Champion state:
     # Available, Banned, Opponent, Top, Jungle, Middle, Carry, Support
     def getRoleIndex(lane, role):
@@ -59,6 +60,7 @@ for patch in PATCHES:
             return 'S'
         else:
             raise Exception(lane, role)
+
 
     for gamePath in gamesPath:
         print(gamePath)
@@ -122,7 +124,7 @@ for patch in PATCHES:
 
         # Bans
         blueState = dict(blueState)  # don't forget to create a clean copy
-        redState = dict(redState)    # ortherwise it will modify previous states
+        redState = dict(redState)  # ortherwise it will modify previous states
         for championId in bans:
             for champ_name, champ_id in CHAMPIONS.items():
                 if champ_id == championId:

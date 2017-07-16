@@ -9,9 +9,12 @@ import sys
 import time
 
 DEBUG = False
+OFFSET = 1  # avoid 429 Rate-limit
+
 
 class ApiError(Exception):
     pass
+
 
 class ApiError404(ApiError):
     pass
@@ -62,7 +65,7 @@ class InterfaceAPI:
                 [c, t] = r.split(':')
                 self.count[int(t)] = int(c)
             for t in self.count:
-                if self.count[t] >= self.rate_limits[t]-1:  # need a window reset
+                if self.count[t] >= self.rate_limits[t] - OFFSET:  # need a window reset
                     waiting_time = t - (time.time() - self.last_reset[t])  # time left until the end of the window
                     if waiting_time > 0:
                         print('Too many requests, waiting', waiting_time, file=sys.stderr)

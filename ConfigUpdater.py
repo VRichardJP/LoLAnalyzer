@@ -23,6 +23,7 @@ else:
                 return data
             print('Incorrect value. Only', validAns, 'are accepted')
 
+
     config.add_section('PARAMS')
     config.add_section('LEAGUES')
     config.add_section('REGIONS')
@@ -80,7 +81,7 @@ for champ in data['champions']:
     date = date[1:] if date[0] == ' ' else date  # solve a problem on annie
     date = date[:10]  # solve a problem on aatrox
     champ_date[slugify(champ['name'], separator='')] = datetime.strptime(date, '%Y-%m-%d')
-sortedChamps.sort(key=lambda x: (champ_date[x], x)) # sorted by date and then abc order (eg. annie/yi or xhaya/rakan)
+sortedChamps.sort(key=lambda x: (champ_date[x], x))  # sorted by date and then abc order (eg. annie/yi or xhaya/rakan)
 config['PARAMS']['sortedChamps'] = ','.join(sortedChamps)
 print('Champions list updated')
 

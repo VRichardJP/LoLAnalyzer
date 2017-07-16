@@ -3,10 +3,14 @@
 
 Under construction
 
-## How to use
+## Requirements
 
-You need a developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just update the config.ini file.
-You need also Python 3 and Tensorflow.
+You need:
+- Python 3 
+- Tensorflow (GPU version recommended if your graphic card is compatible)
+- A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
+
+## How to use
 
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit.
 2. DataDownloader.py : download raw game files according to the parameters in config.ini (patches, regions, leagues).
