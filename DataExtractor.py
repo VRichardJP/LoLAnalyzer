@@ -230,3 +230,5 @@ for patch in PATCHES:
         with open(extracted_file, 'a+') as f:
             f.write(gamePath)
             f.write('\n')
+
+print('-- Extraction complete --')

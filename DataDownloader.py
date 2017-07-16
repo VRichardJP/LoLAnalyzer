@@ -120,3 +120,6 @@ if __name__ == '__main__':
 
     for kdproc in kdprocs:
         kdproc.join()
+
+    print('-- Download complete --')
+
