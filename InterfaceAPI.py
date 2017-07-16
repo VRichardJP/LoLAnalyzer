@@ -13,6 +13,9 @@ DEBUG = False
 class ApiError(Exception):
     pass
 
+class ApiError404(ApiError):
+    pass
+
 
 class InterfaceAPI:
     def __init__(self, API_KEY=None):
@@ -37,6 +40,8 @@ class InterfaceAPI:
             # This means something went wrong.
             if resp.status_code == 403:
                 raise ApiError('API-KEY has EXPIRED. Please set the new one in config.ini (https://developer.riotgames.com/)')
+            elif resp.status_code == 404:
+                raise ApiError404('Error %d - GET %s' % (resp.status_code, uri))
             raise ApiError('Error %d - GET %s' % (resp.status_code, uri))
         elif DEBUG:
             print(uri, file=sys.stderr)

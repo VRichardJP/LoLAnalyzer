@@ -9,7 +9,7 @@ import random
 import sys
 import time
 
-from InterfaceAPI import InterfaceAPI, ApiError
+from InterfaceAPI import InterfaceAPI, ApiError, ApiError404
 from distutils.version import StrictVersion
 
 
@@ -59,14 +59,25 @@ class DataDownloader:
     def downloadData(self):
         while self.summonerIDs:  # if the API in unavailable, or the sumID is unreachable for w/e reason, just take the skip to the next
             sumID = self.summonerIDs.pop()
-            accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
-            games = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})['matches']
+            try:
+                accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
+                games = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})['matches']
+            except ApiError as e:
+                print(e, file=sys.stderr)
+                continue
             for game in games:  # from most recent to oldest
                 gameID = str(game['gameId'])
                 # Already downloaded ?
                 if gameID in self.downloadedGames:
                     break
-                gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
+                try:
+                    gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
+                except ApiError404 as e:
+                    print(e, file=sys.stderr)
+                    break
+                except ApiError as e:
+                    print(e, file=sys.stderr)
+                    continue
                 # Game too old ?
                 gameVersion = gameData['gameVersion'][:len(self.patch)]
                 if StrictVersion(gameVersion) < StrictVersion(self.patch):  # too old history
@@ -78,16 +89,16 @@ class DataDownloader:
                 pickle.dump(gameData, open(file_path, 'wb'))
 
                 self.downloadedGames.append(gameID)
-                print(self.region, gameID)
+                print(self.region, self.patch, gameID)
                 with open(self.downloadedGamesPath, 'a+') as f:
                     f.write(gameID + '\n')
         return False  # No data left to download
 
 
 def keepDownloading(database, patches, region, leagues):
-    print('Starting data collection for', patches, region, file=sys.stderr)
-    dd = None
+    print('Starting data collection for', region, patches, file=sys.stderr)
     for patch in patches:
+        dd = None
         while True:
             if not dd:
                 try:
@@ -97,13 +108,10 @@ def keepDownloading(database, patches, region, leagues):
                     print(region, 'initial connection failed. Retrying in 10 minutes', file=sys.stderr)
                     time.sleep(600)
                     continue
-            try:
-                if not dd.downloadData():
-                    print(region, patch, 'all games downloaded', file=sys.stderr)
-                    break
-            except ApiError as e:
-                print(e, file=sys.stderr)
-                continue
+
+            dd.downloadData()
+            print(region, patch, 'all games downloaded', file=sys.stderr)
+            break
     print(region, 'download complete')
 
 

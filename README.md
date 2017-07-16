@@ -18,7 +18,7 @@ You need also Python 3 and Tensorflow.
 - When there's a new patch, run ConfigUpdater.py
 - You can delete config.ini to start with a clean config but it's easier to simply edit the file
 - You can download games from several patches by listing them in the config.ini file. See the list of all the patches for the synthax and existing patches. In order to download the most recent games first the patches should be ordered from the most recent to the oldest. 
-- When you download games, you may experience some errors (see https://developer.riotgames.com/response-codes.html), most often: 503 if the service is unavailable, 403 means your API-KEY has expired (edit config.ini with a new one from https://developer.riotgames.com/). 
+- When you download games, you may experience some errors (see https://developer.riotgames.com/response-codes.html), most often: 404/503 if the data was not found/service is unavailable, 403 means your API-KEY has expired (edit config.ini with a new one from https://developer.riotgames.com/).
 - The downloaded games are located under DATABASE_ROOT/patches/PATCH/REGION/. You can change the patch/regions you're downloading games from by simply editing config.ini. 
 - Pre-processed data location is DATABASE_ROOT/ (data.cvs and extracted.txt) and contains all the data you've downloaded (all patches/all regions)
 - Only data.cvs is used for the training, so if you need to free some space on your hard drive you can delete the data files from a patch you've already fully extracted (under DATABASE_ROOT/patches/).
