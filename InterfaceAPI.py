@@ -85,6 +85,7 @@ class InterfaceAPI:
 
 
 if __name__ == '__main__':
+    print('-- Testing InterfaceAPI --', file=sys.stderr)
     interfaceAPI = InterfaceAPI()
     while True:
         interfaceAPI.getData('https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/RiotSchmick')

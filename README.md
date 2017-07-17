@@ -1,13 +1,16 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
-Warning: this application is under construction. Not everything has been published yet, and I don't guarantee that all the published scripts will run softly. I you want to test it anyway, feedbacks are welcome
+Warning: this application is under construction. Not everything has been published yet, and I don't guarantee that all the published scripts will run softly. I you want to test it anyway, feedbacks are welcome.
+
+Furthermore, I won't provide any trained network, because I simply can't maintain such network updated on a daily basis. I you want to use this app you will have to train your own network.
 
 ## Requirements
 
-You need:
+You need (pip install is the simplest way)
 - Python 3 
 - Tensorflow (GPU version recommended if your graphic card is compatible)
+- PyQt5
 - A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
 
 ## How to use
@@ -16,7 +19,7 @@ You need:
 2. DataDownloader.py : download raw game files according to the parameters in config.ini (patches, regions, leagues).
 3. DataExtractor.py : pre-process all the downloaded data (all patch, all regions).
 4. Learner.py: train a neural network on all the downloaded data.
-5. BestPick.py: under construction
+5. BestPick.py: Soon
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
