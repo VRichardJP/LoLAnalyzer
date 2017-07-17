@@ -34,13 +34,13 @@ else:
     config['PARAMS']['api-key'] = API_KEY
     config['PARAMS']['database'] = input('Database location (eg. C:\LoLAnalyzerDB): ')
     print('Leagues you want to download games from (y/n): ')
-    config['LEAGUE']['challenger'] = 'yes' if validationInput('challenger: ', ['y', 'n']) == 'y' else 'no'
-    config['LEAGUE']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
-    config['LEAGUE']['diamond'] = 'yes' if validationInput('diamond: ', ['y', 'n']) == 'y' else 'no'
-    config['LEAGUE']['platinum'] = 'yes' if validationInput('platinum: ', ['y', 'n']) == 'y' else 'no'
-    config['LEAGUE']['gold'] = 'yes' if validationInput('gold: ', ['y', 'n']) == 'y' else 'no'
-    config['LEAGUE']['silver'] = 'yes' if validationInput('silver: ', ['y', 'n']) == 'y' else 'no'
-    config['LEAGUE']['bronze'] = 'yes' if validationInput('bronze: ', ['y', 'n']) == 'y' else 'no'
+    config['LEAGUES']['challenger'] = 'yes' if validationInput('challenger: ', ['y', 'n']) == 'y' else 'no'
+    config['LEAGUES']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
+    config['LEAGUES']['diamond'] = 'yes' if validationInput('diamond: ', ['y', 'n']) == 'y' else 'no'
+    config['LEAGUES']['platinum'] = 'yes' if validationInput('platinum: ', ['y', 'n']) == 'y' else 'no'
+    config['LEAGUES']['gold'] = 'yes' if validationInput('gold: ', ['y', 'n']) == 'y' else 'no'
+    config['LEAGUES']['silver'] = 'yes' if validationInput('silver: ', ['y', 'n']) == 'y' else 'no'
+    config['LEAGUES']['bronze'] = 'yes' if validationInput('bronze: ', ['y', 'n']) == 'y' else 'no'
     print('Regions you want to download games from (the more the better) (y/n):')
     config['REGIONS']['ru'] = 'yes' if validationInput('ru: ', ['y', 'n']) == 'y' else 'no'
     config['REGIONS']['kr'] = 'yes' if validationInput('kr: ', ['y', 'n']) == 'y' else 'no'

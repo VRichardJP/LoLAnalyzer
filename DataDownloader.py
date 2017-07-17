@@ -10,7 +10,6 @@ import sys
 import time
 
 from InterfaceAPI import InterfaceAPI, ApiError, ApiError404, ApiError403
-from distutils.version import StrictVersion
 
 
 class DataDownloader:
@@ -82,10 +81,13 @@ class DataDownloader:
                     print(e, file=sys.stderr)
                     continue
                 # Game too old ?
-                gameVersion = gameData['gameVersion'][:len(self.patch)]
-                if StrictVersion(gameVersion) < StrictVersion(self.patch):  # too old history
+                gameVersion = gameData['gameVersion'].split('.')[:3]  # formatting both
+                gameVersion[2] = gameVersion[2][:1]  # so we can compare
+                gameVersion = tuple(list(map(int, gameVersion)))
+                patchVersion = tuple(list(map(int, self.patch.split('.'))))
+                if gameVersion < patchVersion:  # too old history
                     break
-                if StrictVersion(gameVersion) > StrictVersion(self.patch):  # too recent history
+                if gameVersion > patchVersion:  # too recent history
                     continue
 
                 file_path = os.path.join(self.db, gameID)

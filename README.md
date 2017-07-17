@@ -7,11 +7,13 @@ Furthermore, I won't provide any trained network, because I simply can't maintai
 
 ## Requirements
 
-You need (pip install is the simplest way)
+You need (pip install is the simplest way):
 - Python 3 
 - Tensorflow (GPU version recommended if your graphic card is compatible)
 - PyQt5
 - A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
+
+...and maybe some others libraries, just google/pip if something is missing.
 
 ## How to use
 
