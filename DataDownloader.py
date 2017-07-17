@@ -9,7 +9,7 @@ import random
 import sys
 import time
 
-from InterfaceAPI import InterfaceAPI, ApiError, ApiError404
+from InterfaceAPI import InterfaceAPI, ApiError, ApiError404, ApiError403
 from distutils.version import StrictVersion
 
 
@@ -72,6 +72,9 @@ class DataDownloader:
                     break
                 try:
                     gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
+                except ApiError403 as e:
+                    print(e, file=sys.stderr)
+                    return e
                 except ApiError404 as e:
                     print(e, file=sys.stderr)
                     break
@@ -92,7 +95,7 @@ class DataDownloader:
                 print(self.patch, self.region, gameID)
                 with open(self.downloadedGamesPath, 'a+') as f:
                     f.write(gameID + '\n')
-        return False  # No data left to download
+        return None  # No data left to download
 
 
 def keepDownloading(database, patches, region, leagues):
@@ -103,13 +106,19 @@ def keepDownloading(database, patches, region, leagues):
             if not dd:
                 try:
                     dd = DataDownloader(database, patch, region, leagues)
+                except ApiError403 as e:
+                    print('FATAL ERROR', patch, region, e, file=sys.stderr)
+                    return
                 except ApiError as e:
                     print(e, file=sys.stderr)
                     print(region, 'initial connection failed. Retrying in 10 minutes', file=sys.stderr)
                     time.sleep(600)
                     continue
 
-            dd.downloadData()
+            e = dd.downloadData()
+            if e is not None:
+                print('FATAL ERROR', patch, region, e, file=sys.stderr)
+                return
             print(region, patch, 'all games downloaded', file=sys.stderr)
             break
     print(region, 'download complete')

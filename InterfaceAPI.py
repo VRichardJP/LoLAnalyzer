@@ -20,6 +20,10 @@ class ApiError404(ApiError):
     pass
 
 
+class ApiError403(ApiError):
+    pass
+
+
 class InterfaceAPI:
     def __init__(self, API_KEY=None):
         self.API_KEY = API_KEY
@@ -48,14 +52,13 @@ class InterfaceAPI:
             for key, value in data.items():
                 uri += '&%s=%s' % (key, value)
         resp = requests.get(uri)
+        for key in self.count:
+            self.count[key] += 1
 
         if resp.status_code != 200:
             # This means something went wrong.
-            for key in self.count: # a request was made anyway
-                self.count[key] += 1
-
             if resp.status_code == 403:
-                raise ApiError('API-KEY has EXPIRED. Please set the new one in config.ini (https://developer.riotgames.com/)')
+                raise ApiError403('API-KEY has EXPIRED. Please set the new one in config.ini (https://developer.riotgames.com/)')
             elif resp.status_code == 404:
                 raise ApiError404('Error %d - GET %s' % (resp.status_code, uri))
             raise ApiError('Error %d - GET %s' % (resp.status_code, uri))
