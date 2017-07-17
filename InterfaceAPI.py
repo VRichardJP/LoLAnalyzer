@@ -9,7 +9,7 @@ import sys
 import time
 
 DEBUG = False
-OFFSET = 0  # To avoid error 429. Normally not necessary
+OFFSET = 5  # To avoid error 429. Normally not necessary but its just a security
 
 
 class ApiError(Exception):

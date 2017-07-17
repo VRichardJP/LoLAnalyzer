@@ -88,6 +88,18 @@ class ValueNetwork:
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
+    @staticmethod
+    def dense5Arch(x, **kwargs):
+        NN = kwargs.pop('NN')
+        dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
+        dense2 = tf.layers.dense(dense1, NN // 2, activation=tf.nn.relu)
+        dense3 = tf.layers.dense(dense2, NN // 4, activation=tf.nn.relu)
+        dense4 = tf.layers.dense(dense3, NN // 8, activation=tf.nn.relu)
+        dense5 = tf.layers.dense(dense4, NN // 16, activation=tf.nn.relu)
+        y_pred = tf.layers.dense(dense5, 1, activation=tf.sigmoid)
+        y_pred = tf.reshape(y_pred, [-1])
+        return y_pred
+
 
 class dataCollector:
     def __init__(self, dataFile, netType, batchSize):
@@ -161,6 +173,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
     mappingArchi = {
         'Dense2': network.dense2Arch,
         'Dense3': network.dense3Arch,
+        'Dense5': network.dense5Arch,
     }
     if netArchi not in mappingArchi:
         raise Exception('Unknown netArchi', netArchi)
@@ -241,4 +254,4 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 1024}, batchSize=200, checkpoint=100, lr=1e-4)
+    learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=100, lr=1e-4)
