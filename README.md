@@ -1,7 +1,7 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
-Under construction
+Warning: this application is under construction. Not everything has been published yet, and I don't guarantee that all the published scripts will run softly. I you want to test it anyway, feedbacks are welcome
 
 ## Requirements
 
