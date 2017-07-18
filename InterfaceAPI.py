@@ -11,7 +11,7 @@ import sys
 import time
 
 DEBUG = False
-OFFSET = 2  # To avoid error 429 at the start since the program has no clue of the current state
+OFFSET = 1  # just a security to avoid error 429. Prevent also the first request from reaching the rate-limit (we have no way to check the rate limit but to request something)
 TIME_LIMIT_WAIT = 120  # If we still get an error 429, wait a little
 
 
