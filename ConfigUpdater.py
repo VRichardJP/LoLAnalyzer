@@ -8,7 +8,7 @@ import os
 import urllib.request
 from datetime import datetime
 from slugify import slugify
-
+from collections import OrderedDict
 from InterfaceAPI import InterfaceAPI
 
 config = configparser.ConfigParser()
@@ -59,9 +59,10 @@ else:
 api = InterfaceAPI(API_KEY)
 PATCHES = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/versions')
 PATCHES = ['.'.join(s.split('.')[:2]) for s in reversed(PATCHES)]
-config['PARAMS']['patches'] = ','.join(PATCHES)
 config['PARAMS']['download_patches'] = PATCHES[-1]
 print('Current patch set to:', config['PARAMS']['download_patches'])
+PATCHES = OrderedDict((x, True) for x in PATCHES).keys()
+config['PARAMS']['patches'] = ','.join(PATCHES)
 print('Patch list updated')
 json_data = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/champions', data={'locale': 'en_US', 'dataById': 'true'})
 CHAMPIONS = json_data['data']
