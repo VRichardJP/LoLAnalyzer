@@ -3,7 +3,7 @@
 
 Warning: this application is under construction. Not everything has been published yet, and I don't guarantee that all the published scripts will run softly. I you want to test it anyway, feedbacks are welcome.
 
-Furthermore, I won't provide any trained network, because I simply can't maintain such network updated on a daily basis. I you want to use this app you will have to train your own network.
+I may provide a demo network in a near future, but I can't maintain a network updated on a daily basis. I you want to use this app you will have to train your own network.
 
 ## Requirements
 

@@ -13,16 +13,17 @@ import tensorflow as tf
 import numpy as np
 from multiprocessing import Manager
 
-# In order to have compatible models between patches, the input size is bigger than necessary
-# 7.14.1: champions 137, patches: 170
+# In order to have compatible models between patches, the input size is oversized
+# 7.14: champions 138, patches: 97
+# current rythm: 6 champions per season, 24 patches per season
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 PATCHES = config['patches'].split(',')
 CHAMPIONS_LABEL = config['sortedChamps'].split(',')
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-CHAMPIONS_SIZE = 200
-PATCHES_SIZE = 300
+CHAMPIONS_SIZE = 150
+PATCHES_SIZE = 150
 INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
