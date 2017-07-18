@@ -9,10 +9,22 @@ import sys
 import time
 
 DEBUG = False
-OFFSET = 5  # To avoid error 429. Normally not necessary but its just a security
+OFFSET = 2  # To avoid error 429. Normally not necessary but its just a security
+TIME_LIMIT_WAIT = 120  # If we still get an error 429, wait a little
 
+
+# The scripts have different behaviour depending on the errors
+# 403 -> stop everything (wrong api-key)
+# 404 -> usually a summoner is not found, just ignore it and analyze the next one
+# 429 -> time limit error. I'm still wondering why this is happening, but w/e, if that happens we just wait  little.
+# Any other -> just ignore current game and get the next one (we don't want the script to be stuck so we never ask twice the same information)
+# It is highly possible that some games where missed during a first scan (because of a random error). Downloading games a second time will eventualy fix the problem (ony download new games)
 
 class ApiError(Exception):
+    pass
+
+
+class ApiError429(ApiError):
     pass
 
 
@@ -47,23 +59,14 @@ class InterfaceAPI:
                     self.count[t] = 0
                     self.last_reset[t] = time.time()
 
+        # Request & response
         uri += '?api_key=' + self.API_KEY
         if data:
             for key, value in data.items():
                 uri += '&%s=%s' % (key, value)
         resp = requests.get(uri)
-        for key in self.count:
+        for key in self.count: # updated right after with a precise value, but I don't know
             self.count[key] += 1
-
-        if resp.status_code != 200:
-            # This means something went wrong.
-            if resp.status_code == 403:
-                raise ApiError403('API-KEY has EXPIRED. Please set the new one in config.ini (https://developer.riotgames.com/)')
-            elif resp.status_code == 404:
-                raise ApiError404('Error %d - GET %s' % (resp.status_code, uri))
-            raise ApiError('Error %d - GET %s' % (resp.status_code, uri))
-        elif DEBUG:
-            print(uri, file=sys.stderr)
 
         # Set the time limits on the first call
         if not self.rate_limits and 'X-App-Rate-Limit' in resp.headers and 'X-App-Rate-Limit-Count' in resp.headers:
@@ -80,6 +83,21 @@ class InterfaceAPI:
             for r in resp.headers['X-App-Rate-Limit-Count'].split(','):  # we use the api value to be precise
                 [c, t] = r.split(':')
                 self.count[int(t)] = int(c)
+
+        if resp.status_code != 200:
+            # This means something went wrong.
+            if resp.status_code == 403:
+                raise ApiError403('API-KEY has EXPIRED. Please set the new one in config.ini (https://developer.riotgames.com/)')
+            elif resp.status_code == 404:
+                raise ApiError404('Error %d - GET %s' % (resp.status_code, uri))
+            elif resp.status_code == 429:
+                # wait a little to make sure we don't hit the limit
+                print('Error 429, waiting', TIME_LIMIT_WAIT, file=sys.stderr)
+                time.sleep(TIME_LIMIT_WAIT)
+                raise ApiError429('Error %d - GET %s' % (resp.status_code, uri))
+            raise ApiError('Error %d - GET %s' % (resp.status_code, uri))
+        elif DEBUG:
+            print(uri, file=sys.stderr)
 
         return json.loads(resp.content.decode('utf-8'))
 

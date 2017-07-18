@@ -81,8 +81,8 @@ class DataDownloader:
                     print(e, file=sys.stderr)
                     continue
                 # Game too old ?
-                gameVersion = gameData['gameVersion'].split('.')[:3]  # formatting both
-                gameVersion[2] = gameVersion[2][:1]  # so we can compare
+                # formatting both so we can compare
+                gameVersion = gameData['gameVersion'].split('.')[:2]
                 gameVersion = tuple(list(map(int, gameVersion)))
                 patchVersion = tuple(list(map(int, self.patch.split('.'))))
                 if gameVersion < patchVersion:  # too old history
