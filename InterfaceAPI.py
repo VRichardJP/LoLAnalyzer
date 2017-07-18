@@ -4,12 +4,14 @@
 # Return data as dict (API send json)
 import configparser
 import json
+
+import collections
 import requests
 import sys
 import time
 
 DEBUG = False
-OFFSET = 2  # To avoid error 429. Normally not necessary but its just a security
+OFFSET = 2  # To avoid error 429 at the start since the program has no clue of the current state
 TIME_LIMIT_WAIT = 120  # If we still get an error 429, wait a little
 
 
@@ -44,20 +46,18 @@ class InterfaceAPI:
             config.read('config.ini')
             self.API_KEY = config['PARAMS']['api-key']
 
-        self.rate_limits = {}
-        self.count = {}
-        self.last_reset = {}
+        self.resets = {}
+
+    # TODO Rework, simply keep in memory the time of the Nth call
+    # https://stackoverflow.com/questions/1931589/python-datatype-for-a-fixed-length-fifo
 
     def getData(self, uri, data=None):
         # need to wait?
-        for t in self.count:
-            if self.count[t] >= self.rate_limits[t] - OFFSET:  # need a window reset
-                waiting_time = t - (time.time() - self.last_reset[t])  # time left until the end of the window
-                if waiting_time > 0:
-                    print('Too many requests, waiting', waiting_time, file=sys.stderr)
-                    time.sleep(waiting_time)
-                    self.count[t] = 0
-                    self.last_reset[t] = time.time()
+        for t in self.resets:
+            wait = self.resets[t][0] + t + OFFSET - time.time()
+            if wait > 0:
+                print('Too many requests - waiting for', wait, file=sys.stderr)
+                time.sleep(wait)
 
         # Request & response
         uri += '?api_key=' + self.API_KEY
@@ -65,24 +65,25 @@ class InterfaceAPI:
             for key, value in data.items():
                 uri += '&%s=%s' % (key, value)
         resp = requests.get(uri)
-        for key in self.count: # updated right after with a precise value, but I don't know
-            self.count[key] += 1
 
-        # Set the time limits on the first call
-        if not self.rate_limits and 'X-App-Rate-Limit' in resp.headers and 'X-App-Rate-Limit-Count' in resp.headers:
-            for r in resp.headers['X-App-Rate-Limit'].split(','):
-                [l, t] = r.split(':')
-                self.rate_limits[int(t)] = int(l)
-            for r in resp.headers['X-App-Rate-Limit-Count'].split(','):
-                [c, t] = r.split(':')
-                self.count[int(t)] = int(c)
-                self.last_reset[int(t)] = time.time()
-
-        # Update & Check time
-        if 'X-App-Rate-Limit-Count' in resp.headers:  # otherwise it's not concerned by the time limit
+        # initialize time limits - only once
+        if not self.resets and 'X-App-Rate-Limit' and 'X-App-Rate-Limit-Count' in resp.headers:
+            # We synchronize with the API to make a fresh start
+            # This will be a problem if we have too big time limits (ironic huh)
+            wait = 0
             for r in resp.headers['X-App-Rate-Limit-Count'].split(','):  # we use the api value to be precise
-                [c, t] = r.split(':')
-                self.count[int(t)] = int(c)
+                [c, t] = list(map(int, r.split(':')))
+                wait = max(wait, t) if c > 1 else wait
+            if wait:
+                print('Initial synchronization - waiting for', wait, file=sys.stderr)
+                time.sleep(wait)
+            for r in resp.headers['X-App-Rate-Limit'].split(','):
+                [l, t] = list(map(int, r.split(':')))
+                self.resets[t] = collections.deque(l * [0], l)
+
+        # update current state
+        for t in self.resets:
+            self.resets[t].append(time.time())
 
         if resp.status_code != 200:
             # This means something went wrong.

@@ -19,8 +19,8 @@ from multiprocessing import Manager
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
-PATCHES = config['patches'].split(',')
-CHAMPIONS_LABEL = config['sortedChamps'].split(',')
+PATCHES = config['PARAMS']['patches'].split(',')
+CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 CHAMPIONS_SIZE = 150
 PATCHES_SIZE = 150
@@ -101,6 +101,15 @@ class ValueNetwork:
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
+    def dense12Arch(x, **kwargs):
+        NN = kwargs.pop('NN')
+        denses = [x]
+        for k in range(12):
+            denses.append(tf.layers.dense(denses[-1], NN // (2 ^ (k // 2)), activation=tf.nn.relu))
+        y_pred = tf.layers.dense(denses[-1], 1, activation=tf.sigmoid)
+        y_pred = tf.reshape(y_pred, [-1])
+        return y_pred
+
 
 class dataCollector:
     def __init__(self, dataFile, netType, batchSize):
@@ -121,7 +130,7 @@ class dataCollector:
                 if DEBUG:
                     print(sample, file=sys.stderr)
                 self.miniCollectors.append(
-                    multiprocessing.Process(target=dataCollector.miniCollectorValue, args=(sample, batchSize, self.q_batch, CHAMPIONS_LABEL, CHAMPIONS_STATUS)))
+                    multiprocessing.Process(target=dataCollector.miniCollectorValue, args=(sample, batchSize, self.q_batch)))
                 self.miniCollectors[-1].start()
         else:
             raise Exception('unknown netType', netType)
@@ -175,6 +184,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
         'Dense2': network.dense2Arch,
         'Dense3': network.dense3Arch,
         'Dense5': network.dense5Arch,
+        'Dense12': network.dense12Arch,
     }
     if netArchi not in mappingArchi:
         raise Exception('Unknown netArchi', netArchi)

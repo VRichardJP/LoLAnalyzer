@@ -70,6 +70,8 @@ class DataDownloader:
                 if gameID in self.downloadedGames:
                     break
                 try:
+                    # TODO Possible improvement: It is not necessary to make the request since we have the timestamp: game['gameId']['timestamp']
+                    # TODO The best way is to use the patch info from the games to estimate when each patch was out
                     gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
                 except ApiError403 as e:
                     print(e, file=sys.stderr)

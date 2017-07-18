@@ -14,7 +14,7 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
-LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUE'].items()}
+LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUES'].items()}
 CHAMPIONS = config['CHAMPIONS']  # need to convert id: str -> int
 CHAMPIONS = {champ_name: int(champ_id) for (champ_name, champ_id) in CHAMPIONS.items()}
 regions_list = config['REGIONS']
@@ -29,7 +29,7 @@ else:
 
 for patch in PATCHES:
     for region, enabled in regions_list.items():
-        if enabled == 'yes':
+        if enabled == 'yes' and os.path.isdir(os.path.join(DATABASE, 'patches', patch, region)):
             gamesPath.extend([os.path.join(DATABASE, 'patches', patch, region, f) for f in os.listdir(os.path.join(DATABASE, 'patches', patch, region))])
     print('%d game files found for %s' % (len(gamesPath), patch))
     gamesPath = list(set(gamesPath) - set(extracted_list))
@@ -40,6 +40,7 @@ for patch in PATCHES:
     fieldsnames = [champ_name for champ_name in CHAMPIONS]
     fieldsnames.append('win')
     fieldsnames.append('patch')
+    fieldsnames.append('file')
     writer = csv.DictWriter(open(csv_file, 'a+'), fieldnames=fieldsnames)
     if writeheader:
         writer.writeheader()
@@ -118,6 +119,8 @@ for patch in PATCHES:
         redState['win'] = int(blueWin)
         blueState['patch'] = patch
         redState['patch'] = patch
+        blueState['file'] = os.path.basename(gamePath)
+        redState['file'] = os.path.basename(gamePath)
         blueState = {champ_name: 'A' for champ_name in CHAMPIONS}
         redState = {champ_name: 'A' for champ_name in CHAMPIONS}
         writer.writerows((blueState, redState))
