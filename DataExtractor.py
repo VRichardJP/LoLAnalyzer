@@ -14,7 +14,6 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
-LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUES'].items()}
 CHAMPIONS = config['CHAMPIONS']  # need to convert id: str -> int
 CHAMPIONS = {champ_name: int(champ_id) for (champ_name, champ_id) in CHAMPIONS.items()}
 regions_list = config['REGIONS']
@@ -121,8 +120,8 @@ for patch in PATCHES:
         redState['patch'] = patch
         blueState['file'] = os.path.basename(gamePath)
         redState['file'] = os.path.basename(gamePath)
-        blueState = {champ_name: 'A' for champ_name in CHAMPIONS}
-        redState = {champ_name: 'A' for champ_name in CHAMPIONS}
+        blueState.update({champ_name: 'A' for champ_name in CHAMPIONS})
+        redState.update({champ_name: 'A' for champ_name in CHAMPIONS})
         writer.writerows((blueState, redState))
 
         # Bans
