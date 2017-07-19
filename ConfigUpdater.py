@@ -27,7 +27,9 @@ else:
     config.add_section('PARAMS')
     config.add_section('LEAGUES')
     config.add_section('REGIONS')
+    config.add_section('PATCHES')
     config.add_section('CHAMPIONS')
+
 
     print("No config file found. Let's set up a few parameters (you may change them anytime by manually editing config.ini).")
     API_KEY = input('API-KEY (https://developer.riotgames.com/): ')

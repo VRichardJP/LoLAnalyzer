@@ -12,11 +12,11 @@ import time
 
 DEBUG = False
 OFFSET = 1  # just a security to avoid error 429. Prevent also the first request from reaching the rate-limit (we have no way to check the rate limit but to request something)
-TIME_LIMIT_WAIT = 120  # If we still get an error 429, wait a little
-
+TIME_LIMIT_WAIT = 120  # If we still get an error 429, wait for a reset. It's painful so it's better to not have to deal with this
+BYPASS_FIRST_WAIT = False  # Warning: only use if you haven't used the script for a while and you know there has been a reset.
 
 # The scripts have different behaviour depending on the errors
-# 403 -> stop everything (wrong api-key)
+# 403 -> stop everything (wrong a pi-key)
 # 404 -> usually a summoner is not found, just ignore it and analyze the next one
 # 429 -> time limit error. I'm still wondering why this is happening, but w/e, if that happens we just wait  little.
 # Any other -> just ignore current game and get the next one (we don't want the script to be stuck so we never ask twice the same information)
@@ -45,7 +45,6 @@ class InterfaceAPI:
             config = configparser.ConfigParser()
             config.read('config.ini')
             self.API_KEY = config['PARAMS']['api-key']
-
         self.resets = {}
 
     # TODO Rework, simply keep in memory the time of the Nth call
@@ -56,7 +55,8 @@ class InterfaceAPI:
         for t in self.resets:
             wait = self.resets[t][0] + t + OFFSET - time.time()
             if wait > 0:
-                print('Too many requests - waiting for', wait, file=sys.stderr)
+                if DEBUG:
+                    print('Too many requests - waiting for', wait, file=sys.stderr)
                 time.sleep(wait)
 
         # Request & response
@@ -71,11 +71,13 @@ class InterfaceAPI:
             # We synchronize with the API to make a fresh start
             # This will be a problem if we have too big time limits (ironic huh)
             wait = 0
-            for r in resp.headers['X-App-Rate-Limit-Count'].split(','):  # we use the api value to be precise
-                [c, t] = list(map(int, r.split(':')))
-                wait = max(wait, t) if c > 1 else wait
+            if not BYPASS_FIRST_WAIT:
+                for r in resp.headers['X-App-Rate-Limit-Count'].split(','):  # we use the api value to be precise
+                    [c, t] = list(map(int, r.split(':')))
+                    wait = max(wait, t) if c > 1 else wait
             if wait:
-                print('Initial synchronization - waiting for', wait, file=sys.stderr)
+                if DEBUG:
+                    print('Initial synchronization - waiting for', wait, file=sys.stderr)
                 time.sleep(wait)
             for r in resp.headers['X-App-Rate-Limit'].split(','):
                 [l, t] = list(map(int, r.split(':')))
@@ -93,11 +95,13 @@ class InterfaceAPI:
                 raise ApiError404('Error %d - GET %s' % (resp.status_code, uri))
             elif resp.status_code == 429:
                 # wait a little to make sure we don't hit the limit
-                print('Error 429, waiting', TIME_LIMIT_WAIT, file=sys.stderr)
+                if DEBUG:
+                    print('Error 429, waiting', TIME_LIMIT_WAIT, file=sys.stderr)
                 time.sleep(TIME_LIMIT_WAIT)
                 raise ApiError429('Error %d - GET %s' % (resp.status_code, uri))
             raise ApiError('Error %d - GET %s' % (resp.status_code, uri))
-        elif DEBUG:
+
+        if DEBUG:
             print(uri, file=sys.stderr)
 
         return json.loads(resp.content.decode('utf-8'))
