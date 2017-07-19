@@ -167,7 +167,6 @@ def saveLastSeen(timestamped_patches, save_interval, end):
     cfg.read('config.ini')
     last_save = time.time()
     while not end.is_set():
-        print(last_save + save_interval, time.time())
         if last_save + save_interval < time.time():
             # we save the dictionnary
             for key, value in timestamped_patches.items():
@@ -179,7 +178,7 @@ def saveLastSeen(timestamped_patches, save_interval, end):
         time.sleep(1)
     # we save the final state of the dictionnary
     for key, value in timestamped_patches.items():
-        cfg['PATCHES'][key] = value
+        cfg['PATCHES'][key] = ','.join(list(map(str, value)))
     with open('config.ini', 'w') as configfile:
         cfg.write(configfile)
         print('patch timestamps saved')
