@@ -116,8 +116,8 @@ for patch in PATCHES:
         redState = {}
         blueState['win'] = int(blueWin)
         redState['win'] = int(blueWin)
-        blueState['patch'] = patch
-        redState['patch'] = patch
+        blueState['patch'] = patch.replace('.', '_')
+        redState['patch'] = patch.replace('.', '_')
         blueState['file'] = os.path.basename(gamePath)
         redState['file'] = os.path.basename(gamePath)
         blueState.update({champ_name: 'A' for champ_name in CHAMPIONS})
