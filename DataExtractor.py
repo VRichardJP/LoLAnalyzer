@@ -4,10 +4,9 @@
 # Append the usefull data to a csv file
 import configparser
 import pickle
-import csv
 import os
-
 import sys
+import pandas as pd
 from collections import Counter
 
 config = configparser.ConfigParser()
@@ -18,12 +17,19 @@ CHAMPIONS = config['CHAMPIONS']  # need to convert id: str -> int
 CHAMPIONS = {champ_name: int(champ_id) for (champ_name, champ_id) in CHAMPIONS.items()}
 regions_list = config['REGIONS']
 gamesPath = []
+COLUMNS = [champ for champ in CHAMPIONS]
+COLUMNS.append('win')
+COLUMNS.append('patch')
+COLUMNS.append('file')
+csv_file = os.path.join(DATABASE, 'data.csv')
 
 extracted_file = os.path.join(DATABASE, 'extracted.txt')
 if os.path.isfile(extracted_file):
+    writeheader = False
     with open(extracted_file, 'r') as f:
         extracted_list = [x.strip() for x in f.readlines()]
 else:
+    writeheader = True
     extracted_list = []
 
 for patch in PATCHES:
@@ -33,17 +39,6 @@ for patch in PATCHES:
     print('%d game files found for %s' % (len(gamesPath), patch))
     gamesPath = list(set(gamesPath) - set(extracted_list))
     print('%d new games to extract' % len(gamesPath))
-
-    csv_file = os.path.join(DATABASE, 'data.csv')
-    writeheader = not os.path.isfile(csv_file)
-    fieldsnames = [champ_name for champ_name in CHAMPIONS]
-    fieldsnames.append('win')
-    fieldsnames.append('patch')
-    fieldsnames.append('file')
-    writer = csv.DictWriter(open(csv_file, 'a+'), fieldnames=fieldsnames)
-    if writeheader:
-        writer.writeheader()
-
 
     # Champion state:
     # Available, Banned, Opponent, Top, Jungle, Middle, Carry, Support
@@ -63,6 +58,10 @@ for patch in PATCHES:
 
 
     for gamePath in gamesPath:
+        raw_data = {champ: [] for champ in CHAMPIONS}
+        raw_data['win'] = []
+        raw_data['patch'] = []
+        raw_data['file'] = []
         print(gamePath)
         game = pickle.load(open(gamePath, 'rb'))
         blueTeam = None
@@ -122,7 +121,11 @@ for patch in PATCHES:
         redState['file'] = os.path.basename(gamePath)
         blueState.update({champ_name: 'A' for champ_name in CHAMPIONS})
         redState.update({champ_name: 'A' for champ_name in CHAMPIONS})
-        writer.writerows((blueState, redState))
+        for key, value in blueState.items():
+            raw_data[key].append(value)
+        for key, value in redState.items():
+            raw_data[key].append(value)
+        # writer.writerows((blueState, redState))
 
         # Bans
         blueState = dict(blueState)  # don't forget to create a clean copy
@@ -133,7 +136,10 @@ for patch in PATCHES:
                     blueState[champ_name] = 'B'
                     redState[champ_name] = 'B'
                     break
-        writer.writerows((blueState, redState))
+        for key, value in blueState.items():
+            raw_data[key].append(value)
+        for key, value in redState.items():
+            raw_data[key].append(value)
 
         # Smart lane-role
         b_roles = {}
@@ -228,8 +234,14 @@ for patch in PATCHES:
                     blueState[champ_name] = roles[i] if bluePick else 'O'
                     redState[champ_name] = 'O' if bluePick else roles[i]
                     break
-            writer.writerows((blueState, redState))
+            for key, value in blueState.items():
+                raw_data[key].append(value)
+            for key, value in redState.items():
+                raw_data[key].append(value)
 
+        df = pd.DataFrame(raw_data, columns=COLUMNS)
+        df.to_csv(csv_file, mode='a', header=writeheader)
+        writeheader = False
         # File fully explored
         with open(extracted_file, 'a+') as f:
             f.write(gamePath)

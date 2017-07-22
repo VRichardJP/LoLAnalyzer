@@ -25,6 +25,7 @@ CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 CHAMPIONS_SIZE = 150
 PATCHES_SIZE = 150
 INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
+# Advantage of this input = 150*9 = 50*27
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
@@ -265,4 +266,4 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
-    learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=100, lr=1e-4)
+    learn(netType='Value', netArchi='Dense12', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=100, lr=1e-4)
