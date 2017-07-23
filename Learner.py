@@ -63,7 +63,8 @@ class ValueNetwork:
 
     @staticmethod
     def loss(y_pred, y_true):
-        loss = tf.reduce_mean(tf.squared_difference(y_pred, y_true))
+        # loss = tf.reduce_mean(tf.squared_difference(y_pred, y_true))
+        loss = tf.reduce_mean(-tf.log(tf.constant(1.0) - tf.abs(y_pred - y_true)))
         return loss
 
     @staticmethod
@@ -114,69 +115,34 @@ class ValueNetwork:
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
+    @staticmethod
+    def dense20Arch(x, **kwargs):
+        NN = kwargs.pop('NN')
+        denses = [x]
+        for k in range(20):
+            denses.append(tf.layers.dense(denses[-1], NN, activation=tf.nn.relu))
+            # denses.append(tf.layers.dense(denses[-1], NN // (2 ** (k // 2)), activation=tf.nn.relu))
+        y_pred = tf.layers.dense(denses[-1], 1, activation=tf.sigmoid)
+        y_pred = tf.reshape(y_pred, [-1])
+        return y_pred
+
 
 class dataCollector:
-    def __init__(self, dataFile, netType, batchSize):
-        if netType == 'Value':
-            names = CHAMPIONS_LABEL[:]
-            names.append('win')
-            names.append('patch')
-            names.append('file')
-            dtype = {champ: str for champ in CHAMPIONS_LABEL}
-            dtype['patch'] = str
-            dtype['win'] = int
-            dtype['file'] = str
-            df = pd.read_csv(dataFile, names=names, dtype=dtype, skiprows=1)
+    def __init__(self, preprocessedFile, netType, batchSize):
+        self.batchSize = batchSize
+        self.i = 0
+        self.df = pd.read_csv(preprocessedFile).sample(frac=1).reset_index(drop=True)
+        self.nextBatch = {
+            'Value': self.nextBatchValue,
+        }[netType]
 
-            # Multi-processing to collect the data faster
-            manager = Manager()
-            n_proc = 1 if DEBUG else multiprocessing.cpu_count()
-            self.q_batch = manager.Queue(n_proc)
-            self.miniCollectors = []
-            samples = np.array_split(df, n_proc)
-            for sample in samples:
-                sample = sample.reset_index(drop=True)
-                if DEBUG:
-                    print(sample, file=sys.stderr)
-                self.miniCollectors.append(
-                    multiprocessing.Process(target=dataCollector.miniCollectorValue, args=(sample, batchSize, self.q_batch)))
-                self.miniCollectors[-1].start()
-        else:
-            raise Exception('unknown netType', netType)
-
-    def next_batch(self):
-        while True:
-            self.miniCollectors = [mc for mc in self.miniCollectors if mc.is_alive()]
-            if not self.miniCollectors:
-                print('No collector left', file=sys.stderr)
-                return None
-            try:
-                return self.q_batch.get(timeout=60)
-            except queue.Empty:
-                continue
-
-    @staticmethod
-    def miniCollectorValue(df, batchSize, q_batch):
-        print(os.getpid(), 'miniCollectorValue starting', file=sys.stderr)
-        end = df.shape[0]
-        i = 0
-        while True:
-            if i >= end:
-                break
-            j = i + batchSize
-            batch = [[], []]
-            # input: patch + champions status
-            for _, row in df.iloc[i:min(j, end)].iterrows():
-                row_input = []
-                row_input.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(len(CHAMPIONS_LABEL))])
-                row_input.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE-len(CHAMPIONS_LABEL))])
-                row_input.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
-                batch[0].append(row_input)
-                # batch[0] = [[[1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS] for champ in CHAMPIONS_LABEL] for _, row in df.iloc[i:min(j, end)].iterrows()]
-            batch[1] = [v for v in df.iloc[i: min(j, end), df.columns.get_loc('win')]]
-            q_batch.put(batch)
-            i = j
-        print(os.getpid(), 'miniCollectorValue end', file=sys.stderr)
+    def nextBatchValue(self):
+        j = self.i + self.batchSize
+        batch = [[], []]
+        batch[0] = self.df.iloc[self.i:j, 1:]
+        batch[1] = self.df.iloc[self.i:j, 0]  # first column is the value
+        self.i = j
+        return batch
 
 
 def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
@@ -195,6 +161,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
         'Dense3': network.dense3Arch,
         'Dense5': network.dense5Arch,
         'Dense12': network.dense12Arch,
+        'Dense20': network.dense20Arch,
     }
     if netArchi not in mappingArchi:
         raise Exception('Unknown netArchi', netArchi)
@@ -275,4 +242,4 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
-    learn(netType='Value', netArchi='Dense12', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=100, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=100, lr=1e-4)

@@ -21,12 +21,10 @@ dtype['patch'] = str
 dtype['win'] = int
 dtype['file'] = str
 df = pd.read_csv(dataFile, names=names, dtype=dtype, skiprows=1)
-# print(df.iloc[:10].to_string())
 # df = pd.read_csv(dataFile, names=names, dtype=dtype, skiprows=1).sample(frac=1).reset_index(drop=True)
-# print(df.iloc[:10].to_string())
+print(len(df))
+print(df.iloc[:10].to_string())
 
-# print(len(df))
-# print(pd.isnull(df).iloc[:10].to_string())
 inds = pd.isnull(df).any(1).nonzero()[0]
 print(inds)
 
