@@ -16,16 +16,17 @@ from multiprocessing import Manager
 # In order to have compatible models between patches, the input size is oversized
 # 7.14: champions 138, patches: 97
 # current rythm: 6 champions per season, 24 patches per season
-config = configparser.ConfigParser()
-config.read('config.ini')
-DATABASE = config['PARAMS']['database']
-PATCHES = config['PARAMS']['patches'].split(',')
-CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
-CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 CHAMPIONS_SIZE = 150
 PATCHES_SIZE = 150
 INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
-# Advantage of this input = 150*9 = 50*27
+config = configparser.ConfigParser()
+config.read('config.ini')
+DATABASE = config['PARAMS']['database']
+PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
+PATCHES.extend((PATCHES_SIZE-len(PATCHES))*[None])
+CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
+# CHAMPIONS_LABEL.extend((CHAMPIONS_SIZE-len(CHAMPIONS_LABEL))*[None])
+CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
@@ -102,11 +103,13 @@ class ValueNetwork:
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
+    @staticmethod
     def dense12Arch(x, **kwargs):
         NN = kwargs.pop('NN')
         denses = [x]
         for k in range(12):
-            denses.append(tf.layers.dense(denses[-1], NN // (2 ^ (k // 2)), activation=tf.nn.relu))
+            denses.append(tf.layers.dense(denses[-1], NN, activation=tf.nn.relu))
+            # denses.append(tf.layers.dense(denses[-1], NN // (2 ** (k // 2)), activation=tf.nn.relu))
         y_pred = tf.layers.dense(denses[-1], 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
@@ -116,14 +119,19 @@ class dataCollector:
     def __init__(self, dataFile, netType, batchSize):
         if netType == 'Value':
             names = CHAMPIONS_LABEL[:]
-            names.append('patch')
             names.append('win')
-            df = pd.read_csv(dataFile, names=names, skiprows=1).sample(frac=1).reset_index(drop=True)
+            names.append('patch')
+            names.append('file')
+            dtype = {champ: str for champ in CHAMPIONS_LABEL}
+            dtype['patch'] = str
+            dtype['win'] = int
+            dtype['file'] = str
+            df = pd.read_csv(dataFile, names=names, dtype=dtype, skiprows=1)
 
             # Multi-processing to collect the data faster
             manager = Manager()
-            self.q_batch = manager.Queue(1)
             n_proc = 1 if DEBUG else multiprocessing.cpu_count()
+            self.q_batch = manager.Queue(n_proc)
             self.miniCollectors = []
             samples = np.array_split(df, n_proc)
             for sample in samples:
@@ -160,8 +168,9 @@ class dataCollector:
             # input: patch + champions status
             for _, row in df.iloc[i:min(j, end)].iterrows():
                 row_input = []
-                row_input.extend([1 if k == PATCHES.index(row['patch']) else 0 for k in range(PATCHES_SIZE)])
-                row_input.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE)])
+                row_input.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(len(CHAMPIONS_LABEL))])
+                row_input.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE-len(CHAMPIONS_LABEL))])
+                row_input.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
                 batch[0].append(row_input)
                 # batch[0] = [[[1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS] for champ in CHAMPIONS_LABEL] for _, row in df.iloc[i:min(j, end)].iterrows()]
             batch[1] = [v for v in df.iloc[i: min(j, end), df.columns.get_loc('win')]]
@@ -247,10 +256,10 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
                 # Logging
                 w_acc.append(acc)
-                if len(w_acc) > 100:
+                if len(w_acc) > 200:
                     w_acc.pop(0)
                 w_loss.append(loss)
-                if len(w_loss) > 100:
+                if len(w_loss) > 200:
                     w_loss.pop(0)
                 s = "%s: step %d, lr=%.6f, loss = %.4f, acc = %.2f%%, w_loss = %.4f, w_acc = %.2f%% (load=%.3f train=%.3f total=%0.3f sec/step)" % (
                     datetime.datetime.now(), step, lr, loss, 100 * acc, sum(w_loss) / len(w_loss),
