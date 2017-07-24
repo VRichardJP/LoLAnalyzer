@@ -30,15 +30,17 @@ class dataCollector:
             dtype['patch'] = str
             dtype['win'] = int
             dtype['file'] = str
-            if os.path.isfile(preprocessedFile) :
+            if os.path.isfile(preprocessedFile):
                 preprocessed_df = pd.read_csv(preprocessedFile)
             else:
                 preprocessed_df = []
 
             df = pd.read_csv(dataFile, names=names, dtype=dtype, skiprows=1)
 
+            print(df.shape[0] - len(preprocessed_df), "rows to analyze")
             for i in range(len(preprocessed_df), df.shape[0]):
                 # data: win + champions status + patch
+                print(df.shape[0] - i)
                 row = df.iloc[i]
                 row_data = list()
                 row_data.append(row['win'])
