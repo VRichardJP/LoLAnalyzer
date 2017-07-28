@@ -1,13 +1,24 @@
 import configparser
 import sys
-from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
+import pandas as pd
+import tensorflow as tf
+
+from Learner import ValueNetwork
+
+CHAMPIONS_SIZE = 150
+PATCHES_SIZE = 150
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 CHAMPIONS = ['...']
 CHAMPIONS.extend(sorted(config['PARAMS']['sortedChamps'].split(',')))
 ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
+PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
+CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
+CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+PATCH = PATCHES_SIZE * [0]
+PATCH[len(PATCHES) - 1] = 1  # current patch
 
 
 class App(QDialog):
@@ -16,8 +27,8 @@ class App(QDialog):
         self.title = 'LoLAnalyzer'
         self.left = 10
         self.top = 10
-        self.width = 320
-        self.height = 100
+        self.width = 660
+        self.height = 400
         self.initUI()
 
     def initUI(self):
@@ -160,9 +171,82 @@ class App(QDialog):
 
         self.show()
 
-    def generate(self):
-        pass
+        network = ValueNetwork
 
+        mappingArchi = {
+            'Dense2': network.dense2Arch,
+            'Dense3': network.dense3Arch,
+            'Dense5': network.dense5Arch,
+            'Dense12': network.dense12Arch,
+            'Dense20': network.dense20Arch,
+        }
+        if netArchi not in mappingArchi:
+            raise Exception('Unknown netArchi', netArchi)
+        architecture = mappingArchi[netArchi]
+
+
+        # Building the neural network
+        with tf.Graph().as_default() as g:
+            with tf.Session(graph=g) as sess:
+                # Network building
+                x, y_true = network.placeholders()
+                y_pred = architecture(x, **archi_kwargs)
+                acc_ph = network.accuracy(y_pred, y_true)
+                loss_ph = network.loss(y_pred, y_true)
+                train_op = network.train_op(loss_ph, lr)
+                w_acc = []
+                w_loss = []
+
+                # Data collector
+                collector = dataCollector(dataFile, netType, batchSize)
+
+                # Restoring last session
+                saver = tf.train.Saver(tf.trainable_variables())
+                sess.run(tf.global_variables_initializer())
+                step = maybe_restore_from_checkpoint(sess, saver, ckpt_dir)
+                s = "New session: %s" % ckpt_dir
+                with open(os.path.join(ckpt_dir, 'training.log'), 'a+') as f:
+                    f.write(s + '\n')
+                print(s)
+
+    def generate(self):
+        currentState = {champ: 'A' for champ in CHAMPIONS[1:]}
+        bans = [self.player1Ban, self.player2Ban, self.player3Ban, self.player4Ban, self.player5Ban, self.player6Ban, self.player7Ban,
+                self.player8Ban, self.player9Ban, self.player10Ban]
+        picks = [(self.player1Pick, self.player1Role), (self.player2Pick, self.player2Role), (self.player3Pick, self.player3Role),
+                 (self.player4Pick, self.player4Role), (self.player5Pick, self.player5Role), (self.player6Pick, 'Opp'), (self.player7Pick, 'Opp'),
+                 (self.player8Pick, 'Opp'), (self.player9Pick, 'Opp'), (self.player10Pick, 'Opp')]
+        for ban in bans:
+            currentState[ban] = 'B'
+        for (pick, role) in picks:
+            if role[0] not in CHAMPIONS_STATUS:
+                raise Exception
+            currentState[pick] = role[0]
+
+        yourRole = self.yourRole[0]
+        if yourRole not in CHAMPIONS_STATUS:
+            raise Exception
+
+        possibleStates = []
+        for champ in CHAMPIONS[1:]:
+            if currentState[champ] != 'A':
+                continue
+            state = dict(currentState)
+            state[champ] = yourRole
+            possibleStates.append(state)
+
+        data = pd.DataFrame()
+
+        for row in possibleStates:
+            row_data = list()
+            row_data.extend([1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS for champ in CHAMPIONS_LABEL])
+            row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
+            row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
+            data.append(pd.DataFrame.from_records([row_data]))
+
+        batch = [[], []]
+        batch[0] = self.df.iloc[:, 1:]
+        batch[1] = self.df.iloc[:, 0]
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -9,9 +9,11 @@ import sys
 import pandas as pd
 from collections import Counter
 
+DATA_LINES = 100000
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
+EXTRACTED_DIR = os.path.join(DATABASE, 'extracted')
 PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
 CHAMPIONS = config['CHAMPIONS']  # need to convert id: str -> int
 CHAMPIONS = {champ_name: int(champ_id) for (champ_name, champ_id) in CHAMPIONS.items()}
@@ -20,15 +22,12 @@ COLUMNS = [champ for champ in CHAMPIONS]
 COLUMNS.append('win')
 COLUMNS.append('patch')
 COLUMNS.append('file')
-csv_file = os.path.join(DATABASE, 'data.csv')
 
 extracted_file = os.path.join(DATABASE, 'extracted.txt')
 if os.path.isfile(extracted_file):
-    writeheader = False
     with open(extracted_file, 'r') as f:
         extracted_list = [x.strip() for x in f.readlines()]
 else:
-    writeheader = True
     extracted_list = []
 
 gamesPath = []
@@ -56,6 +55,22 @@ def getRoleIndex(lane, role):
         return 'S'
     else:
         raise Exception(lane, role)
+
+extracted_files = [f for f in os.listdir(EXTRACTED_DIR)]
+l = list(map(lambda x: int(x.replace('data_', '').replace('.csv', '')), extracted_files))
+l = sorted(range(len(l)), key=lambda k: l[k])
+extracted_files = [extracted_files[k] for k in l]
+if extracted_files:
+    current_index = len(extracted_files) - 1
+    current_file = extracted_files[current_index]
+    csv_file = os.path.join(EXTRACTED_DIR, current_file)
+    csv_index = len(pd.read_csv(csv_file, skiprows=1))
+else:
+    current_index = 0
+    current_file = ''
+    csv_file = None
+    csv_index = DATA_LINES
+
 
 for gamePath in gamesPath:
     raw_data = {champ: [] for champ in CHAMPIONS}
@@ -240,8 +255,21 @@ for gamePath in gamesPath:
             raw_data[key].append(value)
 
     df = pd.DataFrame(raw_data, columns=COLUMNS)
-    df.to_csv(csv_file, mode='a', header=writeheader, index=False)
-    writeheader = False
+    if csv_index + len(df) < DATA_LINES:
+        df.to_csv(csv_file, mode='a', header=False, index=False)
+        csv_index += len(df)
+    else:  # split the data in two: finish prev file and start another
+        to_current = df.iloc[:DATA_LINES - csv_index - 1]
+        to_next = df.iloc[DATA_LINES - csv_index - 1:]
+        to_current.to_csv(csv_file, mode='a', header=False, index=False)
+        # preparing new file
+        current_index += 1
+        current_file = 'data_' + str(current_index) + '.csv'
+        csv_file = os.path.join(EXTRACTED_DIR, current_file)
+        csv_index = 0
+        to_next.to_csv(csv_file, mode='a', header=True, index=False)
+        csv_index += len(to_next)
+
     # File fully explored
     with open(extracted_file, 'a+') as f:
         f.write(gamePath)

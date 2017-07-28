@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import datetime
 import queue
+import random
 import time
 import sys
 import pandas as pd
@@ -22,11 +23,13 @@ INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
+PREPROCESSED_DIR = os.path.join(DATABASE, 'data')
 PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
 PATCHES.extend((PATCHES_SIZE-len(PATCHES))*[None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 # CHAMPIONS_LABEL.extend((CHAMPIONS_SIZE-len(CHAMPIONS_LABEL))*[None])
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
@@ -128,26 +131,31 @@ class ValueNetwork:
 
 
 class dataCollector:
-    def __init__(self, preprocessedFile, netType, batchSize):
+    def __init__(self, netType, batchSize):
         self.batchSize = batchSize
         self.i = 0
-        self.df = pd.read_csv(preprocessedFile).sample(frac=1).reset_index(drop=True)
+        self.preprocessed_files = os.listdir(PREPROCESSED_DIR)
+        random.shuffle(self.preprocessed_files)
+        self.df = pd.read_csv(self.preprocessed_files.pop()).sample(frac=1).reset_index(drop=True)
         self.nextBatch = {
             'Value': self.nextBatchValue,
         }[netType]
 
     def nextBatchValue(self):
-        j = self.i + self.batchSize
+        j = min(self.i + self.batchSize, len(self.df))
         batch = [[], []]
         batch[0] = self.df.iloc[self.i:j, 1:]
         batch[1] = self.df.iloc[self.i:j, 0]  # first column is the value
-        self.i = j
+        if j < len(self.df):
+            self.i = j
+        else:
+            self.i = 0
+            self.df = pd.read_csv(self.preprocessed_files.pop()).sample(frac=1).reset_index(drop=True)
         return batch
 
 
 def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
     ckpt_dir = os.path.join(DATABASE, 'models', netType + netArchi)
-    dataFile = os.path.join(DATABASE, 'data.csv')
 
     mappingType = {
         'Value': ValueNetwork,
@@ -179,7 +187,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
             w_loss = []
 
             # Data collector
-            collector = dataCollector(dataFile, netType, batchSize)
+            collector = dataCollector(netType, batchSize)
 
             # Restoring last session
             saver = tf.train.Saver(tf.trainable_variables())
