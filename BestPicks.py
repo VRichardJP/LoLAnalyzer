@@ -23,7 +23,7 @@ PATCH = PATCHES_SIZE * [0]
 PATCH[len(PATCHES) - 1] = 1  # current patch
 
 netArchi = 'Dense3'
-archi_kwargs={'NN': 2048}
+archi_kwargs = {'NN': 2048}
 
 
 class App(QDialog):
@@ -35,6 +35,7 @@ class App(QDialog):
         self.width = 660
         self.height = 400
         self.initUI()
+        self.buildNetwork()
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -146,7 +147,8 @@ class App(QDialog):
         self.yourRole = QComboBox()
         self.yourRole.addItems(ROLES)
         bestPicksLayout.addWidget(self.yourRole, 0, 1)
-        self.generateButton = QPushButton('Analyze')
+        self.generateButton = QPushButton('Wait...')
+        self.generateButton.setEnabled(False)
         self.generateButton.clicked.connect(lambda: self.generate())
         bestPicksLayout.addWidget(self.generateButton, 0, 2)
         self.results = QTableWidget()
@@ -176,6 +178,7 @@ class App(QDialog):
 
         self.show()
 
+    def buildNetwork(self):
         network = ValueNetwork
         netType = 'Value'
 
@@ -189,7 +192,6 @@ class App(QDialog):
         if netArchi not in mappingArchi:
             raise Exception('Unknown netArchi', netArchi)
         architecture = mappingArchi[netArchi]
-
 
         # Building the neural network
         with tf.Graph().as_default() as g:
@@ -213,31 +215,44 @@ class App(QDialog):
                     f.write(s + '\n')
                 print(s)
 
+        self.generateButton.setText('Analyze')
+        self.generateButton.setEnabled(True)
+
     def generate(self):
+        print('generating for:', str(self.yourRole.currentText()))
         currentState = {champ: 'A' for champ in CHAMPIONS[1:]}
-        bans = [self.player1Ban, self.player2Ban, self.player3Ban, self.player4Ban, self.player5Ban, self.player6Ban, self.player7Ban,
-                self.player8Ban, self.player9Ban, self.player10Ban]
-        picks = [(self.player1Pick, self.player1Role), (self.player2Pick, self.player2Role), (self.player3Pick, self.player3Role),
-                 (self.player4Pick, self.player4Role), (self.player5Pick, self.player5Role), (self.player6Pick, 'Opp'), (self.player7Pick, 'Opp'),
-                 (self.player8Pick, 'Opp'), (self.player9Pick, 'Opp'), (self.player10Pick, 'Opp')]
+        bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
+                str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
+                str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
+                str(self.player10Ban.currentText())]
+        picks = [(str(self.player1Pick.currentText()), str(self.player1Role.currentText()))[0],
+                 (str(self.player2Pick.currentText()), str(self.player2Role.currentText()))[0],
+                 (str(self.player3Pick.currentText()), str(self.player3Role.currentText()))[0],
+                 (str(self.player4Pick.currentText()), str(self.player4Role.currentText()))[0],
+                 (str(self.player5Pick.currentText()), str(self.player5Role.currentText()))[0],
+                 (str(self.player6Pick.currentText()), 'Opp'), (str(self.player7Pick.currentText()), 'Opp'),
+                 (str(self.player8Pick.currentText()), 'Opp'), (str(self.player9Pick.currentText()), 'Opp'),
+                 (str(self.player10Pick.currentText()), 'Opp')]
         for ban in bans:
             currentState[ban] = 'B'
         for (pick, role) in picks:
-            if role[0] not in CHAMPIONS_STATUS:
+            if role not in ROLES:
                 raise Exception
             currentState[pick] = role[0]
 
-        yourRole = self.yourRole[0]
-        if yourRole not in CHAMPIONS_STATUS:
+        yourRole = str(self.yourRole.currentText())[0]
+        if yourRole not in ROLES or yourRole == '...':
             raise Exception
 
         possibleStates = []
+        champions = []
         for champ in CHAMPIONS[1:]:
             if currentState[champ] != 'A':
                 continue
             state = dict(currentState)
             state[champ] = yourRole
             possibleStates.append(state)
+            champions.append(champ)
 
         data = pd.DataFrame()
 
@@ -255,8 +270,8 @@ class App(QDialog):
             self.x: batch[0],
         }
         pred_values = self.sess.run([self.y_pred], feed_dict=feed_dict)
-        possibleStates = [x for (y,x) in sorted(zip(pred_values, possibleStates))]
-        print(possibleStates)
+        best_champs = [(x, y) for (y, x) in sorted(zip(pred_values, champions))]
+        print(best_champs)
 
 
 if __name__ == '__main__':

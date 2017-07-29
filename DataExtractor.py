@@ -56,15 +56,21 @@ def getRoleIndex(lane, role):
     else:
         raise Exception(lane, role)
 
+if not os.path.isdir(EXTRACTED_DIR):
+    os.makedirs(EXTRACTED_DIR)
+
 extracted_files = [f for f in os.listdir(EXTRACTED_DIR)]
 l = list(map(lambda x: int(x.replace('data_', '').replace('.csv', '')), extracted_files))
 l = sorted(range(len(l)), key=lambda k: l[k])
 extracted_files = [extracted_files[k] for k in l]
+
+print(extracted_files)
 if extracted_files:
-    current_index = len(extracted_files) - 1
-    current_file = extracted_files[current_index]
+    current_index = len(extracted_files)
+    current_file = extracted_files[current_index - 1]
     csv_file = os.path.join(EXTRACTED_DIR, current_file)
     csv_index = len(pd.read_csv(csv_file, skiprows=1))
+    print('lines', csv_index)
 else:
     current_index = 0
     current_file = ''
@@ -82,6 +88,7 @@ for gamePath in gamesPath:
     blueTeam = None
     redTeam = None
     bans = []
+    game_patch = '_'.join(game['gameVersion'].split('.')[:2])
 
     if game['gameDuration'] < 300:
         print('FF afk', game['gameDuration'])
@@ -89,6 +96,9 @@ for gamePath in gamesPath:
             f.write(gamePath)
             f.write('\n')
         continue
+
+    blueTeam = None
+    redTeam = None
     for team in game['teams']:
         if team['teamId'] == 100:
             blueTeam = team
@@ -130,17 +140,16 @@ for gamePath in gamesPath:
     redState = dict()
     blueState['win'] = int(blueWin)
     redState['win'] = int(blueWin)
-    blueState['patch'] = patch.replace('.', '_')
-    redState['patch'] = patch.replace('.', '_')
+    blueState['patch'] = game_patch
+    redState['patch'] = game_patch
     blueState['file'] = os.path.basename(gamePath)
     redState['file'] = os.path.basename(gamePath)
     blueState.update({champ_name: 'A' for champ_name in CHAMPIONS})
     redState.update({champ_name: 'A' for champ_name in CHAMPIONS})
     for key, value in blueState.items():
         raw_data[key].append(value)
-    for key, value in redState.items():
-        raw_data[key].append(value)
-    # writer.writerows((blueState, redState))
+    # for key, value in redState.items():
+    #     raw_data[key].append(value)
 
     # Bans
     blueState = dict(blueState)  # don't forget to create a clean copy
@@ -153,8 +162,8 @@ for gamePath in gamesPath:
                 break
     for key, value in blueState.items():
         raw_data[key].append(value)
-    for key, value in redState.items():
-        raw_data[key].append(value)
+    # for key, value in redState.items():
+    #     raw_data[key].append(value)
 
     # Smart lane-role
     b_roles = {}
@@ -259,8 +268,8 @@ for gamePath in gamesPath:
         df.to_csv(csv_file, mode='a', header=False, index=False)
         csv_index += len(df)
     else:  # split the data in two: finish prev file and start another
-        to_current = df.iloc[:DATA_LINES - csv_index - 1]
-        to_next = df.iloc[DATA_LINES - csv_index - 1:]
+        to_current = df.iloc[:DATA_LINES - csv_index]
+        to_next = df.iloc[DATA_LINES - csv_index:]
         to_current.to_csv(csv_file, mode='a', header=False, index=False)
         # preparing new file
         current_index += 1

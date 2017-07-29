@@ -138,33 +138,25 @@ class dataCollector:
         random.shuffle(self.preprocessed_files)
         file = self.preprocessed_files.pop()
         self.df = pd.read_csv(file).sample(frac=1).reset_index(drop=True)
-        # preprocessed_files = os.listdir(PREPROCESSED_DIR)
-        # l = list(map(lambda x: int(x.replace('data_', '').replace('.csv', '')), preprocessed_files))
-        # l = sorted(range(len(l)), key=lambda k: l[k], reverse=True)
-        # self.preprocessed_files = [os.path.join(PREPROCESSED_DIR, preprocessed_files[k]) for k in l]
-        # print('loading data')
-        # self.df = pd.DataFrame()
-        # while self.preprocessed_files:
-        #     file = self.preprocessed_files.pop()
-        #     print(file)
-        #     self.df = self.df.append(pd.read_csv(file), ignore_index=True)
-        # print('shuffling')
-        # self.df = self.df.sample(frac=1).reset_index(drop=True)
-        # print(len(self.df))
         self.next_batch = {
             'Value': self.nextBatchValue,
         }[netType]
 
     def nextBatchValue(self):
-        j = min(self.i + self.batchSize, len(self.df))
         batch = [[], []]
+        if not self.df:
+            return batch
+        j = min(self.i + self.batchSize, len(self.df))
         batch[0] = self.df.iloc[self.i:j, 1:].values.tolist()
         batch[1] = self.df.iloc[self.i:j, 0].values.tolist()  # first column is the value
         if j < len(self.df):
             self.i = j
         else:
             self.i = 0
-            self.df = pd.read_csv(self.preprocessed_files.pop()).sample(frac=1).reset_index(drop=True)
+            if self.preprocessed_files:
+                self.df = pd.read_csv(self.preprocessed_files.pop()).sample(frac=1).reset_index(drop=True)
+            else:
+                self.df = None
         return batch
 
 
