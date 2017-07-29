@@ -1,16 +1,18 @@
 import configparser
+import os
 import sys
 from PyQt5.QtWidgets import *
 import pandas as pd
 import tensorflow as tf
 
-from Learner import ValueNetwork
+from Learner import ValueNetwork, maybe_restore_from_checkpoint
 
 CHAMPIONS_SIZE = 150
 PATCHES_SIZE = 150
 
 config = configparser.ConfigParser()
 config.read('config.ini')
+DATABASE = config['PARAMS']['database']
 CHAMPIONS = ['...']
 CHAMPIONS.extend(sorted(config['PARAMS']['sortedChamps'].split(',')))
 ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
@@ -19,6 +21,9 @@ CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 PATCH = PATCHES_SIZE * [0]
 PATCH[len(PATCHES) - 1] = 1  # current patch
+
+netArchi = 'Dense3'
+archi_kwargs={'NN': 2048}
 
 
 class App(QDialog):
@@ -172,6 +177,7 @@ class App(QDialog):
         self.show()
 
         network = ValueNetwork
+        netType = 'Value'
 
         mappingArchi = {
             'Dense2': network.dense2Arch,
@@ -187,25 +193,23 @@ class App(QDialog):
 
         # Building the neural network
         with tf.Graph().as_default() as g:
-            with tf.Session(graph=g) as sess:
+            with tf.Session(graph=g) as self.sess:
                 # Network building
-                x, y_true = network.placeholders()
-                y_pred = architecture(x, **archi_kwargs)
-                acc_ph = network.accuracy(y_pred, y_true)
-                loss_ph = network.loss(y_pred, y_true)
-                train_op = network.train_op(loss_ph, lr)
+                self.x, y_true = network.placeholders()
+                self.y_pred = architecture(self.x, **archi_kwargs)
+                # acc_ph = network.accuracy(y_pred, y_true)
+                # loss_ph = network.loss(y_pred, y_true)
+                # train_op = network.train_op(loss_ph, lr)
                 w_acc = []
                 w_loss = []
 
-                # Data collector
-                collector = dataCollector(dataFile, netType, batchSize)
-
                 # Restoring last session
                 saver = tf.train.Saver(tf.trainable_variables())
-                sess.run(tf.global_variables_initializer())
-                step = maybe_restore_from_checkpoint(sess, saver, ckpt_dir)
+                self.sess.run(tf.global_variables_initializer())
+                ckpt_dir = os.path.join(DATABASE, 'models', netType + netArchi)
+                step = maybe_restore_from_checkpoint(self.sess, saver, ckpt_dir)
                 s = "New session: %s" % ckpt_dir
-                with open(os.path.join(ckpt_dir, 'training.log'), 'a+') as f:
+                with open(os.path.join(ckpt_dir, 'testing.log'), 'a+') as f:
                     f.write(s + '\n')
                 print(s)
 
@@ -242,11 +246,18 @@ class App(QDialog):
             row_data.extend([1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS for champ in CHAMPIONS_LABEL])
             row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
             row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
-            data.append(pd.DataFrame.from_records([row_data]))
+            data = data.append([row_data])
 
         batch = [[], []]
-        batch[0] = self.df.iloc[:, 1:]
-        batch[1] = self.df.iloc[:, 0]
+        batch[0] = self.data
+
+        feed_dict = {
+            self.x: batch[0],
+        }
+        pred_values = self.sess.run([self.y_pred], feed_dict=feed_dict)
+        possibleStates = [x for (y,x) in sorted(zip(pred_values, possibleStates))]
+        print(possibleStates)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

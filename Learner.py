@@ -23,7 +23,7 @@ INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
-PREPROCESSED_DIR = os.path.join(DATABASE, 'data')
+SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
 PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
 PATCHES.extend((PATCHES_SIZE-len(PATCHES))*[None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
@@ -134,18 +134,32 @@ class dataCollector:
     def __init__(self, netType, batchSize):
         self.batchSize = batchSize
         self.i = 0
-        self.preprocessed_files = os.listdir(PREPROCESSED_DIR)
+        self.preprocessed_files = [os.path.join(SHUFFLED_DIR, f) for f in os.listdir(SHUFFLED_DIR)]
         random.shuffle(self.preprocessed_files)
-        self.df = pd.read_csv(self.preprocessed_files.pop()).sample(frac=1).reset_index(drop=True)
-        self.nextBatch = {
+        file = self.preprocessed_files.pop()
+        self.df = pd.read_csv(file).sample(frac=1).reset_index(drop=True)
+        # preprocessed_files = os.listdir(PREPROCESSED_DIR)
+        # l = list(map(lambda x: int(x.replace('data_', '').replace('.csv', '')), preprocessed_files))
+        # l = sorted(range(len(l)), key=lambda k: l[k], reverse=True)
+        # self.preprocessed_files = [os.path.join(PREPROCESSED_DIR, preprocessed_files[k]) for k in l]
+        # print('loading data')
+        # self.df = pd.DataFrame()
+        # while self.preprocessed_files:
+        #     file = self.preprocessed_files.pop()
+        #     print(file)
+        #     self.df = self.df.append(pd.read_csv(file), ignore_index=True)
+        # print('shuffling')
+        # self.df = self.df.sample(frac=1).reset_index(drop=True)
+        # print(len(self.df))
+        self.next_batch = {
             'Value': self.nextBatchValue,
         }[netType]
 
     def nextBatchValue(self):
         j = min(self.i + self.batchSize, len(self.df))
         batch = [[], []]
-        batch[0] = self.df.iloc[self.i:j, 1:]
-        batch[1] = self.df.iloc[self.i:j, 0]  # first column is the value
+        batch[0] = self.df.iloc[self.i:j, 1:].values.tolist()
+        batch[1] = self.df.iloc[self.i:j, 0].values.tolist()  # first column is the value
         if j < len(self.df):
             self.i = j
         else:
@@ -154,7 +168,7 @@ class dataCollector:
         return batch
 
 
-def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
+def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
     ckpt_dir = os.path.join(DATABASE, 'models', netType + netArchi)
 
     mappingType = {
@@ -241,7 +255,8 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
                     100 * sum(w_acc) / len(w_acc), batch_time, train_time, step_time)
                 with open(os.path.join(ckpt_dir, 'training.log'), 'a+') as f:
                     f.write(s + '\n')
-                print(s)
+                if step % report == 0:
+                    print(s)
 
             saver.save(sess, os.path.join(ckpt_dir, "model.ckpt"), global_step=step)
             print('Final step saved', file=sys.stderr)
@@ -250,4 +265,4 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, lr):
 
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=100, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=1000, report=10, lr=1e-4)
