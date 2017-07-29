@@ -21,8 +21,9 @@ You need (pip/google is your best friend):
 2. DataDownloader.py : download raw game files according to the parameters in config.ini (patches, regions, leagues)
 3. DataExtractor.py : extract and collect all the downloaded data
 4. DataProcessing.py : pre-process the extrated data
-5. Learner.py: train a neural network
-6. BestPick.py: Not finished yet (you can still train neural nets though)
+5. DataShuffling.py : shuffling the data
+6. Learner.py: train a neural network
+7. BestPick.py: Not finished yet (you can still train neural nets though)
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
@@ -32,5 +33,5 @@ You need (pip/google is your best friend):
 - The downloaded games are located under DATABASE_ROOT/patches/PATCH/REGION/. You can change the patch/regions you're downloading games from by simply editing config.ini. 
 - Extracted data location is DATABASE_ROOT/extracted/ and DATABASE_ROOT/extracted.txt and contains all the data you've downloaded (all patches/all regions)
 - Preprocessed data location is DATABASE_ROOT/data/. The pre-processing can take a lot of time
-- Only DATABASE_ROOT/data/ is used for the training, so if you need to free some space on your hard drive you can delete the data files from a patch you've already fully extracted (under DATABASE_ROOT/patches/). Keep in mind if you don't configure the app properly, it may re-download games you've already used for training
+- Only DATABASE_ROOT/shuffled/ is used for the training, so if you need to free some space on your hard drive you can delete the data files from a patch you've already fully extracted (under DATABASE_ROOT/patches/). Keep in mind if you don't configure the app properly, it may re-download games you've already used for training
 - The models you train are located under DATABASE_ROOT/model.
