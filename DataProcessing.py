@@ -62,6 +62,7 @@ def processing(dataFile):
         row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
         data.loc[len(data)] = row_data
 
+    data = data.astype(int)
     data.to_csv(currentFile, mode='a', header=False, index=False)
     print(currentFile, 'DONE')
 

@@ -254,14 +254,14 @@ class App(QDialog):
             possibleStates.append(state)
             champions.append(champ)
 
-        data = pd.DataFrame()
+        data = []
 
         for row in possibleStates:
             row_data = list()
             row_data.extend([1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS for champ in CHAMPIONS_LABEL])
             row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
             row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
-            data = data.append([row_data])
+            data = data.append(row_data)
 
         batch = [[], []]
         batch[0] = self.data
