@@ -4,9 +4,10 @@ import multiprocessing
 import pandas as pd
 import os
 
+SAVE = 1000
 CHAMPIONS_SIZE = 150
 PATCHES_SIZE = 150
-INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
+INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
@@ -17,6 +18,10 @@ PATCHES.extend((PATCHES_SIZE - len(PATCHES)) * [None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
+
+
+if not os.path.isdir(PREPROCESSED_DIR):
+    os.makedirs(PREPROCESSED_DIR)
 
 names = CHAMPIONS_LABEL[:]
 names.append('win')
@@ -31,18 +36,22 @@ dtype['file'] = str
 def processing(dataFile):
     currentFile = os.path.join(PREPROCESSED_DIR, dataFile)
     if os.path.isfile(currentFile):
-        preprocessed_df = pd.read_csv(currentFile)
+        try:
+            preprocessed_df = pd.read_csv(currentFile)
+        except:
+            preprocessed_df = []
     else:
         preprocessed_df = []
     df = pd.read_csv(os.path.join(EXTRACTED_DIR, dataFile), names=names, dtype=dtype, skiprows=1)
 
     print(currentFile, len(df) - len(preprocessed_df), "rows to analyze")
-    data = pd.DataFrame()
+    data = pd.DataFrame(columns=range(INPUT_SIZE))
     for i in range(len(preprocessed_df), len(df)):
-        if i % 1000 == 0:  # saving periodically because the process is rather long
+        if i % SAVE == 0 and i != 0:  # saving periodically because the process is rather long
             print(currentFile, len(df)-i)
+            data = data.astype(int)
             data.to_csv(currentFile, mode='a', header=False, index=False)
-            data = pd.DataFrame()
+            data = pd.DataFrame(columns=range(INPUT_SIZE))
 
         # data: win + champions status + patch
         row = df.iloc[i]
@@ -51,7 +60,8 @@ def processing(dataFile):
         row_data.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(len(CHAMPIONS_LABEL))])
         row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
         row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
-        data = data.append([row_data])
+        data.loc[len(data)] = row_data
+
     data.to_csv(currentFile, mode='a', header=False, index=False)
     print(currentFile, 'DONE')
 
