@@ -15,7 +15,7 @@ SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
 
 
 def shuffling(dataFile, nb_files):
-    df = pd.read_csv(os.path.join(PREPROCESSED_DIR, dataFile))
+    df = pd.read_csv(os.path.join(PREPROCESSED_DIR, dataFile), header=None)
     for i in range(nb_files):
         currentFile = os.path.join(SHUFFLED_DIR, 'data_' + str(i+1) + '.csv')
         print(currentFile)

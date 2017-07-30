@@ -37,17 +37,16 @@ def processing(dataFile):
     currentFile = os.path.join(PREPROCESSED_DIR, dataFile)
     if os.path.isfile(currentFile):
         try:
-            preprocessed_df = pd.read_csv(currentFile)
+            preprocessed_df = pd.read_csv(currentFile, header=None)
         except:
             preprocessed_df = []
     else:
         preprocessed_df = []
     df = pd.read_csv(os.path.join(EXTRACTED_DIR, dataFile), names=names, dtype=dtype, skiprows=1)
-
     print(currentFile, len(df) - len(preprocessed_df), "rows to analyze")
     data = pd.DataFrame(columns=range(INPUT_SIZE))
     for i in range(len(preprocessed_df), len(df)):
-        if i % SAVE == 0 and i != 0:  # saving periodically because the process is rather long
+        if i % SAVE == 0 and i != len(preprocessed_df):  # saving periodically because the process is rather long
             print(currentFile, len(df)-i)
             data = data.astype(int)
             data.to_csv(currentFile, mode='a', header=False, index=False)
@@ -61,9 +60,9 @@ def processing(dataFile):
         row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
         row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
         data.loc[len(data)] = row_data
-
-    data = data.astype(int)
-    data.to_csv(currentFile, mode='a', header=False, index=False)
+    if len(data):
+        data = data.astype(int)
+        data.to_csv(currentFile, mode='a', header=False, index=False)
     print(currentFile, 'DONE')
 
 
