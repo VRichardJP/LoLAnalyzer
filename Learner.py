@@ -25,11 +25,10 @@ config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
 PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
-PATCHES.extend((PATCHES_SIZE-len(PATCHES))*[None])
+PATCHES.extend((PATCHES_SIZE - len(PATCHES)) * [None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 # CHAMPIONS_LABEL.extend((CHAMPIONS_SIZE-len(CHAMPIONS_LABEL))*[None])
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
@@ -88,10 +87,12 @@ class ValueNetwork:
     @staticmethod
     def dense3Arch(x, **kwargs):
         NN = kwargs.pop('NN')
+        training = kwargs.pop('training')
         dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
-        dense2 = tf.layers.dense(dense1, NN // 2, activation=tf.nn.relu)
-        dense3 = tf.layers.dense(dense2, NN // 4, activation=tf.nn.relu)
-        y_pred = tf.layers.dense(dense3, 1, activation=tf.sigmoid)
+        dense2 = tf.layers.dense(dense1, NN, activation=tf.nn.relu)
+        dense3 = tf.layers.dense(dense2, NN, activation=tf.nn.relu)
+        dropout = tf.layers.dropout(inputs=dense3, rate=0.4, training=training)
+        y_pred = tf.layers.dense(dropout, 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
@@ -144,7 +145,7 @@ class dataCollector:
 
     def nextBatchValue(self):
         batch = [[], []]
-        if not self.df:
+        if self.df is None:
             return batch
         j = min(self.i + self.batchSize, len(self.df))
         batch[0] = self.df.iloc[self.i:j, 1:].values.tolist()
@@ -202,7 +203,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
             s = "New session: %s" % ckpt_dir
             with open(os.path.join(ckpt_dir, 'training.log'), 'a+') as f:
                 f.write(s + '\n')
-            print(s)
+            print(s, file=sys.stderr)
 
             while True:
                 step_start = time.time()
@@ -227,8 +228,8 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
 
                 # printing results
                 if DEBUG:
-                    print(np.array(pred_values[:20]))
-                    print(np.array(real_values[:20]))
+                    print(np.array(pred_values[:20]), file=sys.stderr)
+                    print(np.array(real_values[:20]), file=sys.stderr)
 
                 # Saving progress
                 if step % checkpoint == 0 and step != 0:
@@ -248,7 +249,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
                 with open(os.path.join(ckpt_dir, 'training.log'), 'a+') as f:
                     f.write(s + '\n')
                 if step % report == 0:
-                    print(s)
+                    print(s, file=sys.stderr)
 
             saver.save(sess, os.path.join(ckpt_dir, "model.ckpt"), global_step=step)
             print('Final step saved', file=sys.stderr)
@@ -257,4 +258,4 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
 
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048}, batchSize=200, checkpoint=1000, report=10, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=200, checkpoint=1000, report=10, lr=1e-4)

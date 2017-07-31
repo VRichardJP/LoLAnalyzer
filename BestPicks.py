@@ -23,7 +23,7 @@ PATCH = PATCHES_SIZE * [0]
 PATCH[len(PATCHES) - 1] = 1  # current patch
 
 netArchi = 'Dense3'
-archi_kwargs = {'NN': 2048}
+archi_kwargs = {'NN': 2048, 'training': False}
 
 
 class App(QDialog):
@@ -93,27 +93,27 @@ class App(QDialog):
         self.player2Pick = QComboBox()
         self.player2Pick.addItems(CHAMPIONS)
         yourTeamLayout.addWidget(self.player2Pick, 1, 0)
-        self.player2Pick = QComboBox()
-        self.player2Pick.addItems(ROLES)
-        yourTeamLayout.addWidget(self.player2Pick, 1, 1)
+        self.player2Role = QComboBox()
+        self.player2Role.addItems(ROLES)
+        yourTeamLayout.addWidget(self.player2Role, 1, 1)
         self.player3Pick = QComboBox()
         self.player3Pick.addItems(CHAMPIONS)
         yourTeamLayout.addWidget(self.player3Pick, 2, 0)
-        self.player3Pick = QComboBox()
-        self.player3Pick.addItems(ROLES)
-        yourTeamLayout.addWidget(self.player3Pick, 2, 1)
+        self.player3Role = QComboBox()
+        self.player3Role.addItems(ROLES)
+        yourTeamLayout.addWidget(self.player3Role, 2, 1)
         self.player4Pick = QComboBox()
         self.player4Pick.addItems(CHAMPIONS)
         yourTeamLayout.addWidget(self.player4Pick, 3, 0)
-        self.player4Pick = QComboBox()
-        self.player4Pick.addItems(ROLES)
-        yourTeamLayout.addWidget(self.player4Pick, 3, 1)
+        self.player4Role = QComboBox()
+        self.player4Role.addItems(ROLES)
+        yourTeamLayout.addWidget(self.player4Role, 3, 1)
         self.player5Pick = QComboBox()
         self.player5Pick.addItems(CHAMPIONS)
         yourTeamLayout.addWidget(self.player5Pick, 4, 0)
-        self.player5Pick = QComboBox()
-        self.player5Pick.addItems(ROLES)
-        yourTeamLayout.addWidget(self.player5Pick, 4, 1)
+        self.player5Role = QComboBox()
+        self.player5Role.addItems(ROLES)
+        yourTeamLayout.addWidget(self.player5Role, 4, 1)
         yourTeamGB.setLayout(yourTeamLayout)
         mainBoxLayout.addWidget(yourTeamGB, 1, 0)
 
@@ -219,31 +219,35 @@ class App(QDialog):
         self.generateButton.setEnabled(True)
 
     def generate(self):
-        print('generating for:', str(self.yourRole.currentText()))
+        print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
         currentState = {champ: 'A' for champ in CHAMPIONS[1:]}
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
                 str(self.player10Ban.currentText())]
-        picks = [(str(self.player1Pick.currentText()), str(self.player1Role.currentText()))[0],
-                 (str(self.player2Pick.currentText()), str(self.player2Role.currentText()))[0],
-                 (str(self.player3Pick.currentText()), str(self.player3Role.currentText()))[0],
-                 (str(self.player4Pick.currentText()), str(self.player4Role.currentText()))[0],
-                 (str(self.player5Pick.currentText()), str(self.player5Role.currentText()))[0],
+        print('bans', bans, file=sys.stderr)
+        picks = [(str(self.player1Pick.currentText()), str(self.player1Role.currentText())),
+                 (str(self.player2Pick.currentText()), str(self.player2Role.currentText())),
+                 (str(self.player3Pick.currentText()), str(self.player3Role.currentText())),
+                 (str(self.player4Pick.currentText()), str(self.player4Role.currentText())),
+                 (str(self.player5Pick.currentText()), str(self.player5Role.currentText())),
                  (str(self.player6Pick.currentText()), 'Opp'), (str(self.player7Pick.currentText()), 'Opp'),
                  (str(self.player8Pick.currentText()), 'Opp'), (str(self.player9Pick.currentText()), 'Opp'),
                  (str(self.player10Pick.currentText()), 'Opp')]
+        print('picks', picks, file=sys.stderr)
         for ban in bans:
-            currentState[ban] = 'B'
+            if ban [0] != '.':
+                currentState[ban] = 'B'
         for (pick, role) in picks:
-            if role not in ROLES:
-                raise Exception
-            currentState[pick] = role[0]
+            if pick[0] != '.' and role[0] in CHAMPIONS_STATUS:
+                currentState[pick] = role[0]
 
         yourRole = str(self.yourRole.currentText())[0]
-        if yourRole not in ROLES or yourRole == '...':
-            raise Exception
+        if yourRole == '.':
+            print('You need to select a role!', file=sys.stderr)
+            return
 
+        print(currentState, file=sys.stderr)
         possibleStates = []
         champions = []
         for champ in CHAMPIONS[1:]:
@@ -254,6 +258,8 @@ class App(QDialog):
             possibleStates.append(state)
             champions.append(champ)
 
+        print(len(possibleStates), file=sys.stderr)
+        return
         data = []
 
         for row in possibleStates:
@@ -261,7 +267,7 @@ class App(QDialog):
             row_data.extend([1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS for champ in CHAMPIONS_LABEL])
             row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
             row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
-            data = data.append(row_data)
+            data.append(row_data)
 
         batch = [[], []]
         batch[0] = self.data
