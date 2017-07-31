@@ -4,6 +4,7 @@ import sys
 from PyQt5.QtWidgets import *
 import pandas as pd
 import tensorflow as tf
+from qtpy import QtCore
 
 from Learner import ValueNetwork, maybe_restore_from_checkpoint
 
@@ -24,6 +25,19 @@ PATCH[len(PATCHES) - 1] = 1  # current patch
 
 netArchi = 'Dense3'
 archi_kwargs = {'NN': 2048, 'training': False}
+
+
+sys._excepthook = sys.excepthook
+
+def my_exception_hook(exctype, value, traceback):
+    # Print the error and traceback
+    print(exctype, value, traceback)
+    # Call the normal Exception hook after
+    sys._excepthook(exctype, value, traceback)
+    sys.exit(1)
+
+# Set the exception hook to our wrapping function
+sys.excepthook = my_exception_hook
 
 
 class App(QDialog):
@@ -152,18 +166,10 @@ class App(QDialog):
         self.generateButton.clicked.connect(lambda: self.generate())
         bestPicksLayout.addWidget(self.generateButton, 0, 2)
         self.results = QTableWidget()
-        self.results.setRowCount(4)
+        # self.results.setRowCount(4)
         self.results.setColumnCount(2)
         self.results.horizontalHeader().hide()
         self.results.verticalHeader().hide()
-        # self.results.setItem(0, 0, QTableWidgetItem("Item (1,1)"))
-        # self.results.setItem(0, 1, QTableWidgetItem("Item (1,2)"))
-        # self.results.setItem(1, 0, QTableWidgetItem("Item (2,1)"))
-        # self.results.setItem(1, 1, QTableWidgetItem("Item (2,2)"))
-        # self.results.setItem(2, 0, QTableWidgetItem("Item (3,1)"))
-        # self.results.setItem(2, 1, QTableWidgetItem("Item (3,2)"))
-        # self.results.setItem(3, 0, QTableWidgetItem("Item (4,1)"))
-        # self.results.setItem(3, 1, QTableWidgetItem("Item (4,2)"))
 
         bestPicksLayout.addWidget(self.results, 1, 0, 1, 3)
 
@@ -194,26 +200,26 @@ class App(QDialog):
         architecture = mappingArchi[netArchi]
 
         # Building the neural network
-        with tf.Graph().as_default() as g:
-            with tf.Session(graph=g) as self.sess:
-                # Network building
-                self.x, y_true = network.placeholders()
-                self.y_pred = architecture(self.x, **archi_kwargs)
-                # acc_ph = network.accuracy(y_pred, y_true)
-                # loss_ph = network.loss(y_pred, y_true)
-                # train_op = network.train_op(loss_ph, lr)
-                w_acc = []
-                w_loss = []
+        # g = tf.Graph()
+        self.sess = tf.Session()
+        # Network building
+        self.x, y_true = network.placeholders()
+        self.y_pred = architecture(self.x, **archi_kwargs)
+        # acc_ph = network.accuracy(y_pred, y_true)
+        # loss_ph = network.loss(y_pred, y_true)
+        # train_op = network.train_op(loss_ph, lr)
+        w_acc = []
+        w_loss = []
 
-                # Restoring last session
-                saver = tf.train.Saver(tf.trainable_variables())
-                self.sess.run(tf.global_variables_initializer())
-                ckpt_dir = os.path.join(DATABASE, 'models', netType + netArchi)
-                step = maybe_restore_from_checkpoint(self.sess, saver, ckpt_dir)
-                s = "New session: %s" % ckpt_dir
-                with open(os.path.join(ckpt_dir, 'testing.log'), 'a+') as f:
-                    f.write(s + '\n')
-                print(s)
+        # Restoring last session
+        saver = tf.train.Saver(tf.trainable_variables())
+        self.sess.run(tf.global_variables_initializer())
+        ckpt_dir = os.path.join(DATABASE, 'models', netType + netArchi)
+        step = maybe_restore_from_checkpoint(self.sess, saver, ckpt_dir)
+        s = "New session: %s" % ckpt_dir
+        with open(os.path.join(ckpt_dir, 'testing.log'), 'a+') as f:
+            f.write(s + '\n')
+        print(s)
 
         self.generateButton.setText('Analyze')
         self.generateButton.setEnabled(True)
@@ -247,7 +253,7 @@ class App(QDialog):
             print('You need to select a role!', file=sys.stderr)
             return
 
-        print(currentState, file=sys.stderr)
+        # print(currentState, file=sys.stderr)
         possibleStates = []
         champions = []
         for champ in CHAMPIONS[1:]:
@@ -258,29 +264,37 @@ class App(QDialog):
             possibleStates.append(state)
             champions.append(champ)
 
-        print(len(possibleStates), file=sys.stderr)
-        return
         data = []
 
-        for row in possibleStates:
-            row_data = list()
-            row_data.extend([1 if row[champ] == s else 0 for s in CHAMPIONS_STATUS for champ in CHAMPIONS_LABEL])
+        for state in possibleStates:
+            row_data = []
+            row_data.extend([1 if state[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(len(CHAMPIONS_LABEL))])
             row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
-            row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
+            row_data.extend(PATCH)
             data.append(row_data)
 
         batch = [[], []]
-        batch[0] = self.data
+        batch[0] = data
 
         feed_dict = {
             self.x: batch[0],
         }
-        pred_values = self.sess.run([self.y_pred], feed_dict=feed_dict)
-        best_champs = [(x, y) for (y, x) in sorted(zip(pred_values, champions))]
-        print(best_champs)
+        pred_values = self.sess.run(self.y_pred, feed_dict=feed_dict)
+        best_champs = [(champions[k], pred_values[k]) for k in range(len(champions))]
+        best_champs = sorted(best_champs, key=lambda x: x[1], reverse=True)
+
+        print(best_champs, file=sys.stderr)
+        self.results.setRowCount(len(best_champs))
+        for k in range(len(best_champs)):
+            self.results.setItem(k, 0, QTableWidgetItem(best_champs[k][0]))
+            self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1] * 100)))
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()
-    sys.exit(app.exec_())
+
+    try:
+        sys.exit(app.exec_())
+    except Exception as e:
+        print(e)

@@ -3,7 +3,6 @@
 # it's not a real shuffle but it spreads the data as much as possible
 
 import configparser
-import numpy as np
 import pandas as pd
 import os
 

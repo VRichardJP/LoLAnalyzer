@@ -27,7 +27,6 @@ SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
 PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
 PATCHES.extend((PATCHES_SIZE - len(PATCHES)) * [None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
-# CHAMPIONS_LABEL.extend((CHAMPIONS_SIZE-len(CHAMPIONS_LABEL))*[None])
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)

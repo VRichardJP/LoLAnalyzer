@@ -6,6 +6,8 @@ import configparser
 import pickle
 import os
 import sys
+from collections import OrderedDict
+
 import pandas as pd
 from collections import Counter
 
@@ -15,10 +17,11 @@ config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 EXTRACTED_DIR = os.path.join(DATABASE, 'extracted')
 PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
-CHAMPIONS = config['CHAMPIONS']  # need to convert id: str -> int
-CHAMPIONS = {champ_name: int(champ_id) for (champ_name, champ_id) in CHAMPIONS.items()}
+CHAMPIONS_ID = config['CHAMPIONS']  # need to convert id: str -> int
+CHAMPIONS_ID = OrderedDict([(champ_name, int(champ_id)) for (champ_name, champ_id) in CHAMPIONS_ID.items()])
+CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 regions_list = config['REGIONS']
-COLUMNS = [champ for champ in CHAMPIONS]
+COLUMNS = [champ for champ in CHAMPIONS_LABEL]
 COLUMNS.append('win')
 COLUMNS.append('patch')
 COLUMNS.append('file')
@@ -79,7 +82,7 @@ else:
 
 
 for gamePath in gamesPath:
-    raw_data = {champ: [] for champ in CHAMPIONS}
+    raw_data = OrderedDict([(champ, []) for champ in CHAMPIONS_LABEL])
     raw_data['win'] = []
     raw_data['patch'] = []
     raw_data['file'] = []
@@ -136,16 +139,16 @@ for gamePath in gamesPath:
     participants = game['participants']
 
     # Blank, everything is available
-    blueState = dict()
-    redState = dict()
+    blueState = OrderedDict()
+    redState = OrderedDict()
     blueState['win'] = int(blueWin)
     redState['win'] = int(blueWin)
     blueState['patch'] = game_patch
     redState['patch'] = game_patch
     blueState['file'] = os.path.basename(gamePath)
     redState['file'] = os.path.basename(gamePath)
-    blueState.update({champ_name: 'A' for champ_name in CHAMPIONS})
-    redState.update({champ_name: 'A' for champ_name in CHAMPIONS})
+    blueState.update([(champ_name, 'A') for champ_name in CHAMPIONS_LABEL])
+    redState.update([(champ_name, 'A') for champ_name in CHAMPIONS_LABEL])
     for key, value in blueState.items():
         raw_data[key].append(value)
     # for key, value in redState.items():
@@ -155,7 +158,7 @@ for gamePath in gamesPath:
     blueState = dict(blueState)  # don't forget to create a clean copy
     redState = dict(redState)  # ortherwise it will modify previous states
     for championId in bans:
-        for champ_name, champ_id in CHAMPIONS.items():
+        for champ_name, champ_id in CHAMPIONS_ID.items():
             if champ_id == championId:
                 blueState[champ_name] = 'B'
                 redState[champ_name] = 'B'
@@ -166,8 +169,8 @@ for gamePath in gamesPath:
     #     raw_data[key].append(value)
 
     # Smart lane-role
-    b_roles = {}
-    r_roles = {}
+    b_roles = OrderedDict()
+    r_roles = OrderedDict()
 
     for i in range(0, 10):
         p = participants[i]
@@ -242,7 +245,7 @@ for gamePath in gamesPath:
             else:
                 r_roles[r_doublei[1]] = 'S'
 
-    roles = {}
+    roles = OrderedDict()
     roles.update(b_roles)
     roles.update(r_roles)
     # Draft
@@ -253,7 +256,7 @@ for gamePath in gamesPath:
         bluePick = i < 5
         p = participants[i]
         championId = p['championId']
-        for champ_name, champ_id in CHAMPIONS.items():
+        for champ_name, champ_id in CHAMPIONS_ID.items():
             if champ_id == championId:
                 blueState[champ_name] = roles[i] if bluePick else 'O'
                 redState[champ_name] = 'O' if bluePick else roles[i]
