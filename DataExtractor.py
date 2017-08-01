@@ -22,8 +22,8 @@ CHAMPIONS_ID = OrderedDict([(champ_name, int(champ_id)) for (champ_name, champ_i
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 regions_list = config['REGIONS']
 COLUMNS = [champ for champ in CHAMPIONS_LABEL]
-COLUMNS.append('win')
 COLUMNS.append('patch')
+COLUMNS.append('win')
 COLUMNS.append('file')
 
 extracted_file = os.path.join(DATABASE, 'extracted.txt')
@@ -37,7 +37,8 @@ gamesPath = []
 for patch in PATCHES:
     for region, enabled in regions_list.items():
         if enabled == 'yes' and os.path.isdir(os.path.join(DATABASE, 'patches', patch, region)):
-            gamesPath.extend([os.path.join(DATABASE, 'patches', patch, region, f) for f in os.listdir(os.path.join(DATABASE, 'patches', patch, region))])
+            gamesPath.extend(
+                [os.path.join(DATABASE, 'patches', patch, region, f) for f in os.listdir(os.path.join(DATABASE, 'patches', patch, region))])
 print('%d game files found' % len(gamesPath))
 gamesPath = list(set(gamesPath) - set(extracted_list))
 print('%d new games to extract' % len(gamesPath))
@@ -59,6 +60,7 @@ def getRoleIndex(lane, role):
     else:
         raise Exception(lane, role)
 
+
 if not os.path.isdir(EXTRACTED_DIR):
     os.makedirs(EXTRACTED_DIR)
 
@@ -67,7 +69,6 @@ l = list(map(lambda x: int(x.replace('data_', '').replace('.csv', '')), extracte
 l = sorted(range(len(l)), key=lambda k: l[k])
 extracted_files = [extracted_files[k] for k in l]
 
-print(extracted_files)
 if extracted_files:
     current_index = len(extracted_files)
     current_file = extracted_files[current_index - 1]
@@ -79,7 +80,6 @@ else:
     current_file = ''
     csv_file = None
     csv_index = DATA_LINES
-
 
 for gamePath in gamesPath:
     raw_data = OrderedDict([(champ, []) for champ in CHAMPIONS_LABEL])
@@ -212,7 +212,8 @@ for gamePath in gamesPath:
         b_roles[b_doublei[1]] = 'S'
     else:  # Last resort -> check cs
         if 'creepsPerMinDeltas' in participants[b_doublei[0]]['timeline']:
-            if participants[b_doublei[0]]['timeline']['creepsPerMinDeltas']['0-10'] < participants[b_doublei[1]]['timeline']['creepsPerMinDeltas']['0-10']:
+            if participants[b_doublei[0]]['timeline']['creepsPerMinDeltas']['0-10'] < participants[b_doublei[1]]['timeline']['creepsPerMinDeltas'][
+                '0-10']:
                 b_roles[b_doublei[0]] = 'S'
             else:
                 b_roles[b_doublei[1]] = 'S'
@@ -235,7 +236,8 @@ for gamePath in gamesPath:
         r_roles[r_doublei[1]] = 'S'
     else:  # Last resort -> check cs
         if 'creepsPerMinDeltas' in participants[r_doublei[0]]['timeline']:
-            if participants[r_doublei[0]]['timeline']['creepsPerMinDeltas']['0-10'] < participants[r_doublei[1]]['timeline']['creepsPerMinDeltas']['0-10']:
+            if participants[r_doublei[0]]['timeline']['creepsPerMinDeltas']['0-10'] < participants[r_doublei[1]]['timeline']['creepsPerMinDeltas'][
+                '0-10']:
                 r_roles[r_doublei[0]] = 'S'
             else:
                 r_roles[r_doublei[1]] = 'S'
@@ -286,5 +288,37 @@ for gamePath in gamesPath:
     with open(extracted_file, 'a+') as f:
         f.write(gamePath)
         f.write('\n')
+
+print('-- Updating roles --')
+extracted_files = [f for f in os.listdir(EXTRACTED_DIR)]
+champ_roles = [[champ, {'A': 0, 'B': 0, 'O': 0, 'T': 0, 'J': 0, 'M': 0, 'C': 0, 'S': 0}] for champ in CHAMPIONS_LABEL]
+for file in extracted_files:
+    csv_file = os.path.join(EXTRACTED_DIR, file)
+    data = pd.read_csv(csv_file, names=COLUMNS, skiprows=1)
+    for [champ, role_count] in champ_roles:
+        counted_roles = data[champ].value_counts()
+        for (r, n) in counted_roles.iteritems():
+            role_count[r] += n
+
+ROLES = {'Top': [], 'Jungle': [], 'Mid': [], 'Carry': [], 'Support': []}
+POSSIBLE_ROLES = ['Top', 'Jungle', 'Mid', 'Carry', 'Support']
+for [champ, role_count] in champ_roles:
+    s = 0
+    for role in POSSIBLE_ROLES:
+        s += role_count[role[0]]
+    role_ratio = {}
+    for role in POSSIBLE_ROLES:
+        role_ratio[role] = 0 if role[0] not in role_count else role_count[role[0]] / s
+    rr = role_ratio.items()
+    print(champ, sorted(rr, key=lambda t:t[1], reverse=True))
+    for role in role_ratio:
+        if role_ratio[role] > 0.1:
+            ROLES[role].append(champ)
+
+for role in ROLES:
+    config['ROLES'][role] = ','.join(ROLES[role])
+
+with open('config.ini', 'w') as configfile:
+    config.write(configfile)
 
 print('-- Extraction complete --')

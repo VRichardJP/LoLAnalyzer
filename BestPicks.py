@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import *
 import pandas as pd
 import tensorflow as tf
 from qtpy import QtCore
+from collections import OrderedDict
+
 
 from Learner import ValueNetwork, maybe_restore_from_checkpoint
 
@@ -14,14 +16,15 @@ PATCHES_SIZE = 150
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
-CHAMPIONS = ['...']
-CHAMPIONS.extend(sorted(config['PARAMS']['sortedChamps'].split(',')))
 ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
 PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
+CHAMPIONS = ['...']
+CHAMPIONS.extend(CHAMPIONS_LABEL)
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 PATCH = PATCHES_SIZE * [0]
 PATCH[len(PATCHES) - 1] = 1  # current patch
+ROLES_CHAMP = config['ROLES']
 
 netArchi = 'Dense3'
 archi_kwargs = {'NN': 2048, 'training': False}
@@ -226,7 +229,7 @@ class App(QDialog):
 
     def generate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
-        currentState = {champ: 'A' for champ in CHAMPIONS[1:]}
+        currentState = OrderedDict([(champ, 'A') for champ in CHAMPIONS_LABEL])
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
@@ -248,29 +251,34 @@ class App(QDialog):
             if pick[0] != '.' and role[0] in CHAMPIONS_STATUS:
                 currentState[pick] = role[0]
 
-        yourRole = str(self.yourRole.currentText())[0]
-        if yourRole == '.':
+        yourRole = str(self.yourRole.currentText())
+        if yourRole == '...':
             print('You need to select a role!', file=sys.stderr)
             return
 
         # print(currentState, file=sys.stderr)
         possibleStates = []
         champions = []
-        for champ in CHAMPIONS[1:]:
+        POSSIBLE_CHAMPS = ROLES_CHAMP[yourRole].split(',')
+        for champ in POSSIBLE_CHAMPS:
             if currentState[champ] != 'A':
                 continue
-            state = dict(currentState)
-            state[champ] = yourRole
+            state = OrderedDict(currentState)
+            state[champ] = yourRole[0]
             possibleStates.append(state)
             champions.append(champ)
 
         data = []
 
+        possibleStates = possibleStates[0:1]
+        champions = champions[0:1]
         for state in possibleStates:
             row_data = []
-            row_data.extend([1 if state[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(len(CHAMPIONS_LABEL))])
-            row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
+            row_data.extend([1 if state[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
+            row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
             row_data.extend(PATCH)
+            print(champions[0])
+            print(row_data)
             data.append(row_data)
 
         batch = [[], []]

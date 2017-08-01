@@ -90,7 +90,7 @@ class ValueNetwork:
         dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
         dense2 = tf.layers.dense(dense1, NN, activation=tf.nn.relu)
         dense3 = tf.layers.dense(dense2, NN, activation=tf.nn.relu)
-        dropout = tf.layers.dropout(inputs=dense3, rate=0.4, training=training)
+        dropout = tf.layers.dropout(inputs=dense3, rate=0.5, training=training)
         y_pred = tf.layers.dense(dropout, 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
@@ -147,8 +147,8 @@ class dataCollector:
         if self.df is None:
             return batch
         j = min(self.i + self.batchSize, len(self.df))
-        batch[0] = self.df.iloc[self.i:j, 1:].values.tolist()
-        batch[1] = self.df.iloc[self.i:j, 0].values.tolist()  # first column is the value
+        batch[0] = self.df.iloc[self.i:j, :-1].values.tolist()
+        batch[1] = self.df.iloc[self.i:j, -1].values.tolist()  # first column is the value
         if j < len(self.df):
             self.i = j
         else:

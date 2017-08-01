@@ -29,6 +29,7 @@ else:
     config.add_section('REGIONS')
     config.add_section('PATCHES')
     config.add_section('CHAMPIONS')
+    config.add_section('ROLES')
 
 
     print("No config file found. Let's set up a few parameters (you may change them anytime by manually editing config.ini).")

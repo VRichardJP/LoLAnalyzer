@@ -26,8 +26,8 @@ if not os.path.isdir(PREPROCESSED_DIR):
     os.makedirs(PREPROCESSED_DIR)
 
 names = CHAMPIONS_LABEL[:]
-names.append('win')
 names.append('patch')
+names.append('win')
 names.append('file')
 dtype = {champ: str for champ in CHAMPIONS_LABEL}
 dtype['patch'] = str
@@ -57,10 +57,10 @@ def processing(dataFile):
         # data: win + champions status + patch
         row = df.iloc[i]
         row_data = list()
-        row_data.append(row['win'])
-        row_data.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for s in CHAMPIONS_STATUS for k in range(len(CHAMPIONS_LABEL))])
-        row_data.extend([0 for s in CHAMPIONS_STATUS for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL))])
+        row_data.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
+        row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS ])
         row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
+        row_data.append(row['win'])
         data.loc[len(data)] = row_data
     if len(data):
         data = data.astype(int)
