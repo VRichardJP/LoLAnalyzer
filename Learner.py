@@ -260,5 +260,5 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
     # learn(netType='Value', netArchi='Dense2', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=200, checkpoint=None, report=1, lr=1e-4)
     # learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)

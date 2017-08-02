@@ -274,7 +274,7 @@ class App(QDialog):
         row_data.extend([1 if currentState[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
         row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
         row_data.extend(PATCH)
-        row_data.append(yourTeam)
+        row_data.append(0 if yourTeam == 'Blue' else 1)
         data.append(row_data)
 
         batch = [[], []]
@@ -286,8 +286,8 @@ class App(QDialog):
         pred_values = self.sess.run(self.y_pred, feed_dict=feed_dict)
 
         self.results.setRowCount(1)
-        self.results.setItem(0, 0, 'winrate')
-        self.results.setItem(0, 1, '%.2f' % (pred_values[0] * 100))
+        self.results.setItem(0, 0, QTableWidgetItem('winrate'))
+        self.results.setItem(0, 1, QTableWidgetItem('%.2f' % (pred_values[0] * 100)))
 
     def generate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
@@ -341,7 +341,7 @@ class App(QDialog):
             row_data.extend([1 if state[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
             row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
             row_data.extend(PATCH)
-            row_data.append(yourTeam)
+            row_data.append(0 if yourTeam == 'Blue' else 1)
             data.append(row_data)
 
         batch = [[], []]
