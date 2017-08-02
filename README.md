@@ -1,13 +1,15 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
-Warning: I don't guarantee that all the published scripts will run softly. I you want to test it anyway, feedbacks are welcome.
+Warning: I don't guarantee that all the scripts will run on your computer. You will need to install quite a bunch of big libraries to make it work. 
 
-I may provide a demo network in a near future, but I can't maintain a network updated on a daily basis. I you want to use this app you will have to train your own network.
+I know it would be cool to have a .exe to double-click, but python is not that easy to distribute, so I won't provide any executable
+
+I may provide a demo network in a near future, but I can't maintain a network updated on a daily basis. I you want to seriously use this app you will have to train your own network. I would even recommend you to test and design your own networks.
 
 ## Requirements
 
-You need (pip/google is your best friend):
+You need at least (pip/google is your best friend):
 - Python 3 
 - Tensorflow (GPU version recommended if your graphic card is compatible)
 - PyQt5
