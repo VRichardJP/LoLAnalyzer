@@ -1,7 +1,7 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
-Warning: this application is under construction. Not everything has been published yet, and I don't guarantee that all the published scripts will run softly. I you want to test it anyway, feedbacks are welcome.
+Warning: I don't guarantee that all the published scripts will run softly. I you want to test it anyway, feedbacks are welcome.
 
 I may provide a demo network in a near future, but I can't maintain a network updated on a daily basis. I you want to use this app you will have to train your own network.
 
@@ -24,6 +24,8 @@ You need (pip/google is your best friend):
 5. DataShuffling.py : shuffling the data
 6. Learner.py: train a neural network
 7. BestPick.py: a very simple GUI so you can enter your draft and the role you want
+
+If you're on Windows and lazy, you can use run_all.bat to do all the steps as once (you can comment lines by adding :: in the file).  
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
