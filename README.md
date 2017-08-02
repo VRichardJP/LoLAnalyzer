@@ -23,7 +23,7 @@ You need (pip/google is your best friend):
 4. DataProcessing.py : pre-process the extrated data
 5. DataShuffling.py : shuffling the data
 6. Learner.py: train a neural network
-7. BestPick.py: Not finished yet (you can still train neural nets though)
+7. BestPick.py: a very simple GUI so you can enter your draft and the role you want
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
