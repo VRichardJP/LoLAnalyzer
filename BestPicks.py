@@ -2,9 +2,7 @@ import configparser
 import os
 import sys
 from PyQt5.QtWidgets import *
-import pandas as pd
 import tensorflow as tf
-from qtpy import QtCore
 from collections import OrderedDict
 
 

@@ -2,17 +2,14 @@
 
 # Build and train a neural network to predict the game result
 import configparser
-import multiprocessing
 import os
 import datetime
-import queue
 import random
 import time
 import sys
 import pandas as pd
 import tensorflow as tf
 import numpy as np
-from multiprocessing import Manager
 
 # In order to have compatible models between patches, the input size is oversized
 # 7.14: champions 138, patches: 97
@@ -77,9 +74,11 @@ class ValueNetwork:
     @staticmethod
     def dense2Arch(x, **kwargs):
         NN = kwargs.pop('NN')
+        training = kwargs.pop('training')
         dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
-        dense2 = tf.layers.dense(dense1, NN // 2, activation=tf.nn.relu)
-        y_pred = tf.layers.dense(dense2, 1, activation=tf.sigmoid)
+        dense2 = tf.layers.dense(dense1, NN, activation=tf.nn.relu)
+        dropout = tf.layers.dropout(inputs=dense2, rate=0.5, training=training)
+        y_pred = tf.layers.dense(dropout, 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
@@ -98,34 +97,38 @@ class ValueNetwork:
     @staticmethod
     def dense5Arch(x, **kwargs):
         NN = kwargs.pop('NN')
+        training = kwargs.pop('training')
         dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
-        dense2 = tf.layers.dense(dense1, NN // 2, activation=tf.nn.relu)
-        dense3 = tf.layers.dense(dense2, NN // 4, activation=tf.nn.relu)
-        dense4 = tf.layers.dense(dense3, NN // 8, activation=tf.nn.relu)
-        dense5 = tf.layers.dense(dense4, NN // 16, activation=tf.nn.relu)
-        y_pred = tf.layers.dense(dense5, 1, activation=tf.sigmoid)
+        dense2 = tf.layers.dense(dense1, NN, activation=tf.nn.relu)
+        dense3 = tf.layers.dense(dense2, NN, activation=tf.nn.relu)
+        dense4 = tf.layers.dense(dense3, NN, activation=tf.nn.relu)
+        dense5 = tf.layers.dense(dense4, NN, activation=tf.nn.relu)
+        dropout = tf.layers.dropout(inputs=dense5, rate=0.5, training=training)
+        y_pred = tf.layers.dense(dropout, 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
     @staticmethod
     def dense12Arch(x, **kwargs):
         NN = kwargs.pop('NN')
+        training = kwargs.pop('training')
         denses = [x]
         for k in range(12):
             denses.append(tf.layers.dense(denses[-1], NN, activation=tf.nn.relu))
-            # denses.append(tf.layers.dense(denses[-1], NN // (2 ** (k // 2)), activation=tf.nn.relu))
-        y_pred = tf.layers.dense(denses[-1], 1, activation=tf.sigmoid)
+        dropout = tf.layers.dropout(inputs=denses[-1], rate=0.5, training=training)
+        y_pred = tf.layers.dense(dropout, 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
     @staticmethod
     def dense20Arch(x, **kwargs):
         NN = kwargs.pop('NN')
+        training = kwargs.pop('training')
         denses = [x]
         for k in range(20):
             denses.append(tf.layers.dense(denses[-1], NN, activation=tf.nn.relu))
-            # denses.append(tf.layers.dense(denses[-1], NN // (2 ** (k // 2)), activation=tf.nn.relu))
-        y_pred = tf.layers.dense(denses[-1], 1, activation=tf.sigmoid)
+        dropout = tf.layers.dropout(inputs=denses[-1], rate=0.5, training=training)
+        y_pred = tf.layers.dense(dropout, 1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
