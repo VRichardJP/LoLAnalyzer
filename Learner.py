@@ -15,8 +15,8 @@ import numpy as np
 # 7.14: champions 138, patches: 97
 # current rythm: 6 champions per season, 24 patches per season
 CHAMPIONS_SIZE = 150
-PATCHES_SIZE = 150
-INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE
+PATCHES_SIZE = 149
+INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1  # team color
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
@@ -151,7 +151,7 @@ class dataCollector:
             return batch
         j = min(self.i + self.batchSize, len(self.df))
         batch[0] = self.df.iloc[self.i:j, :-1].values.tolist()
-        batch[1] = self.df.iloc[self.i:j, -1].values.tolist()  # first column is the value
+        batch[1] = self.df.iloc[self.i:j, -1].values.tolist()  # last column is the win value
         if j < len(self.df):
             self.i = j
         else:
@@ -261,5 +261,5 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
     # learn(netType='Value', netArchi='Dense2', archi_kwargs={'NN': 2048, 'training': True}, batchSize=10000, checkpoint=None, report=1, lr=1e-4)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=10000, checkpoint=None, report=1, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)
     # learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048, 'training': True}, batchSize=10000, checkpoint=None, report=1, lr=1e-4)

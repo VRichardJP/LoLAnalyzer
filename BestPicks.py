@@ -9,7 +9,7 @@ from collections import OrderedDict
 from Learner import ValueNetwork, maybe_restore_from_checkpoint
 
 CHAMPIONS_SIZE = 150
-PATCHES_SIZE = 150
+PATCHES_SIZE = 149
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -163,6 +163,10 @@ class App(QDialog):
         self.yourTeam = QComboBox()
         self.yourTeam.addItems(TEAMS)
         bestPicksLayout.addWidget(self.yourTeam, 0, 1)
+        self.evaluateButton = QPushButton('Wait...')
+        self.evaluateButton.setEnabled(False)
+        self.evaluateButton.clicked.connect(lambda: self.evaluate())
+        bestPicksLayout.addWidget(self.evaluateButton, 0, 2)
         yourRoleLabel = QLabel()
         yourRoleLabel.setText('Your role:')
         bestPicksLayout.addWidget(yourRoleLabel, 1, 0)
@@ -231,6 +235,59 @@ class App(QDialog):
 
         self.generateButton.setText('Analyze')
         self.generateButton.setEnabled(True)
+        self.evaluateButton.setText('Evaluate')
+        self.evaluateButton.setEnabled(True)
+
+    def evaluate(self):
+        print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
+        currentState = OrderedDict([(champ, 'A') for champ in CHAMPIONS_LABEL])
+        bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
+                str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
+                str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
+                str(self.player10Ban.currentText())]
+        print('bans', bans, file=sys.stderr)
+        picks = [(str(self.player1Pick.currentText()), str(self.player1Role.currentText())),
+                 (str(self.player2Pick.currentText()), str(self.player2Role.currentText())),
+                 (str(self.player3Pick.currentText()), str(self.player3Role.currentText())),
+                 (str(self.player4Pick.currentText()), str(self.player4Role.currentText())),
+                 (str(self.player5Pick.currentText()), str(self.player5Role.currentText())),
+                 (str(self.player6Pick.currentText()), 'Opp'), (str(self.player7Pick.currentText()), 'Opp'),
+                 (str(self.player8Pick.currentText()), 'Opp'), (str(self.player9Pick.currentText()), 'Opp'),
+                 (str(self.player10Pick.currentText()), 'Opp')]
+        print('picks', picks, file=sys.stderr)
+        for ban in bans:
+            if ban [0] != '.':
+                currentState[ban] = 'B'
+        for (pick, role) in picks:
+            if pick[0] != '.' and role[0] in CHAMPIONS_STATUS:
+                currentState[pick] = role[0]
+
+        yourTeam = str(self.yourTeam.currentText())
+        if yourTeam == '...':
+            print('You need to select a team!', file=sys.stderr)
+            return
+        # print(currentState, file=sys.stderr)
+
+        data = []
+
+        row_data = []
+        row_data.extend([1 if currentState[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
+        row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
+        row_data.extend(PATCH)
+        row_data.append(yourTeam)
+        data.append(row_data)
+
+        batch = [[], []]
+        batch[0] = data
+
+        feed_dict = {
+            self.x: batch[0],
+        }
+        pred_values = self.sess.run(self.y_pred, feed_dict=feed_dict)
+
+        self.results.setRowCount(1)
+        self.results.setItem(0, 0, 'winrate')
+        self.results.setItem(0, 1, '%.2f' % (pred_values[0] * 100))
 
     def generate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
@@ -284,6 +341,7 @@ class App(QDialog):
             row_data.extend([1 if state[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
             row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
             row_data.extend(PATCH)
+            row_data.append(yourTeam)
             data.append(row_data)
 
         batch = [[], []]

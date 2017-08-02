@@ -8,8 +8,8 @@ import os
 
 SAVE = 1000
 CHAMPIONS_SIZE = 150
-PATCHES_SIZE = 150
-INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1
+PATCHES_SIZE = 149
+INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1 + 1  # team color + team win
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
@@ -27,10 +27,12 @@ if not os.path.isdir(PREPROCESSED_DIR):
 
 names = CHAMPIONS_LABEL[:]
 names.append('patch')
+names.append('team')
 names.append('win')
 names.append('file')
 dtype = {champ: str for champ in CHAMPIONS_LABEL}
 dtype['patch'] = str
+dtype['team'] = int
 dtype['win'] = int
 dtype['file'] = str
 
@@ -60,6 +62,7 @@ def processing(dataFile):
         row_data.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
         row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS ])
         row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
+        row_data.append(row['team'])
         row_data.append(row['win'])
         data.loc[len(data)] = row_data
     if len(data):

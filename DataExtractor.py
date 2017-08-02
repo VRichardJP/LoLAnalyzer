@@ -23,6 +23,7 @@ CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 regions_list = config['REGIONS']
 COLUMNS = [champ for champ in CHAMPIONS_LABEL]
 COLUMNS.append('patch')
+COLUMNS.append('team')
 COLUMNS.append('win')
 COLUMNS.append('file')
 
@@ -83,8 +84,9 @@ else:
 
 for gamePath in gamesPath:
     raw_data = OrderedDict([(champ, []) for champ in CHAMPIONS_LABEL])
-    raw_data['win'] = []
     raw_data['patch'] = []
+    raw_data['team'] = []
+    raw_data['win'] = []
     raw_data['file'] = []
     print(gamePath)
     game = pickle.load(open(gamePath, 'rb'))
@@ -141,8 +143,10 @@ for gamePath in gamesPath:
     # Blank, everything is available
     blueState = OrderedDict()
     redState = OrderedDict()
+    blueState['team'] = 0
+    redState['team'] = 1
     blueState['win'] = int(blueWin)
-    redState['win'] = int(blueWin)
+    redState['win'] = int(redWin)
     blueState['patch'] = game_patch
     redState['patch'] = game_patch
     blueState['file'] = os.path.basename(gamePath)
@@ -151,8 +155,8 @@ for gamePath in gamesPath:
     redState.update([(champ_name, 'A') for champ_name in CHAMPIONS_LABEL])
     for key, value in blueState.items():
         raw_data[key].append(value)
-    # for key, value in redState.items():
-    #     raw_data[key].append(value)
+    for key, value in redState.items():
+        raw_data[key].append(value)
 
     # Bans
     blueState = dict(blueState)  # don't forget to create a clean copy
@@ -165,8 +169,8 @@ for gamePath in gamesPath:
                 break
     for key, value in blueState.items():
         raw_data[key].append(value)
-    # for key, value in redState.items():
-    #     raw_data[key].append(value)
+    for key, value in redState.items():
+        raw_data[key].append(value)
 
     # Smart lane-role
     b_roles = OrderedDict()
