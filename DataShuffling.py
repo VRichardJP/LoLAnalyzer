@@ -1,4 +1,3 @@
-
 # moving consecutive lines from the same file in different files
 # it's not a real shuffle but it spreads the data as much as possible
 

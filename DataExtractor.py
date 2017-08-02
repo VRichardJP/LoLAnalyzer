@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Extract the useful data from game files (json)
 # Append the usefull data to a csv file
 import configparser

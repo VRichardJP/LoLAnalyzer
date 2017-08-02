@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Update the working patch and champions list
 
 import configparser

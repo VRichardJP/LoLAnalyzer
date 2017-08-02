@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Send requests while respecting rate_limit
 # Return data as dict (API send json)
 import configparser

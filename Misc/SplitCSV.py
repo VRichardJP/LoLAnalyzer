@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Script from jrivero: https://gist.github.com/jrivero/1085501
 
 import configparser
