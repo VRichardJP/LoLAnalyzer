@@ -18,7 +18,7 @@ ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
 PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 CHAMPIONS = ['...']
-CHAMPIONS.extend(CHAMPIONS_LABEL)
+CHAMPIONS.extend(sorted(CHAMPIONS_LABEL))
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 PATCH = PATCHES_SIZE * [0]
 PATCH[len(PATCHES) - 1] = 1  # current patch
@@ -268,15 +268,11 @@ class App(QDialog):
 
         data = []
 
-        possibleStates = possibleStates[0:1]
-        champions = champions[0:1]
         for state in possibleStates:
             row_data = []
             row_data.extend([1 if state[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
             row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
             row_data.extend(PATCH)
-            print(champions[0])
-            print(row_data)
             data.append(row_data)
 
         batch = [[], []]
