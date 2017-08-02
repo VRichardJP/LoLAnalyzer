@@ -23,6 +23,7 @@ CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
 PATCH = PATCHES_SIZE * [0]
 PATCH[len(PATCHES) - 1] = 1  # current patch
 ROLES_CHAMP = config['ROLES']
+TEAMS = ['...', 'Blue', 'Red']
 
 netArchi = 'Dense3'
 archi_kwargs = {'NN': 2048, 'training': False}
@@ -156,23 +157,29 @@ class App(QDialog):
         # Best picks Layout
         bestPicksGB = QGroupBox('Best Picks')
         bestPicksLayout = QGridLayout()
+        yourTeamLabel = QLabel()
+        yourTeamLabel.setText('Your team:')
+        bestPicksLayout.addWidget(yourTeamLabel, 0, 0)
+        self.yourTeam = QComboBox()
+        self.yourTeam.addItems(TEAMS)
+        bestPicksLayout.addWidget(self.yourTeam, 0, 1)
         yourRoleLabel = QLabel()
         yourRoleLabel.setText('Your role:')
-        bestPicksLayout.addWidget(yourRoleLabel, 0, 0)
+        bestPicksLayout.addWidget(yourRoleLabel, 1, 0)
         self.yourRole = QComboBox()
         self.yourRole.addItems(ROLES)
-        bestPicksLayout.addWidget(self.yourRole, 0, 1)
+        bestPicksLayout.addWidget(self.yourRole, 1, 1)
         self.generateButton = QPushButton('Wait...')
         self.generateButton.setEnabled(False)
         self.generateButton.clicked.connect(lambda: self.generate())
-        bestPicksLayout.addWidget(self.generateButton, 0, 2)
+        bestPicksLayout.addWidget(self.generateButton, 1, 2)
+
         self.results = QTableWidget()
         # self.results.setRowCount(4)
         self.results.setColumnCount(2)
         self.results.horizontalHeader().hide()
         self.results.verticalHeader().hide()
-
-        bestPicksLayout.addWidget(self.results, 1, 0, 1, 3)
+        bestPicksLayout.addWidget(self.results, 2, 0, 1, 3)
 
         bestPicksGB.setLayout(bestPicksLayout)
         mainBoxLayout.addWidget(bestPicksGB, 1, 1)
@@ -253,6 +260,10 @@ class App(QDialog):
         if yourRole == '...':
             print('You need to select a role!', file=sys.stderr)
             return
+        yourTeam = str(self.yourTeam.currentText())
+        if yourTeam == '...':
+            print('You need to select a team!', file=sys.stderr)
+            return
 
         # print(currentState, file=sys.stderr)
         possibleStates = []
@@ -282,7 +293,7 @@ class App(QDialog):
             self.x: batch[0],
         }
         pred_values = self.sess.run(self.y_pred, feed_dict=feed_dict)
-        best_champs = [(champions[k], pred_values[k]) for k in range(len(champions))]
+        best_champs = [(champions[k], pred_values[k] if yourTeam == 'Blue' else 1 - pred_values[k]) for k in range(len(champions))]
         best_champs = sorted(best_champs, key=lambda x: x[1], reverse=True)
 
         print(best_champs, file=sys.stderr)

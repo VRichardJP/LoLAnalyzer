@@ -234,7 +234,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
                     print(np.array(real_values[:20]), file=sys.stderr)
 
                 # Saving progress
-                if step % checkpoint == 0 and step != 0:
+                if checkpoint and step % checkpoint == 0 and step != 0:
                     saver.save(sess, os.path.join(ckpt_dir, "model.ckpt"), global_step=step)
                     print("Checkpoint reached", file=sys.stderr)
 
@@ -260,5 +260,6 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
 
 if __name__ == '__main__':
     # Testing (production network will be more sopisticated)
-    learn(netType='Value', netArchi='Dense2', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=1000, report=10, lr=1e-4)
-    # learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=1000, report=10, lr=1e-4)
+    # learn(netType='Value', netArchi='Dense2', archi_kwargs={'NN': 2048, 'training': True}, batchSize=10000, checkpoint=None, report=1, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=10000, checkpoint=None, report=1, lr=1e-4)
+    # learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048, 'training': True}, batchSize=10000, checkpoint=None, report=1, lr=1e-4)
