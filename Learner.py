@@ -1,5 +1,7 @@
 # Build and train a neural network to predict the game result
 
+from __future__ import print_function
+
 import configparser
 import os
 import datetime
@@ -16,6 +18,8 @@ import numpy as np
 CHAMPIONS_SIZE = 150
 PATCHES_SIZE = 149
 INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1  # team color
+IMAGE_X = 45
+IMAGE_Y = 30
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
@@ -24,6 +28,7 @@ PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
 PATCHES.extend((PATCHES_SIZE - len(PATCHES)) * [None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
 CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
@@ -60,8 +65,8 @@ class ValueNetwork:
 
     @staticmethod
     def loss(y_pred, y_true):
-        # loss = tf.reduce_mean(tf.squared_difference(y_pred, y_true))
-        loss = tf.reduce_mean(-tf.log(tf.constant(1.0) - tf.abs(y_pred - y_true)))
+        loss = tf.reduce_mean(tf.squared_difference(y_pred, y_true))
+        # loss = tf.reduce_mean(-tf.log(tf.constant(1.0) - tf.abs(y_pred - y_true)))
         return loss
 
     @staticmethod
@@ -71,13 +76,29 @@ class ValueNetwork:
 
     # Architectures
     @staticmethod
+    def conv3Arch(x, **kwargs):
+        NN = kwargs.pop('NN')
+        NF = kwargs.pop('NF')
+        training = kwargs.pop('training')
+        x = tf.reshape(x, [-1, IMAGE_X, IMAGE_Y, 1])
+        conv1 = tf.layers.conv2d(inputs=x, filters=NF//2, kernel_size=[3,3], padding='same', activation=tf.nn.relu)
+        conv2 = tf.layers.conv2d(inputs=conv1, filters=NF, kernel_size=[3,3], padding='same', activation=tf.nn.relu)
+        conv3 = tf.layers.conv2d(inputs=conv2, filters=NF, kernel_size=[3,3], padding='same', activation=tf.nn.relu)
+        conv3flat = tf.reshape(conv3, [-1, INPUT_SIZE*NF])
+        dense = tf.layers.dense(inputs=conv3flat, units=NN, activation=tf.nn.relu)
+        dropout = tf.layers.dropout(inputs=dense, rate=0.4, training=training)
+        y_pred = tf.layers.dense(dropout, units=1, activation=tf.sigmoid)
+        y_pred = tf.reshape(y_pred, [-1])
+        return y_pred
+
+    @staticmethod
     def dense2Arch(x, **kwargs):
         NN = kwargs.pop('NN')
         training = kwargs.pop('training')
         dense1 = tf.layers.dense(x, NN, activation=tf.nn.relu)
         dense2 = tf.layers.dense(dense1, NN, activation=tf.nn.relu)
         dropout = tf.layers.dropout(inputs=dense2, rate=0.5, training=training)
-        y_pred = tf.layers.dense(dropout, 1, activation=tf.sigmoid)
+        y_pred = tf.layers.dense(dropout, units=1, activation=tf.sigmoid)
         y_pred = tf.reshape(y_pred, [-1])
         return y_pred
 
@@ -178,6 +199,7 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
         'Dense5': network.dense5Arch,
         'Dense12': network.dense12Arch,
         'Dense20': network.dense20Arch,
+        'Conv3': network.conv3Arch,
     }
     if netArchi not in mappingArchi:
         raise Exception('Unknown netArchi', netArchi)
@@ -257,8 +279,12 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
             print('-- End of Session --', file=sys.stderr)
 
 
-if __name__ == '__main__':
+def run():
     # Testing (production network will be more sopisticated)
     # learn(netType='Value', netArchi='Dense2', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)
-    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=200, checkpoint=None, report=1, lr=1e-4)
+    # learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=200, checkpoint=None, report=10, lr=1e-4)
     # learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)
+    learn(netType='Value', netArchi='Conv3', archi_kwargs={'NN': 128, 'NF': 128, 'training': True}, batchSize=100, checkpoint=None, report=1, lr=1e-4)
+
+if __name__ == '__main__':
+    run()

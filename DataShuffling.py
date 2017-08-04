@@ -1,6 +1,8 @@
 # moving consecutive lines from the same file in different files
 # it's not a real shuffle but it spreads the data as much as possible
 
+from __future__ import print_function
+
 import configparser
 import pandas as pd
 import os
@@ -13,7 +15,6 @@ SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
 
 if os.path.isdir(SHUFFLED_DIR):
     import shutil
-
     if not os.access(SHUFFLED_DIR, os.W_OK):
         # Is the error an access error ?
         os.chmod(SHUFFLED_DIR, os.stat.S_IWUSR)
@@ -46,6 +47,9 @@ def processData(netType):
         raise Exception('unknown netType', netType)
 
 
-if __name__ == '__main__':
+def run():
     netType = 'Value'
     processData(netType)
+
+if __name__ == '__main__':
+    run()

@@ -1,4 +1,7 @@
 # Download games from the Riot API from Challenger/Master players
+
+from __future__ import print_function
+
 import configparser
 import multiprocessing
 import os
@@ -181,7 +184,7 @@ def saveLastSeen(timestamped_patches, save_interval, end):
         cfg.write(configfile)
         print('patch timestamps saved')
 
-if __name__ == '__main__':
+def run():
     config = configparser.ConfigParser()
     config.read('config.ini')
     DATABASE = config['PARAMS']['database']
@@ -198,7 +201,8 @@ if __name__ == '__main__':
     kdprocs = []
     for region, enabled in REGIONS.items():
         if enabled == 'yes':
-            kdprocs.append(multiprocessing.Process(target=keepDownloading, args=(DATABASE, PATCHES_TO_DOWNLOAD, region, LEAGUES, last_seen_from_patch)))
+            kdprocs.append(
+                multiprocessing.Process(target=keepDownloading, args=(DATABASE, PATCHES_TO_DOWNLOAD, region, LEAGUES, last_seen_from_patch)))
             kdprocs[-1].start()
 
     slsproc = multiprocessing.Process(target=saveLastSeen, args=(last_seen_from_patch, 300, endUpdate))
@@ -213,3 +217,6 @@ if __name__ == '__main__':
     endUpdate.set()
 
     print('-- Download complete --')
+
+if __name__ == '__main__':
+    run()

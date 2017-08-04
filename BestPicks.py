@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import configparser
 import os
 import sys
@@ -361,7 +363,7 @@ class App(QDialog):
             self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1] * 100)))
 
 
-if __name__ == '__main__':
+def run():
     app = QApplication(sys.argv)
     ex = App()
 
@@ -369,3 +371,6 @@ if __name__ == '__main__':
         sys.exit(app.exec_())
     except Exception as e:
         print(e)
+
+if __name__ == '__main__':
+    run()

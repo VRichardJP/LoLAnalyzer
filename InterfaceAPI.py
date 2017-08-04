@@ -1,8 +1,10 @@
 # Send requests while respecting rate_limit
 # Return data as dict (API send json)
+
+from __future__ import print_function
+
 import configparser
 import json
-
 import collections
 import requests
 import sys
@@ -105,8 +107,12 @@ class InterfaceAPI:
         return json.loads(resp.content.decode('utf-8'))
 
 
-if __name__ == '__main__':
+def run():
     print('-- Testing InterfaceAPI --', file=sys.stderr)
     interfaceAPI = InterfaceAPI()
     while True:
         interfaceAPI.getData('https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/RiotSchmick')
+
+
+if __name__ == '__main__':
+    run()

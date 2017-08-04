@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import configparser
 from collections import OrderedDict
 
@@ -86,6 +88,9 @@ def processData(netType):
         raise Exception('unknown netType', netType)
 
 
-if __name__ == '__main__':
+def run():
     netType = 'Value'
     processData(netType)
+
+if __name__ == '__main__':
+    run()
