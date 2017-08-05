@@ -15,20 +15,20 @@ import numpy as np
 # In order to have compatible models between patches, the input size is oversized
 # 7.14: champions 138, patches: 97
 # current rythm: 6 champions per season, 24 patches per season
-CHAMPIONS_SIZE = 150
-PATCHES_SIZE = 149
-INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1  # team color
-IMAGE_X = 45
-IMAGE_Y = 30
+
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
-PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
-PATCHES.extend((PATCHES_SIZE - len(PATCHES)) * [None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
-CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-
+CHAMPIONS_SIZE = len(CHAMPIONS_LABEL)
+PATCHES = list(map(lambda x: x.replace('.', '_').split(','), os.listdir(os.path.join(DATABASE, 'patches'))))
+PATCHES_SIZE = len(PATCHES)
+INPUT_SIZE = -1
+IMAGE_SHAPE = False
+IMAGE_X = -1
+IMAGE_Y = -1
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
@@ -77,6 +77,8 @@ class ValueNetwork:
     # Architectures
     @staticmethod
     def conv3Arch(x, **kwargs):
+        if not IMAGE_SHAPE:
+            raise Exception('Cannot use convolution without an image shape')
         NN = kwargs.pop('NN')
         NF = kwargs.pop('NF')
         training = kwargs.pop('training')
@@ -279,12 +281,31 @@ def learn(netType, netArchi, archi_kwargs, batchSize, checkpoint, report, lr):
             print('-- End of Session --', file=sys.stderr)
 
 
-def run():
+def run(MODE='ABOTJMCS', IMAGE=False):
+    global INPUT_SIZE
+    global CHAMPIONS_STATUS
+    global IMAGE_SHAPE
+    global IMAGE_X
+    global IMAGE_Y
+    IMAGE_SHAPE = IMAGE
+
+    if MODE == 'ABOTJMCS':
+        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+    elif MODE == 'ABOT':
+        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T']
+
+    if not IMAGE:
+        INPUT_SIZE = CHAMPIONS_SIZE * len(CHAMPIONS_STATUS) + PATCHES_SIZE + 1 + 1  # team color + team win
+    else:
+        IMAGE_X = CHAMPIONS_SIZE
+        IMAGE_Y = len(CHAMPIONS_STATUS) + PATCHES_SIZE + 1  # status, patches, team color
+        INPUT_SIZE = IMAGE_X * IMAGE_Y + 1
+
     # Testing (production network will be more sopisticated)
     # learn(netType='Value', netArchi='Dense2', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)
-    # learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=200, checkpoint=None, report=10, lr=1e-4)
+    learn(netType='Value', netArchi='Dense3', archi_kwargs={'NN': 2048, 'training': True}, batchSize=200, checkpoint=None, report=10, lr=1e-4)
     # learn(netType='Value', netArchi='Dense5', archi_kwargs={'NN': 2048, 'training': True}, batchSize=1000, checkpoint=None, report=1, lr=1e-4)
-    learn(netType='Value', netArchi='Conv3', archi_kwargs={'NN': 128, 'NF': 128, 'training': True}, batchSize=100, checkpoint=None, report=1, lr=1e-4)
+    # learn(netType='Value', netArchi='Conv3', archi_kwargs={'NN': 128, 'NF': 128, 'training': True}, batchSize=100, checkpoint=None, report=1, lr=1e-4)
 
 if __name__ == '__main__':
     run()

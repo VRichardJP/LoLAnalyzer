@@ -1,28 +1,29 @@
 from __future__ import print_function
 
 import configparser
-from collections import OrderedDict
 
 import numpy as np
 import multiprocessing
 import pandas as pd
 import os
 
-SAVE = 1000
-CHAMPIONS_SIZE = 150
-PATCHES_SIZE = 149
-INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1 + 1  # team color + team win
+MODES = ['ABOTJMCS', 'ABOT']
+
+np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
+
+SAVE = 100
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
 EXTRACTED_DIR = os.path.join(DATABASE, 'extracted')
 PREPROCESSED_DIR = os.path.join(DATABASE, 'data')
-PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
-PATCHES.extend((PATCHES_SIZE - len(PATCHES)) * [None])
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
-CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
+CHAMPIONS_SIZE = len(CHAMPIONS_LABEL)
+PATCHES = list(map(lambda x: x.replace('.', '_').split(','), os.listdir(os.path.join(DATABASE, 'patches'))))
+PATCHES_SIZE = len(PATCHES)
 
+INPUT_SIZE = -1
+CHAMPIONS_STATUS = []
 
 if not os.path.isdir(PREPROCESSED_DIR):
     os.makedirs(PREPROCESSED_DIR)
@@ -38,6 +39,7 @@ dtype['team'] = int
 dtype['win'] = int
 dtype['file'] = str
 
+IMAGE_SHAPE = False
 
 def processing(dataFile):
     currentFile = os.path.join(PREPROCESSED_DIR, dataFile)
@@ -62,9 +64,12 @@ def processing(dataFile):
         row = df.iloc[i]
         row_data = list()
         row_data.extend([1 if row[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
-        row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS ])
-        row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
-        row_data.append(row['team'])
+        if IMAGE_SHAPE:
+            row_data.extend([(1 for j in range(len(CHAMPIONS_LABEL))) if row['patch'] == PATCHES[k] else (0 for j in range(len(CHAMPIONS_LABEL))) for k in range(PATCHES_SIZE)])
+            row_data.extend([row['team'] for k in range(len(CHAMPIONS_LABEL))])
+        else:
+            row_data.extend([1 if row['patch'] == PATCHES[k] else 0 for k in range(PATCHES_SIZE)])
+            row_data.append(row['team'])
         row_data.append(row['win'])
         data.loc[len(data)] = row_data
     if len(data):
@@ -88,9 +93,21 @@ def processData(netType):
         raise Exception('unknown netType', netType)
 
 
-def run():
+def run(MODE='ABOTJMCS', IMAGE=False):
+    global INPUT_SIZE
+    global CHAMPIONS_STATUS
+    global IMAGE_SHAPE
+    IMAGE_SHAPE = IMAGE
+    if MODE == 'ABOTJMCS':
+        INPUT_SIZE = CHAMPIONS_SIZE * 8 + PATCHES_SIZE + 1 + 1  # team color + team win
+        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+    elif MODE == 'ABOT':
+        INPUT_SIZE = CHAMPIONS_SIZE * 4 + PATCHES_SIZE + 1 + 1  # team color + team win
+        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T']
+
     netType = 'Value'
     processData(netType)
+
 
 if __name__ == '__main__':
     run()
