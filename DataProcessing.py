@@ -102,7 +102,7 @@ def processData(netType, MODE, IMAGE):
         l = sorted(range(len(l)), key=lambda k: l[k])
         extracted_files = [extracted_files[k] for k in l]
 
-        cpu = multiprocessing.cpu_count() - 1
+        cpu = multiprocessing.cpu_count() - 2
         pool = multiprocessing.Pool(processes=cpu)
         fun = partial(processing, MODE, IMAGE)
         pool.map(fun, extracted_files, chunksize=1)

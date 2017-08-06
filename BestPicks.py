@@ -10,25 +10,46 @@ from collections import OrderedDict
 
 from Learner import ValueNetwork, maybe_restore_from_checkpoint
 
-CHAMPIONS_SIZE = 150
-PATCHES_SIZE = 149
-
+# CHAMPIONS_SIZE = 150
+# PATCHES_SIZE = 149
+#
+# config = configparser.ConfigParser()
+# config.read('config.ini')
+# DATABASE = config['PARAMS']['database']
+# ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
+# PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
+# CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
+# CHAMPIONS = ['...']
+# CHAMPIONS.extend(sorted(CHAMPIONS_LABEL))
+# CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+# PATCH = PATCHES_SIZE * [0]
+# PATCH[len(PATCHES) - 1] = 1  # current patch
+# ROLES_CHAMP = config['ROLES']
+# TEAMS = ['...', 'Blue', 'Red']
 config = configparser.ConfigParser()
 config.read('config.ini')
 DATABASE = config['PARAMS']['database']
+SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
 ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
-PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
 CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
+CHAMPIONS_SIZE = len(CHAMPIONS_LABEL)
 CHAMPIONS = ['...']
 CHAMPIONS.extend(sorted(CHAMPIONS_LABEL))
-CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+PATCHES = list(map(lambda x: x.replace('.', '_').split(','), os.listdir(os.path.join(DATABASE, 'patches'))))
+PATCHES_SIZE = len(PATCHES)
 PATCH = PATCHES_SIZE * [0]
 PATCH[len(PATCHES) - 1] = 1  # current patch
 ROLES_CHAMP = config['ROLES']
 TEAMS = ['...', 'Blue', 'Red']
+INPUT_SIZE = -1
+IMAGE_SHAPE = False
+IMAGE_X = -1
+IMAGE_Y = -1
+CHAMPIONS_STATUS = []
 
-netArchi = 'Dense3'
-archi_kwargs = {'NN': 2048, 'training': False}
+
+netArchi = None
+archi_kwargs = {}
 
 
 sys._excepthook = sys.excepthook
@@ -362,8 +383,29 @@ class App(QDialog):
             self.results.setItem(k, 0, QTableWidgetItem(best_champs[k][0]))
             self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1] * 100)))
 
+def run(MODE='ABOTJMCS', IMAGE=False, arch = 'Dense3', a_kwargs = {'NN': 2048, 'training': False}):
+    global INPUT_SIZE
+    global CHAMPIONS_STATUS
+    global IMAGE_SHAPE
+    global IMAGE_X
+    global IMAGE_Y
+    global netArchi
+    global archi_kwargs
+    IMAGE_SHAPE = IMAGE
+    netArchi = arch
+    archi_kwargs = a_kwargs
 
-def run():
+    if MODE == 'ABOTJMCS':
+        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
+    elif MODE == 'ABOT':
+        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T']
+
+    if not IMAGE:
+        INPUT_SIZE = CHAMPIONS_SIZE * len(CHAMPIONS_STATUS) + PATCHES_SIZE + 1 + 1  # team color + team win
+    else:
+        IMAGE_X = CHAMPIONS_SIZE
+        IMAGE_Y = len(CHAMPIONS_STATUS) + PATCHES_SIZE + 1  # status, patches, team color
+        INPUT_SIZE = IMAGE_X * IMAGE_Y + 1
     app = QApplication(sys.argv)
     ex = App()
 

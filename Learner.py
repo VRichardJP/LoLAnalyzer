@@ -29,6 +29,7 @@ INPUT_SIZE = -1
 IMAGE_SHAPE = False
 IMAGE_X = -1
 IMAGE_Y = -1
+CHAMPIONS_STATUS = []
 
 np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=200)
 DEBUG = False
