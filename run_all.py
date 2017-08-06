@@ -13,10 +13,11 @@ IMAGE = True
 # HENCE NOT IMPLEMENTED
 PERMUTATIONS = False
 
-# ConfigUpdater.run()
-# DataDownloader.run()
-DataExtractor.run(MODE, PERMUTATIONS)
-# RoleUpdater.run(MODE)  # not in ABOT mode
-DataProcessing.run(MODE, IMAGE)
-DataShuffling.run()
-Learner.run(MODE, IMAGE)
+if __name__ == '__main__':
+    # ConfigUpdater.run()
+    # DataDownloader.run()
+    # DataExtractor.run(MODE, PERMUTATIONS)
+    # RoleUpdater.run(MODE)  # not in ABOT mode
+    DataProcessing.run(MODE, IMAGE)
+    DataShuffling.run()
+    Learner.run(MODE, IMAGE)

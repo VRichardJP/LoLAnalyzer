@@ -13,15 +13,6 @@ DATABASE = config['PARAMS']['database']
 PREPROCESSED_DIR = os.path.join(DATABASE, 'data')
 SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
 
-if os.path.isdir(SHUFFLED_DIR):
-    import shutil
-    if not os.access(SHUFFLED_DIR, os.W_OK):
-        # Is the error an access error ?
-        os.chmod(SHUFFLED_DIR, os.stat.S_IWUSR)
-    shutil.rmtree(SHUFFLED_DIR)
-os.makedirs(SHUFFLED_DIR)
-
-
 def shuffling(dataFile, nb_files):
     df = pd.read_csv(os.path.join(PREPROCESSED_DIR, dataFile), header=None)
     for i in range(nb_files):
@@ -48,6 +39,14 @@ def processData(netType):
 
 
 def run():
+    if os.path.isdir(SHUFFLED_DIR):
+        import shutil
+        if not os.access(SHUFFLED_DIR, os.W_OK):
+            # Is the error an access error ?
+            os.chmod(SHUFFLED_DIR, os.stat.S_IWUSR)
+        shutil.rmtree(SHUFFLED_DIR)
+    os.makedirs(SHUFFLED_DIR)
+
     netType = 'Value'
     processData(netType)
 
