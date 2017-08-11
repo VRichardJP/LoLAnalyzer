@@ -19,6 +19,9 @@ You need at least (pip/google is your best friend):
 
 ## How to use
 
+0. RunAll.py : All the steps from 1 to 7 at once. You can comment steps you've already done.
+
+or in details
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit
 2. DataDownloader.py : download raw game files according to the parameters in config.ini (patches, regions, leagues)
 3. DataExtractor.py : extract and collect all the downloaded data
@@ -27,7 +30,6 @@ You need at least (pip/google is your best friend):
 6. Learner.py: train a neural network
 7. BestPick.py: a very simple GUI so you can enter your draft and the role you want
 
-If you're on Windows and lazy, you can use run_all.bat to do all the steps as once (you can comment lines by adding :: in the file).  
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py

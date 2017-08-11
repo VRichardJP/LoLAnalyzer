@@ -12,7 +12,7 @@ import BestPicks
 import Modes
 
 image = False
-permutation = False # not implemented
+permutation = False  # not implemented
 mode = Modes.BR_Mode(image, permutation)
 
 if __name__ == '__main__':
