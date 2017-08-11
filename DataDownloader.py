@@ -1,4 +1,5 @@
 # Download games from the Riot API from Challenger/Master players
+
 import configparser
 import multiprocessing
 import os
