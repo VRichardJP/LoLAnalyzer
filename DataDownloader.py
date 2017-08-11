@@ -1,7 +1,4 @@
 # Download games from the Riot API from Challenger/Master players
-
-from __future__ import print_function
-
 import configparser
 import multiprocessing
 import os
@@ -10,6 +7,7 @@ import random
 import sys
 import time
 
+from Modes import BaseMode
 from multiprocessing import Manager
 
 from InterfaceAPI import InterfaceAPI, ApiError, ApiError404, ApiError403
@@ -64,7 +62,9 @@ class DataDownloader:
             sumID = self.summonerIDs.pop()
             try:
                 accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
-                games = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})['matches']
+                games = \
+                    self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})[
+                        'matches']
             except ApiError403 as e:
                 print(e, file=sys.stderr)
                 return e
@@ -78,7 +78,7 @@ class DataDownloader:
                 timestamp = game['timestamp']
                 previous_patch = self.patch
                 previous_patch = previous_patch.split('.')
-                previous_patch[1] = str(int(previous_patch[1])-1)
+                previous_patch[1] = str(int(previous_patch[1]) - 1)
                 previous_patch = '.'.join(previous_patch)
                 if previous_patch in self.timestamped_patches and self.timestamped_patches[previous_patch][1] > timestamp:  # game is too old
                     break  # all the next games are too old
@@ -184,25 +184,22 @@ def saveLastSeen(timestamped_patches, save_interval, end):
         cfg.write(configfile)
         print('patch timestamps saved')
 
-def run():
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    DATABASE = config['PARAMS']['database']
-    PATCHES_TO_DOWNLOAD = config['PARAMS']['download_patches'].split(',')
-    LEAGUES = {league: enabled == 'yes' for (league, enabled) in config['LEAGUES'].items()}
-    REGIONS = config['REGIONS']
+
+def run(mode):
+    assert type(mode) == BaseMode, 'Unrecognized mode {}'.format(mode)
 
     manager = Manager()
     last_seen_from_patch = manager.dict()
     endUpdate = manager.Event()
-    for key, value in config['PATCHES'].items():
+    for key, value in mode.config['PATCHES'].items():
         last_seen_from_patch[key] = list(map(int, value.split(',')))  # first seen and last seen
 
     kdprocs = []
-    for region, enabled in REGIONS.items():
+    for region, enabled in mode.REGIONS.items():
         if enabled == 'yes':
             kdprocs.append(
-                multiprocessing.Process(target=keepDownloading, args=(DATABASE, PATCHES_TO_DOWNLOAD, region, LEAGUES, last_seen_from_patch)))
+                multiprocessing.Process(target=keepDownloading,
+                                        args=(mode.DATABASE, mode.PATCHES_TO_DOWNLOAD, region, mode.LEAGUES, last_seen_from_patch)))
             kdprocs[-1].start()
 
     slsproc = multiprocessing.Process(target=saveLastSeen, args=(last_seen_from_patch, 300, endUpdate))
@@ -218,5 +215,6 @@ def run():
 
     print('-- Download complete --')
 
+
 if __name__ == '__main__':
-    run()
+    run(BaseMode())

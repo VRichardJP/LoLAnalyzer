@@ -11,6 +11,7 @@ from slugify import slugify
 from collections import OrderedDict
 from InterfaceAPI import InterfaceAPI
 
+
 def run():
     config = configparser.ConfigParser()
     if os.path.isfile('config.ini'):

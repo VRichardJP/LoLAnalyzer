@@ -1,8 +1,6 @@
 # Send requests while respecting rate_limit
 # Return data as dict (API send json)
 
-from __future__ import print_function
-
 import configparser
 import json
 import collections
@@ -11,16 +9,21 @@ import sys
 import time
 
 DEBUG = False
-OFFSET = 1  # just a security to avoid error 429. Prevent also the first request from reaching the rate-limit (we have no way to check the rate limit but to request something)
+OFFSET = 1
+# OFFSET is just a security to avoid error 429. Prevent also the first request from reaching the rate-limit
+# we have no way to check the rate limit but to request something
 TIME_LIMIT_WAIT = 120  # If we still get an error 429, wait for a reset. It's painful so it's better to not have to deal with this
 BYPASS_FIRST_WAIT = False  # Warning: only use if you haven't used the script for a while and you know there has been a reset.
+
 
 # The scripts have different behaviour depending on the errors
 # 403 -> stop everything (wrong a pi-key)
 # 404 -> usually a summoner is not found, just ignore it and analyze the next one
 # 429 -> time limit error. I'm still wondering why this is happening, but w/e, if that happens we just wait  little.
 # Any other -> just ignore current game and get the next one (we don't want the script to be stuck so we never ask twice the same information)
-# It is highly possible that some games where missed during a first scan (because of a random error). Downloading games a second time will eventualy fix the problem (ony download new games)
+# It is highly possible that some games where missed during a first scan (because of a random error). Downloading games a second time will eventualy
+# fix the problem (onlly download new games)
+
 
 class ApiError(Exception):
     pass
@@ -46,9 +49,6 @@ class InterfaceAPI:
             config.read('config.ini')
             self.API_KEY = config['PARAMS']['api-key']
         self.resets = {}
-
-    # TODO Rework, simply keep in memory the time of the Nth call
-    # https://stackoverflow.com/questions/1931589/python-datatype-for-a-fixed-length-fifo
 
     def getData(self, uri, data=None):
         # need to wait?

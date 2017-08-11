@@ -1,38 +1,19 @@
 # Extract the useful data from game files (json)
-# Append the usefull data to a csv file
+# Append the useful data to a csv file
 
-from __future__ import print_function
-
-import configparser
 import pickle
 import os
 import sys
 from collections import OrderedDict
-
+import Modes
 import pandas as pd
 from collections import Counter
 
-MODES = ['ABOTJMCS', 'ABOT']
 
+def run(mode):
+    assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
 
-def run(MODE='ABOTJMCS', PERMUTATIONS=False):
-    DATA_LINES = 100000
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    DATABASE = config['PARAMS']['database']
-    EXTRACTED_DIR = os.path.join(DATABASE, 'extracted')
-    PATCHES = os.listdir(os.path.join(DATABASE, 'patches'))
-    CHAMPIONS_ID = config['CHAMPIONS']  # need to convert id: str -> int
-    CHAMPIONS_ID = OrderedDict([(champ_name, int(champ_id)) for (champ_name, champ_id) in CHAMPIONS_ID.items()])
-    CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
-    regions_list = config['REGIONS']
-    COLUMNS = [champ for champ in CHAMPIONS_LABEL]
-    COLUMNS.append('patch')
-    COLUMNS.append('team')
-    COLUMNS.append('win')
-    COLUMNS.append('file')
-
-    extracted_file = os.path.join(DATABASE, 'extracted.txt')
+    extracted_file = mode.EXTRACTED_FILE
     if os.path.isfile(extracted_file):
         with open(extracted_file, 'r') as f:
             extracted_list = [x.strip() for x in f.readlines()]
@@ -40,35 +21,20 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
         extracted_list = []
 
     gamesPath = []
-    for patch in PATCHES:
-        for region, enabled in regions_list.items():
-            if enabled == 'yes' and os.path.isdir(os.path.join(DATABASE, 'patches', patch, region)):
+    for patch in mode.GAME_FILES:
+        for region, enabled in mode.REGIONS.items():
+            if enabled == 'yes' and os.path.isdir(os.path.join(mode.DATABASE, 'patches', patch, region)):
                 gamesPath.extend(
-                    [os.path.join(DATABASE, 'patches', patch, region, f) for f in os.listdir(os.path.join(DATABASE, 'patches', patch, region))])
+                    [os.path.join(mode.DATABASE, 'patches', patch, region, f) for f in
+                     os.listdir(os.path.join(mode.DATABASE, 'patches', patch, region))])
     print('%d game files found' % len(gamesPath))
     gamesPath = list(set(gamesPath) - set(extracted_list))
     print('%d new games to extract' % len(gamesPath))
 
-    # Champion state:
-    # Available, Banned, Opponent, Top, Jungle, Middle, Carry, Support
-    def getRoleIndex(lane, role):
-        if lane == 'TOP' and role == 'SOLO':
-            return 'T'
-        elif lane == 'JUNGLE' and role == 'NONE':
-            return 'J'
-        elif lane == 'MIDDLE' and role == 'SOLO':
-            return 'M'
-        elif lane == 'BOTTOM' and role == 'DUO_CARRY':
-            return 'C'
-        elif lane == 'BOTTOM' and role == 'DUO_SUPPORT':
-            return 'S'
-        else:
-            raise Exception(lane, role)
+    if not os.path.isdir(mode.EXTRACTED_DIR):
+        os.makedirs(mode.EXTRACTED_DIR)
 
-    if not os.path.isdir(EXTRACTED_DIR):
-        os.makedirs(EXTRACTED_DIR)
-
-    extracted_files = [f for f in os.listdir(EXTRACTED_DIR)]
+    extracted_files = [f for f in os.listdir(mode.EXTRACTED_DIR)]
     l = list(map(lambda x: int(x.replace('data_', '').replace('.csv', '')), extracted_files))
     l = sorted(range(len(l)), key=lambda k: l[k])
     extracted_files = [extracted_files[k] for k in l]
@@ -76,19 +42,19 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
     if extracted_files:
         current_index = len(extracted_files)
         current_file = extracted_files[current_index - 1]
-        csv_file = os.path.join(EXTRACTED_DIR, current_file)
+        csv_file = os.path.join(mode.EXTRACTED_DIR, current_file)
         csv_index = len(pd.read_csv(csv_file, skiprows=1))
         print('lines', csv_index)
     else:
         current_index = 0
-        current_file = ''
         csv_file = None
-        csv_index = DATA_LINES
+        csv_index = mode.DATA_LINES
 
     for gamePath in gamesPath:
-        raw_data = OrderedDict([(champ, []) for champ in CHAMPIONS_LABEL])
+        raw_data = OrderedDict([(champ, []) for champ in mode.CHAMPIONS_LABEL])
         raw_data['patch'] = []
-        raw_data['team'] = []
+        if type(mode) != Modes.BR_Mode:
+            raw_data['team'] = []
         raw_data['win'] = []
         raw_data['file'] = []
         print(gamePath)
@@ -140,7 +106,7 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
             continue
 
         participants = game['participants']
-        if MODE == 'ABOTJMCS':
+        if type(mode) != Modes.ABOTJMCS_Mode:
             # Full mode, all the info on the the teams are taken into account
             # Blank, everything is available
             blueState = OrderedDict()
@@ -153,8 +119,8 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
             redState['patch'] = game_patch
             blueState['file'] = os.path.basename(gamePath)
             redState['file'] = os.path.basename(gamePath)
-            blueState.update([(champ_name, 'A') for champ_name in CHAMPIONS_LABEL])
-            redState.update([(champ_name, 'A') for champ_name in CHAMPIONS_LABEL])
+            blueState.update([(champ_name, 'A') for champ_name in mode.CHAMPIONS_LABEL])
+            redState.update([(champ_name, 'A') for champ_name in mode.CHAMPIONS_LABEL])
             for key, value in blueState.items():
                 raw_data[key].append(value)
             for key, value in redState.items():
@@ -164,7 +130,7 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
             blueState = OrderedDict(blueState)  # don't forget to create a clean copy
             redState = OrderedDict(redState)  # ortherwise it will modify previous states
             for championId in bans:
-                for champ_name, champ_id in CHAMPIONS_ID.items():
+                for champ_name, champ_id in mode.CHAMPIONS_ID.items():
                     if champ_id == championId:
                         blueState[champ_name] = 'B'
                         redState[champ_name] = 'B'
@@ -264,7 +230,7 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
                 bluePick = i < 5
                 p = participants[i]
                 championId = p['championId']
-                for champ_name, champ_id in CHAMPIONS_ID.items():
+                for champ_name, champ_id in mode.CHAMPIONS_ID.items():
                     if champ_id == championId:
                         blueState[champ_name] = roles[i] if bluePick else 'O'
                         redState[champ_name] = 'O' if bluePick else roles[i]
@@ -273,7 +239,7 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
                     raw_data[key].append(value)
                 for key, value in redState.items():
                     raw_data[key].append(value)
-        elif MODE == 'ABOT':
+        elif type(mode) != Modes.ABOT_Mode:
             # The roles are not taken into account
             # Blank, everything is available
             blueState = OrderedDict()
@@ -286,8 +252,8 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
             redState['patch'] = game_patch
             blueState['file'] = os.path.basename(gamePath)
             redState['file'] = os.path.basename(gamePath)
-            blueState.update([(champ_name, 'A') for champ_name in CHAMPIONS_LABEL])
-            redState.update([(champ_name, 'A') for champ_name in CHAMPIONS_LABEL])
+            blueState.update([(champ_name, 'A') for champ_name in mode.CHAMPIONS_LABEL])
+            redState.update([(champ_name, 'A') for champ_name in mode.CHAMPIONS_LABEL])
             for key, value in blueState.items():
                 raw_data[key].append(value)
             for key, value in redState.items():
@@ -297,7 +263,7 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
             blueState = OrderedDict(blueState)  # don't forget to create a clean copy
             redState = OrderedDict(redState)  # ortherwise it will modify previous states
             for championId in bans:
-                for champ_name, champ_id in CHAMPIONS_ID.items():
+                for champ_name, champ_id in mode.CHAMPIONS_ID.items():
                     if champ_id == championId:
                         blueState[champ_name] = 'B'
                         redState[champ_name] = 'B'
@@ -315,7 +281,7 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
                 bluePick = i < 5
                 p = participants[i]
                 championId = p['championId']
-                for champ_name, champ_id in CHAMPIONS_ID.items():
+                for champ_name, champ_id in mode.CHAMPIONS_ID.items():
                     if champ_id == championId:
                         blueState[champ_name] = 'T' if bluePick else 'O'
                         redState[champ_name] = 'O' if bluePick else 'T'
@@ -324,19 +290,44 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
                     raw_data[key].append(value)
                 for key, value in redState.items():
                     raw_data[key].append(value)
+        elif type(mode) != Modes.BR_Mode:
+            # Unpicked, opponent, team
+            # Blank, everything is unpicked (banned = unpicked
+            blueState = OrderedDict()
+            blueState['win'] = int(blueWin)
+            blueState['patch'] = game_patch
+            blueState['file'] = os.path.basename(gamePath)
+            blueState.update([(champ_name, 'N') for champ_name in mode.CHAMPIONS_LABEL])  # N for none, its easier to visualize the data like this
+            for key, value in blueState.items():
+                raw_data[key].append(value)
+            # No ban
 
-        df = pd.DataFrame(raw_data, columns=COLUMNS)
-        if csv_index + len(df) < DATA_LINES:
+            # Draft
+            DRAFT_ORDER = [0, 5, 6, 1, 2, 7, 8, 3, 4, 9]
+            for i in DRAFT_ORDER:
+                blueState = OrderedDict(blueState)
+                bluePick = i < 5
+                p = participants[i]
+                championId = p['championId']
+                for champ_name, champ_id in mode.CHAMPIONS_ID.items():
+                    if champ_id == championId:
+                        blueState[champ_name] = 'B' if bluePick else 'R'
+                        break
+                for key, value in blueState.items():
+                    raw_data[key].append(value)
+
+        df = pd.DataFrame(raw_data, columns=mode.COLUMNS)
+        if csv_index + len(df) < mode.DATA_LINES:
             df.to_csv(csv_file, mode='a', header=False, index=False)
             csv_index += len(df)
         else:  # split the data in two: finish prev file and start another
-            to_current = df.iloc[:DATA_LINES - csv_index]
-            to_next = df.iloc[DATA_LINES - csv_index:]
+            to_current = df.iloc[:mode.DATA_LINES - csv_index]
+            to_next = df.iloc[mode.DATA_LINES - csv_index:]
             to_current.to_csv(csv_file, mode='a', header=False, index=False)
             # preparing new file
             current_index += 1
             current_file = 'data_' + str(current_index) + '.csv'
-            csv_file = os.path.join(EXTRACTED_DIR, current_file)
+            csv_file = os.path.join(mode.EXTRACTED_DIR, current_file)
             csv_index = 0
             to_next.to_csv(csv_file, mode='a', header=True, index=False)
             csv_index += len(to_next)
@@ -350,4 +341,4 @@ def run(MODE='ABOTJMCS', PERMUTATIONS=False):
 
 
 if __name__ == '__main__':
-    run()
+    run(Modes.BR_Mode())
