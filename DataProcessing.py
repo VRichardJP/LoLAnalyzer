@@ -18,13 +18,13 @@ def processing(mode, dataFile):
         preprocessed_df = []
     df = pd.read_csv(os.path.join(mode.EXTRACTED_DIR, dataFile), names=mode.COLUMNS, dtype=mode.DTYPE, skiprows=1)
     print(currentFile, len(df) - len(preprocessed_df), "rows to analyze")
-    data = pd.DataFrame(columns=range(mode.INPUT_SIZE))
+    data = pd.DataFrame(columns=range(mode.INPUT_SIZE + mode.OUTPUT_SIZE))
     for i in range(len(preprocessed_df), len(df)):
         if i % mode.SAVE == 0 and i != len(preprocessed_df):  # saving periodically because the process is rather long
-            print(currentFile, len(df)-i)
+            print(currentFile, len(df) - i)
             data = data.astype(int)
             data.to_csv(currentFile, mode='a', header=False, index=False)
-            data = pd.DataFrame(columns=range(mode.INPUT_SIZE))
+            data = pd.DataFrame(columns=range(mode.INPUT_SIZE + mode.OUTPUT_SIZE))
 
         # data: win + champions status + patch
         row = df.iloc[i]
@@ -50,7 +50,9 @@ def processing(mode, dataFile):
     print(currentFile, 'DONE')
 
 
-def processData(mode):
+def run(mode, cpu):
+    assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
+
     if not os.path.isdir(mode.PREPROCESSED_DIR):
         os.makedirs(mode.PREPROCESSED_DIR)
 
@@ -60,18 +62,12 @@ def processData(mode):
     l = sorted(range(len(l)), key=lambda k: l[k])
     extracted_files = [extracted_files[k] for k in l]
 
-    cpu = multiprocessing.cpu_count() - 2
     pool = multiprocessing.Pool(processes=cpu)
     fun = partial(processing, mode)
     pool.map(fun, extracted_files, chunksize=1)
     pool.close()
     pool.join()
 
-
-def run(mode):
-    assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
-    processData(mode)
-
-
 if __name__ == '__main__':
-    run(Modes.BR_Mode())
+    cpu = multiprocessing.cpu_count() - 1
+    run(Modes.BR_Mode(), cpu)

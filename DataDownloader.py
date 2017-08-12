@@ -187,7 +187,7 @@ def saveLastSeen(timestamped_patches, save_interval, end):
 
 
 def run(mode):
-    assert type(mode) == BaseMode, 'Unrecognized mode {}'.format(mode)
+    assert isinstance(mode, BaseMode), 'Unrecognized mode {}'.format(mode)
 
     manager = Manager()
     last_seen_from_patch = manager.dict()

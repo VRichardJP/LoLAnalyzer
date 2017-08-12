@@ -5,6 +5,8 @@
 import pandas as pd
 import os
 
+import sys
+
 import Modes
 
 
@@ -19,9 +21,21 @@ def shuffling(mode, dataFile, nb_files):
     print(dataFile, 'DONE')
 
 
-def run(mode):
+def validationInput(msg, validAns):
+    while True:
+        data = input(msg)
+        if data.lower() in validAns:
+            return data
+        print('Incorrect value. Only', validAns, 'are accepted')
+
+
+def run(mode, nb_files, reshuffle=True):
     assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
     if os.path.isdir(mode.SHUFFLED_DIR):
+        print('WARNING PREVIOUS SHUFFLED DATA FOUND', file=sys.stderr)
+        if not reshuffle or validationInput('Do you want to reshuffle the data anyway (take a while)? (y/n)', ['y', 'n']) == 'n':
+            return
+
         import shutil
         if not os.access(mode.SHUFFLED_DIR, os.W_OK):
             # Is the error an access error ?
@@ -34,9 +48,8 @@ def run(mode):
     l = list(map(lambda x: int(x.replace('data_', '').replace('.csv', '')), preprocessed_files))
     l = sorted(range(len(l)), key=lambda k: l[k])
     preprocessed_files = [preprocessed_files[k] for k in l]
-    nb_files = 37  # prime number is important
     for file in preprocessed_files:
-        shuffling(file, nb_files)
+        shuffling(mode, file, nb_files)
 
 if __name__ == '__main__':
     run(Modes.BR_Mode())

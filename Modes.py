@@ -29,6 +29,12 @@ class BaseMode:
         self.PATCHES = list(map(lambda x: x.replace('.', '_'), os.listdir(os.path.join(self.DATABASE, 'patches'))))
         self.CHAMPIONS_SIZE = len(self.CHAMPIONS_LABEL)
         self.PATCHES_SIZE = len(self.PATCHES)
+        self.OUTPUT_SIZE = 1
+
+
+
+    def __repr__(self):
+        return 'BaseMode(*{!r})'.format(self.image, self.permutation)
 
 
 class ABOTJMCS_Mode(BaseMode):
@@ -55,6 +61,9 @@ class ABOTJMCS_Mode(BaseMode):
         else:
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
 
+    def __repr__(self):
+        return 'ABOTJMCS_Mode(*{!r})'.format(self.image, self.permutation)
+
 
 class ABOT_Mode(BaseMode):
     def __init__(self, image=False, permutation=False):
@@ -80,6 +89,9 @@ class ABOT_Mode(BaseMode):
         else:
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
 
+    def __repr__(self):
+        return 'ABOT_Mode(*{!r})'.format(self.image, self.permutation)
+
 
 class BR_Mode(BaseMode):
     def __init__(self, image=False, permutation=False):
@@ -102,3 +114,6 @@ class BR_Mode(BaseMode):
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
         else:
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES))
+
+    def __repr__(self):
+        return 'BR_Mode(*{!r})'.format(self.image, self.permutation)

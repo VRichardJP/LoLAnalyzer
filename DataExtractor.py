@@ -106,7 +106,7 @@ def run(mode):
             continue
 
         participants = game['participants']
-        if type(mode) != Modes.ABOTJMCS_Mode:
+        if type(mode) == Modes.ABOTJMCS_Mode:
             # Full mode, all the info on the the teams are taken into account
             # Blank, everything is available
             blueState = OrderedDict()
@@ -239,7 +239,7 @@ def run(mode):
                     raw_data[key].append(value)
                 for key, value in redState.items():
                     raw_data[key].append(value)
-        elif type(mode) != Modes.ABOT_Mode:
+        elif type(mode) == Modes.ABOT_Mode:
             # The roles are not taken into account
             # Blank, everything is available
             blueState = OrderedDict()
@@ -290,7 +290,7 @@ def run(mode):
                     raw_data[key].append(value)
                 for key, value in redState.items():
                     raw_data[key].append(value)
-        elif type(mode) != Modes.BR_Mode:
+        elif type(mode) == Modes.BR_Mode:
             # Unpicked, opponent, team
             # Blank, everything is unpicked (banned = unpicked
             blueState = OrderedDict()
