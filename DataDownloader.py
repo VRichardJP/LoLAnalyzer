@@ -8,7 +8,7 @@ import random
 import sys
 import time
 
-from Modes import BaseMode
+from Modes import Base_Mode
 from multiprocessing import Manager
 
 from InterfaceAPI import InterfaceAPI, ApiError, ApiError404, ApiError403
@@ -187,7 +187,7 @@ def saveLastSeen(timestamped_patches, save_interval, end):
 
 
 def run(mode):
-    assert isinstance(mode, BaseMode), 'Unrecognized mode {}'.format(mode)
+    assert isinstance(mode, Base_Mode), 'Unrecognized mode {}'.format(mode)
 
     manager = Manager()
     last_seen_from_patch = manager.dict()
@@ -218,4 +218,4 @@ def run(mode):
 
 
 if __name__ == '__main__':
-    run(BaseMode())
+    run(Base_Mode())

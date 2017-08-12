@@ -5,7 +5,7 @@ import os
 from collections import OrderedDict
 
 
-class BaseMode:
+class Base_Mode:
     def __init__(self, image=False, permutation=False):
         self.image = image
         self.permutation = permutation
@@ -31,13 +31,14 @@ class BaseMode:
         self.PATCHES_SIZE = len(self.PATCHES)
         self.OUTPUT_SIZE = 1
 
-
+    def __str__(self):
+        return 'Base_{}_{}'.format(self.image, self.permutation)
 
     def __repr__(self):
-        return 'BaseMode(*{!r})'.format(self.image, self.permutation)
+        return 'Base_Mode(*{!r})'.format(self.image, self.permutation)
 
 
-class ABOTJMCS_Mode(BaseMode):
+class ABOTJMCS_Mode(Base_Mode):
     def __init__(self, image=False, permutation=False):
         super().__init__(image, permutation)
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_ABOTJMCS.txt')
@@ -61,11 +62,14 @@ class ABOTJMCS_Mode(BaseMode):
         else:
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
 
+    def __str__(self):
+        return 'ABOTJMCS_{}_{}'.format(self.image, self.permutation)
+
     def __repr__(self):
         return 'ABOTJMCS_Mode(*{!r})'.format(self.image, self.permutation)
 
 
-class ABOT_Mode(BaseMode):
+class ABOT_Mode(Base_Mode):
     def __init__(self, image=False, permutation=False):
         super().__init__(image, permutation)
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_ABOT.txt')
@@ -89,11 +93,14 @@ class ABOT_Mode(BaseMode):
         else:
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
 
+    def __str__(self):
+        return 'ABOT_{}_{}'.format(self.image, self.permutation)
+
     def __repr__(self):
         return 'ABOT_Mode(*{!r})'.format(self.image, self.permutation)
 
 
-class BR_Mode(BaseMode):
+class BR_Mode(Base_Mode):
     def __init__(self, image=False, permutation=False):
         super().__init__(image, permutation)
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_BR.txt')
@@ -114,6 +121,9 @@ class BR_Mode(BaseMode):
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
         else:
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES))
+
+    def __str__(self):
+        return 'BR_{}_{}'.format(self.image, self.permutation)
 
     def __repr__(self):
         return 'BR_Mode(*{!r})'.format(self.image, self.permutation)

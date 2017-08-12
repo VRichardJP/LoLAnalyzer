@@ -1,4 +1,5 @@
 # All script can be called from here
+
 import multiprocessing
 
 import ConfigUpdater
@@ -23,17 +24,17 @@ reshuffle = True
 
 # Mode and Network
 mode = Modes.BR_Mode(image, permutation)
-network = Networks.DenseUniform(5, 256)
+network = Networks.DenseUniform(mode, 5, 256)
 
 # Scripts to execute, comment useless ones
 to_execute = [
     # 'ConfigUpdater',
-    'DataDownloader',
+    'DataDownloader',  # run on multiple cpu
     'DataExtractor',
     'RoleUpdater',
-    'DataProcessing',
+    'DataProcessing',  # run on multiple cpu
     'DataShuffling',
-    'Learner',
+    'Learner',  # run on gpu
 ]
 
 
