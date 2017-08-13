@@ -1,18 +1,9 @@
 # All script can be called from here
 
 import multiprocessing
-
-import ConfigUpdater
-import DataDownloader
-import DataExtractor
 import Networks
-import RoleUpdater
-import DataProcessing
-import DataShuffling
-import Learner
-import BestPicks
 import Modes
-
+# Scripts import are made on the go to avoid flooding the memory when running on multiple cpu
 
 # Running options
 cpu = min(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
@@ -30,7 +21,7 @@ network = Networks.DenseUniform(mode=mode, n_hidden_layers=3, NN=256, dropout=0.
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
     # 'ConfigUpdater',
-    # 'DataDownloader',  # run on multiple cpu
+    'DataDownloader',  # run on multiple cpu
     'DataExtractor',
     'RoleUpdater',
     'DataProcessing',  # run on multiple cpu
@@ -42,18 +33,26 @@ to_execute = [
 
 if __name__ == '__main__':
     if 'ConfigUpdater' in to_execute:
+        import ConfigUpdater
         ConfigUpdater.run()
     if 'DataDownloader' in to_execute:
+        import DataDownloader
         DataDownloader.run(mode)
     if 'DataExtractor' in to_execute:
+        import DataExtractor
         DataExtractor.run(mode)
     if 'RoleUpdater' in to_execute:
+        import RoleUpdater
         RoleUpdater.run(mode)
     if 'DataProcessing' in to_execute:
+        import DataProcessing
         DataProcessing.run(mode, cpu)
     if 'DataShuffling' in to_execute:
+        import DataShuffling
         DataShuffling.run(mode, shuffling_files)
     if 'Learner' in to_execute:
+        import Learner
         Learner.run(mode, network, restore)
     if 'BestPicks' in to_execute:
+        import BestPicks
         BestPicks.run(mode, network)

@@ -2,9 +2,7 @@
 
 import os
 import random
-
 import keras
-
 import Modes
 import Networks
 import sys

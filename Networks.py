@@ -1,7 +1,6 @@
 # Implement a lot of different networks
 
 from abc import ABC, abstractmethod
-import keras
 
 
 class BaseModel(ABC):
@@ -42,6 +41,8 @@ class DenseUniform(BaseModel):
         self.report = report  # In order to not be overflowed by training/testing logs
 
     def build(self):
+        import keras  # keras is heavy, we charge the module only when necessary
+
         self.model = keras.models.Sequential()
         self.model.add(keras.layers.Dense(units=self.NN, input_dim=self.mode.INPUT_SIZE, activation='relu'))
         self.model.add(keras.layers.Dropout(self.dropout))
@@ -73,6 +74,8 @@ class DenseRegressive(BaseModel):
         self.report = report  # In order to not be overflowed by training/testing logs
 
     def build(self):
+        import keras
+
         self.model = keras.models.Sequential()
         self.model.add(keras.layers.Dense(units=self.NN, input_dim=self.mode.INPUT_SIZE, activation='relu'))
         self.model.add(keras.layers.Dropout(self.dropout))

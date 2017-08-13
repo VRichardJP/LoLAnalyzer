@@ -230,7 +230,6 @@ class App(QDialog):
         row_data = []
         row_data.extend([1 if currentState[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(self.mode.CHAMPIONS_LABEL)) for s in
                          self.mode.CHAMPIONS_STATUS])
-        # row_data.extend([0 for _ in range(self.mode.CHAMPIONS_SIZE - len(self.mode.CHAMPIONS_LABEL)) for _ in self.mode.CHAMPIONS_STATUS])
         row_data.extend(self.mode.PATCH)
         if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
             row_data.append(0 if yourTeam == 'Blue' else 1)
@@ -292,7 +291,6 @@ class App(QDialog):
             row_data = []
             row_data.extend([1 if state[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(self.mode.CHAMPIONS_LABEL)) for s in
                              self.mode.CHAMPIONS_STATUS])
-            # row_data.extend([0 for _ in range(self.mode.CHAMPIONS_SIZE - len(self.mode.CHAMPIONS_LABEL)) for _ in self.mode.CHAMPIONS_STATUS])
             row_data.extend(self.mode.PATCH)
             if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
                 row_data.append(0 if yourTeam == 'Blue' else 1)
