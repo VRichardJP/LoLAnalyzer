@@ -1,58 +1,16 @@
-from __future__ import print_function
+# Evaluate the best pick for the given role and team
 
-import configparser
 import os
 import sys
+import keras
 from PyQt5.QtWidgets import *
-import tensorflow as tf
 from collections import OrderedDict
 
-
-from Learner import ValueNetwork, maybe_restore_from_checkpoint
-
-# CHAMPIONS_SIZE = 150
-# PATCHES_SIZE = 149
-#
-# config = configparser.ConfigParser()
-# config.read('config.ini')
-# DATABASE = config['PARAMS']['database']
-# ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
-# PATCHES = config['PARAMS']['patches'].replace('.', '_').split(',')
-# CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
-# CHAMPIONS = ['...']
-# CHAMPIONS.extend(sorted(CHAMPIONS_LABEL))
-# CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-# PATCH = PATCHES_SIZE * [0]
-# PATCH[len(PATCHES) - 1] = 1  # current patch
-# ROLES_CHAMP = config['ROLES']
-# TEAMS = ['...', 'Blue', 'Red']
-config = configparser.ConfigParser()
-config.read('config.ini')
-DATABASE = config['PARAMS']['database']
-SHUFFLED_DIR = os.path.join(DATABASE, 'shuffled')
-ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
-CHAMPIONS_LABEL = config['PARAMS']['sortedChamps'].split(',')
-CHAMPIONS_SIZE = len(CHAMPIONS_LABEL)
-CHAMPIONS = ['...']
-CHAMPIONS.extend(sorted(CHAMPIONS_LABEL))
-PATCHES = list(map(lambda x: x.replace('.', '_').split(','), os.listdir(os.path.join(DATABASE, 'patches'))))
-PATCHES_SIZE = len(PATCHES)
-PATCH = PATCHES_SIZE * [0]
-PATCH[len(PATCHES) - 1] = 1  # current patch
-ROLES_CHAMP = config['ROLES']
-TEAMS = ['...', 'Blue', 'Red']
-INPUT_SIZE = -1
-IMAGE_SHAPE = False
-IMAGE_X = -1
-IMAGE_Y = -1
-CHAMPIONS_STATUS = []
-
-
-netArchi = None
-archi_kwargs = {}
-
+import Modes
+import Networks
 
 sys._excepthook = sys.excepthook
+
 
 def my_exception_hook(exctype, value, traceback):
     # Print the error and traceback
@@ -61,18 +19,21 @@ def my_exception_hook(exctype, value, traceback):
     sys._excepthook(exctype, value, traceback)
     sys.exit(1)
 
+
 # Set the exception hook to our wrapping function
 sys.excepthook = my_exception_hook
 
 
 class App(QDialog):
-    def __init__(self):
+    def __init__(self, mode, network):
         super().__init__()
         self.title = 'LoLAnalyzer'
         self.left = 10
         self.top = 10
         self.width = 660
         self.height = 400
+        self.mode = mode
+        self.network = network
         self.initUI()
         self.buildNetwork()
 
@@ -88,34 +49,34 @@ class App(QDialog):
         bansGB = QGroupBox('Bans')
         BansLayout = QGridLayout()
         self.player1Ban = QComboBox()
-        self.player1Ban.addItems(CHAMPIONS)
+        self.player1Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player1Ban, 0, 0)
         self.player2Ban = QComboBox()
-        self.player2Ban.addItems(CHAMPIONS)
+        self.player2Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player2Ban, 0, 1)
         self.player3Ban = QComboBox()
-        self.player3Ban.addItems(CHAMPIONS)
+        self.player3Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player3Ban, 0, 2)
         self.player4Ban = QComboBox()
-        self.player4Ban.addItems(CHAMPIONS)
+        self.player4Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player4Ban, 0, 3)
         self.player5Ban = QComboBox()
-        self.player5Ban.addItems(CHAMPIONS)
+        self.player5Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player5Ban, 0, 4)
         self.player6Ban = QComboBox()
-        self.player6Ban.addItems(CHAMPIONS)
+        self.player6Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player6Ban, 1, 0)
         self.player7Ban = QComboBox()
-        self.player7Ban.addItems(CHAMPIONS)
+        self.player7Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player7Ban, 1, 1)
         self.player8Ban = QComboBox()
-        self.player8Ban.addItems(CHAMPIONS)
+        self.player8Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player8Ban, 1, 2)
         self.player9Ban = QComboBox()
-        self.player9Ban.addItems(CHAMPIONS)
+        self.player9Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player9Ban, 1, 3)
         self.player10Ban = QComboBox()
-        self.player10Ban.addItems(CHAMPIONS)
+        self.player10Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player10Ban, 1, 4)
         bansGB.setLayout(BansLayout)
         mainBoxLayout.addWidget(bansGB, 0, 0, 1, 3)
@@ -124,34 +85,34 @@ class App(QDialog):
         yourTeamGB = QGroupBox('Your Team')
         yourTeamLayout = QGridLayout()
         self.player1Pick = QComboBox()
-        self.player1Pick.addItems(CHAMPIONS)
+        self.player1Pick.addItems(self.mode.BP_CHAMPIONS)
         yourTeamLayout.addWidget(self.player1Pick, 0, 0)
         self.player1Role = QComboBox()
-        self.player1Role.addItems(ROLES)
+        self.player1Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player1Role, 0, 1)
         self.player2Pick = QComboBox()
-        self.player2Pick.addItems(CHAMPIONS)
+        self.player2Pick.addItems(self.mode.BP_CHAMPIONS)
         yourTeamLayout.addWidget(self.player2Pick, 1, 0)
         self.player2Role = QComboBox()
-        self.player2Role.addItems(ROLES)
+        self.player2Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player2Role, 1, 1)
         self.player3Pick = QComboBox()
-        self.player3Pick.addItems(CHAMPIONS)
+        self.player3Pick.addItems(self.mode.BP_CHAMPIONS)
         yourTeamLayout.addWidget(self.player3Pick, 2, 0)
         self.player3Role = QComboBox()
-        self.player3Role.addItems(ROLES)
+        self.player3Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player3Role, 2, 1)
         self.player4Pick = QComboBox()
-        self.player4Pick.addItems(CHAMPIONS)
+        self.player4Pick.addItems(self.mode.BP_CHAMPIONS)
         yourTeamLayout.addWidget(self.player4Pick, 3, 0)
         self.player4Role = QComboBox()
-        self.player4Role.addItems(ROLES)
+        self.player4Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player4Role, 3, 1)
         self.player5Pick = QComboBox()
-        self.player5Pick.addItems(CHAMPIONS)
+        self.player5Pick.addItems(self.mode.BP_CHAMPIONS)
         yourTeamLayout.addWidget(self.player5Pick, 4, 0)
         self.player5Role = QComboBox()
-        self.player5Role.addItems(ROLES)
+        self.player5Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player5Role, 4, 1)
         yourTeamGB.setLayout(yourTeamLayout)
         mainBoxLayout.addWidget(yourTeamGB, 1, 0)
@@ -160,19 +121,19 @@ class App(QDialog):
         ennemyTeamGB = QGroupBox('Ennemy Team')
         ennemyTeamLayout = QVBoxLayout()
         self.player6Pick = QComboBox()
-        self.player6Pick.addItems(CHAMPIONS)
+        self.player6Pick.addItems(self.mode.BP_CHAMPIONS)
         ennemyTeamLayout.addWidget(self.player6Pick)
         self.player7Pick = QComboBox()
-        self.player7Pick.addItems(CHAMPIONS)
+        self.player7Pick.addItems(self.mode.BP_CHAMPIONS)
         ennemyTeamLayout.addWidget(self.player7Pick)
         self.player8Pick = QComboBox()
-        self.player8Pick.addItems(CHAMPIONS)
+        self.player8Pick.addItems(self.mode.BP_CHAMPIONS)
         ennemyTeamLayout.addWidget(self.player8Pick)
         self.player9Pick = QComboBox()
-        self.player9Pick.addItems(CHAMPIONS)
+        self.player9Pick.addItems(self.mode.BP_CHAMPIONS)
         ennemyTeamLayout.addWidget(self.player9Pick)
         self.player10Pick = QComboBox()
-        self.player10Pick.addItems(CHAMPIONS)
+        self.player10Pick.addItems(self.mode.BP_CHAMPIONS)
         ennemyTeamLayout.addWidget(self.player10Pick)
         ennemyTeamGB.setLayout(ennemyTeamLayout)
         mainBoxLayout.addWidget(ennemyTeamGB, 1, 2)
@@ -184,7 +145,7 @@ class App(QDialog):
         yourTeamLabel.setText('Your team:')
         bestPicksLayout.addWidget(yourTeamLabel, 0, 0)
         self.yourTeam = QComboBox()
-        self.yourTeam.addItems(TEAMS)
+        self.yourTeam.addItems(self.mode.BP_TEAMS)
         bestPicksLayout.addWidget(self.yourTeam, 0, 1)
         self.evaluateButton = QPushButton('Wait...')
         self.evaluateButton.setEnabled(False)
@@ -194,7 +155,7 @@ class App(QDialog):
         yourRoleLabel.setText('Your role:')
         bestPicksLayout.addWidget(yourRoleLabel, 1, 0)
         self.yourRole = QComboBox()
-        self.yourRole.addItems(ROLES)
+        self.yourRole.addItems(self.mode.BP_ROLES)
         bestPicksLayout.addWidget(self.yourRole, 1, 1)
         self.generateButton = QPushButton('Wait...')
         self.generateButton.setEnabled(False)
@@ -220,41 +181,16 @@ class App(QDialog):
         self.show()
 
     def buildNetwork(self):
-        network = ValueNetwork
-        netType = 'Value'
+        keras.backend.set_learning_phase(0)  # evaluation = testing phase
 
-        mappingArchi = {
-            'Dense2': network.dense2Arch,
-            'Dense3': network.dense3Arch,
-            'Dense5': network.dense5Arch,
-            'Dense12': network.dense12Arch,
-            'Dense20': network.dense20Arch,
-        }
-        if netArchi not in mappingArchi:
-            raise Exception('Unknown netArchi', netArchi)
-        architecture = mappingArchi[netArchi]
+        model_file = os.path.join(self.mode.CKPT_DIR, str(self.network) + '.h5')
+        print('-- New evaluating Session --', file=sys.stderr)
+        print(model_file, file=sys.stderr)
 
-        # Building the neural network
-        # g = tf.Graph()
-        self.sess = tf.Session()
-        # Network building
-        self.x, y_true = network.placeholders()
-        self.y_pred = architecture(self.x, **archi_kwargs)
-        # acc_ph = network.accuracy(y_pred, y_true)
-        # loss_ph = network.loss(y_pred, y_true)
-        # train_op = network.train_op(loss_ph, lr)
-        w_acc = []
-        w_loss = []
-
-        # Restoring last session
-        saver = tf.train.Saver(tf.trainable_variables())
-        self.sess.run(tf.global_variables_initializer())
-        ckpt_dir = os.path.join(DATABASE, 'models', netType + netArchi)
-        step = maybe_restore_from_checkpoint(self.sess, saver, ckpt_dir)
-        s = "New session: %s" % ckpt_dir
-        with open(os.path.join(ckpt_dir, 'testing.log'), 'a+') as f:
-            f.write(s + '\n')
-        print(s)
+        if not os.path.isfile(model_file):
+            print('Cannot find {}'.format(model_file), file=sys.stderr)
+            return
+        self.network.model = keras.models.load_model(model_file)
 
         self.generateButton.setText('Analyze')
         self.generateButton.setEnabled(True)
@@ -263,7 +199,7 @@ class App(QDialog):
 
     def evaluate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
-        currentState = OrderedDict([(champ, 'A') for champ in CHAMPIONS_LABEL])
+        currentState = OrderedDict([(champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
@@ -279,42 +215,35 @@ class App(QDialog):
                  (str(self.player10Pick.currentText()), 'Opp')]
         print('picks', picks, file=sys.stderr)
         for ban in bans:
-            if ban [0] != '.':
+            if ban[0] != '.':
                 currentState[ban] = 'B'
         for (pick, role) in picks:
-            if pick[0] != '.' and role[0] in CHAMPIONS_STATUS:
+            if pick[0] != '.' and role[0] in self.mode.CHAMPIONS_STATUS:
                 currentState[pick] = role[0]
 
         yourTeam = str(self.yourTeam.currentText())
         if yourTeam == '...':
             print('You need to select a team!', file=sys.stderr)
             return
-        # print(currentState, file=sys.stderr)
 
         data = []
-
         row_data = []
-        row_data.extend([1 if currentState[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
-        row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
-        row_data.extend(PATCH)
-        row_data.append(0 if yourTeam == 'Blue' else 1)
+        row_data.extend([1 if currentState[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(self.mode.CHAMPIONS_LABEL)) for s in
+                         self.mode.CHAMPIONS_STATUS])
+        # row_data.extend([0 for _ in range(self.mode.CHAMPIONS_SIZE - len(self.mode.CHAMPIONS_LABEL)) for _ in self.mode.CHAMPIONS_STATUS])
+        row_data.extend(self.mode.PATCH)
+        if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
+            row_data.append(0 if yourTeam == 'Blue' else 1)
         data.append(row_data)
 
-        batch = [[], []]
-        batch[0] = data
-
-        feed_dict = {
-            self.x: batch[0],
-        }
-        pred_values = self.sess.run(self.y_pred, feed_dict=feed_dict)
-
+        pred_values = self.network.model.predict(data, batch_size=len(data))
         self.results.setRowCount(1)
         self.results.setItem(0, 0, QTableWidgetItem('winrate'))
         self.results.setItem(0, 1, QTableWidgetItem('%.2f' % (pred_values[0] * 100)))
 
     def generate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
-        currentState = OrderedDict([(champ, 'A') for champ in CHAMPIONS_LABEL])
+        currentState = OrderedDict([(champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
@@ -330,10 +259,10 @@ class App(QDialog):
                  (str(self.player10Pick.currentText()), 'Opp')]
         print('picks', picks, file=sys.stderr)
         for ban in bans:
-            if ban [0] != '.':
+            if ban[0] != '.':
                 currentState[ban] = 'B'
         for (pick, role) in picks:
-            if pick[0] != '.' and role[0] in CHAMPIONS_STATUS:
+            if pick[0] != '.' and role[0] in self.mode.CHAMPIONS_STATUS:
                 currentState[pick] = role[0]
 
         yourRole = str(self.yourRole.currentText())
@@ -348,7 +277,7 @@ class App(QDialog):
         # print(currentState, file=sys.stderr)
         possibleStates = []
         champions = []
-        POSSIBLE_CHAMPS = ROLES_CHAMP[yourRole].split(',')
+        POSSIBLE_CHAMPS = self.mode.ROLES_CHAMP[yourRole].split(',')
         for champ in POSSIBLE_CHAMPS:
             if currentState[champ] != 'A':
                 continue
@@ -361,19 +290,15 @@ class App(QDialog):
 
         for state in possibleStates:
             row_data = []
-            row_data.extend([1 if state[CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
-            row_data.extend([0 for k in range(CHAMPIONS_SIZE - len(CHAMPIONS_LABEL)) for s in CHAMPIONS_STATUS])
-            row_data.extend(PATCH)
-            row_data.append(0 if yourTeam == 'Blue' else 1)
+            row_data.extend([1 if state[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(self.mode.CHAMPIONS_LABEL)) for s in
+                             self.mode.CHAMPIONS_STATUS])
+            # row_data.extend([0 for _ in range(self.mode.CHAMPIONS_SIZE - len(self.mode.CHAMPIONS_LABEL)) for _ in self.mode.CHAMPIONS_STATUS])
+            row_data.extend(self.mode.PATCH)
+            if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
+                row_data.append(0 if yourTeam == 'Blue' else 1)
             data.append(row_data)
 
-        batch = [[], []]
-        batch[0] = data
-
-        feed_dict = {
-            self.x: batch[0],
-        }
-        pred_values = self.sess.run(self.y_pred, feed_dict=feed_dict)
+        pred_values = self.network.model.predict(data, batch_size=len(data))
         best_champs = [(champions[k], pred_values[k] if yourTeam == 'Blue' else 1 - pred_values[k]) for k in range(len(champions))]
         best_champs = sorted(best_champs, key=lambda x: x[1], reverse=True)
 
@@ -383,36 +308,16 @@ class App(QDialog):
             self.results.setItem(k, 0, QTableWidgetItem(best_champs[k][0]))
             self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1] * 100)))
 
-def run(MODE='ABOTJMCS', IMAGE=False, arch = 'Dense3', a_kwargs = {'NN': 2048, 'training': False}):
-    global INPUT_SIZE
-    global CHAMPIONS_STATUS
-    global IMAGE_SHAPE
-    global IMAGE_X
-    global IMAGE_Y
-    global netArchi
-    global archi_kwargs
-    IMAGE_SHAPE = IMAGE
-    netArchi = arch
-    archi_kwargs = a_kwargs
 
-    if MODE == 'ABOTJMCS':
-        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-    elif MODE == 'ABOT':
-        CHAMPIONS_STATUS = ['A', 'B', 'O', 'T']
-
-    if not IMAGE:
-        INPUT_SIZE = CHAMPIONS_SIZE * len(CHAMPIONS_STATUS) + PATCHES_SIZE + 1 + 1  # team color + team win
-    else:
-        IMAGE_X = CHAMPIONS_SIZE
-        IMAGE_Y = len(CHAMPIONS_STATUS) + PATCHES_SIZE + 1  # status, patches, team color
-        INPUT_SIZE = IMAGE_X * IMAGE_Y + 1
+def run(mode, network):
     app = QApplication(sys.argv)
-    ex = App()
-
+    App(mode, network)
     try:
         sys.exit(app.exec_())
     except Exception as e:
         print(e)
 
+
 if __name__ == '__main__':
-    run()
+    m = Modes.BR_Mode()
+    run(m, Networks.DenseUniform(m, 5, 256, True))

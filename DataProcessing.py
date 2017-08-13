@@ -30,18 +30,9 @@ def processing(mode, dataFile):
         row = df.iloc[i]
         row_data = list()
         row_data.extend([1 if row[mode.CHAMPIONS_LABEL[k]] == s else 0 for s in mode.CHAMPIONS_STATUS for k in range(mode.CHAMPIONS_SIZE)])
-        if mode.image:
-            for k in range(mode.PATCHES_SIZE):
-                if row['patch'] == mode.PATCHES[k]:
-                    row_data.extend([1 for _ in range(mode.CHAMPIONS_SIZE)])
-                else:
-                    row_data.extend([0 for _ in range(mode.CHAMPIONS_SIZE)])
-            if type(mode) != Modes.BR_Mode:
-                row_data.extend([row['team'] for _ in range(mode.CHAMPIONS_SIZE)])
-        else:
-            row_data.extend([1 if row['patch'] == mode.PATCHES[k] else 0 for k in range(mode.PATCHES_SIZE)])
-            if type(mode) != Modes.BR_Mode:
-                row_data.append(row['team'])
+        row_data.extend([1 if row['patch'] == mode.PATCHES[k] else 0 for k in range(mode.PATCHES_SIZE)])
+        if type(mode) != Modes.BR_Mode:
+            row_data.append(row['team'])
         row_data.append(row['win'])
         data.loc[len(data)] = row_data
     if len(data):
@@ -69,5 +60,4 @@ def run(mode, cpu):
     pool.join()
 
 if __name__ == '__main__':
-    cpu = multiprocessing.cpu_count() - 1
-    run(Modes.BR_Mode(), cpu)
+    run(Modes.BR_Mode(), multiprocessing.cpu_count())

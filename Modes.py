@@ -6,9 +6,7 @@ from collections import OrderedDict
 
 
 class Base_Mode:
-    def __init__(self, image=False):
-        self.image = image
-
+    def __init__(self):
         # Downloader+
         self.config = configparser.ConfigParser()
         self.config.read('config.ini')
@@ -33,20 +31,30 @@ class Base_Mode:
         # LEARNING+
         self.CKPT_DIR = os.path.join(self.DATABASE, 'models')
 
+        # BESTPICKS+
+        self.ROLES_CHAMP = self.config['ROLES']
+        self.PATCH = self.PATCHES_SIZE * [0]
+        self.PATCH[self.PATCHES_SIZE - 1] = 1  # current patch
+        self.BP_ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
+        self.BP_CHAMPIONS = ['...']
+        self.BP_CHAMPIONS.extend(sorted(self.CHAMPIONS_LABEL))
+        self.BP_TEAMS = ['...', 'Blue', 'Red']
+
     def __str__(self):
-        return 'Base_{}'.format(self.image)
+        return 'Base'.format()
 
     def __repr__(self):
-        return 'Base_Mode(*{!r})'.format(self.image)
+        return 'Base_Mode()'.format()
 
 
 class ABOTJMCS_Mode(Base_Mode):
-    def __init__(self, image=False):
-        super().__init__(image)
+    def __init__(self):
+        super().__init__()
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_ABOTJMCS.txt')
         self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_ABOTJMCS')
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_ABOTJMCS')
-        self.SHUFFLED_DIR = os.path.join(self.DATABASE, 'shuffled_ABOTJMCS')
+        self.TRAINING_DIR = os.path.join(self.DATABASE, 'training_ABOTJMCS')
+        self.TESTING_DIR = os.path.join(self.DATABASE, 'testing_ABOTJMCS')
 
         self.COLUMNS = self.CHAMPIONS_LABEL[:]
         self.COLUMNS.append('patch')
@@ -59,25 +67,23 @@ class ABOTJMCS_Mode(Base_Mode):
         self.DTYPE['win'] = int
         self.DTYPE['file'] = str
         self.CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
-        if not self.image:
-            self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1
-        else:
-            self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
+        self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1
 
     def __str__(self):
-        return 'ABOTJMCS_{}'.format(self.image)
+        return 'ABOTJMCS'
 
     def __repr__(self):
-        return 'ABOTJMCS_Mode(*{!r})'.format(self.image)
+        return 'ABOTJMCS_Mode()'
 
 
 class ABOT_Mode(Base_Mode):
-    def __init__(self, image=False):
-        super().__init__(image)
+    def __init__(self):
+        super().__init__()
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_ABOT.txt')
         self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_ABOT')
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_ABOT')
-        self.SHUFFLED_DIR = os.path.join(self.DATABASE, 'shuffled_ABOT')
+        self.TRAINING_DIR = os.path.join(self.DATABASE, 'training_ABOT')
+        self.TESTING_DIR = os.path.join(self.DATABASE, 'testing_ABOT')
 
         self.COLUMNS = self.CHAMPIONS_LABEL[:]
         self.COLUMNS.append('patch')
@@ -90,25 +96,23 @@ class ABOT_Mode(Base_Mode):
         self.DTYPE['win'] = int
         self.DTYPE['file'] = str
         self.CHAMPIONS_STATUS = ['A', 'B', 'O', 'T']
-        if not self.image:
-            self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1
-        else:
-            self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
+        self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1
 
     def __str__(self):
-        return 'ABOT_{}'.format(self.image)
+        return 'ABOT'
 
     def __repr__(self):
-        return 'ABOT_Mode(*{!r})'.format(self.image)
+        return 'ABOT_Mode()'
 
 
 class BR_Mode(Base_Mode):
-    def __init__(self, image=False):
-        super().__init__(image)
+    def __init__(self):
+        super().__init__()
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_BR.txt')
         self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_BR')
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_BR')
-        self.SHUFFLED_DIR = os.path.join(self.DATABASE, 'shuffled_BR')
+        self.TRAINING_DIR = os.path.join(self.DATABASE, 'training_BR')
+        self.TESTING_DIR = os.path.join(self.DATABASE, 'testing_BR')
 
         self.COLUMNS = self.CHAMPIONS_LABEL[:]
         self.COLUMNS.append('patch')
@@ -119,13 +123,10 @@ class BR_Mode(Base_Mode):
         self.DTYPE['win'] = int
         self.DTYPE['file'] = str
         self.CHAMPIONS_STATUS = ['B', 'R']
-        if not self.image:
-            self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
-        else:
-            self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES))
+        self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
 
     def __str__(self):
-        return 'BR_{}'.format(self.image)
+        return 'BR'
 
     def __repr__(self):
-        return 'BR_Mode(*{!r})'.format(self.image)
+        return 'BR_Mode()'

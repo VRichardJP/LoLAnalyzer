@@ -13,6 +13,8 @@ from multiprocessing import Manager
 
 from InterfaceAPI import InterfaceAPI, ApiError, ApiError404, ApiError403
 
+ATTEMPTS = 3
+
 
 class DataDownloader:
     def __init__(self, database, patch, region, leagues, timestamped_patches):
@@ -138,7 +140,7 @@ class DataDownloader:
         return None  # No data left to download
 
 
-def keepDownloading(database, patches, region, leagues, timestamped_patches):
+def keepDownloading(database, patches, region, leagues, timestamped_patches, attempts=ATTEMPTS):
     print('Starting data collection for', region, patches, file=sys.stderr)
     for patch in patches:
         dd = None
@@ -151,8 +153,12 @@ def keepDownloading(database, patches, region, leagues, timestamped_patches):
                     return
                 except ApiError as e:
                     print(e, file=sys.stderr)
-                    print(region, 'initial connection failed. Retrying in 10 minutes', file=sys.stderr)
-                    time.sleep(600)
+                    attempts -= 1
+                    if attempts <= 0:
+                        print(region, 'initial connection failed. End of connection attempts.', file=sys.stderr)
+                        return
+                    print(region, 'initial connection failed. Retrying in 5 minutes. Attempts left:', attempts, file=sys.stderr)
+                    time.sleep(300)
                     continue
 
             e = dd.downloadData()
