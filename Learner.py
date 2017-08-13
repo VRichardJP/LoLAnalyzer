@@ -2,6 +2,9 @@
 
 import os
 import random
+
+import keras
+
 import Modes
 import Networks
 import sys
@@ -36,46 +39,87 @@ class dataCollector:
             yield x, y
 
 
-def train(mode, network):
-    ckpt_dir = os.path.join(mode.DATABASE, 'models', network)
+def training(mode, network, restore, window_size=1000):
+    model_file = os.path.join(mode.CKPT_DIR, str(network) + '.h5')
     print('-- New training Session --', file=sys.stderr)
-    print(ckpt_dir, file=sys.stderr)
+    print(model_file, file=sys.stderr)
 
     network.build()
+    if os.path.isfile(model_file) and restore:
+        print('Restoring previous session')
+        network.model = keras.models.load_model(model_file)
+    else:
+        print('Training a new model')
+
     collector = dataCollector(mode, network.batch_size)
 
     step = 0
+    windowed_loss = []
+    windowed_acc = []
     for x, y in collector.batchGenerator():
-        print('step {}'.format(step))
-        network.model.train_on_batch(x, y)
+        step += 1
+        res = network.model.train_on_batch(x, y)
 
+        windowed_loss.append(res[0])
+        if len(windowed_loss) > window_size:
+            windowed_loss.pop(0)
+        windowed_acc.append(res[1])
+        if len(windowed_acc) > window_size:
+            windowed_acc.pop(0)
+
+        if step % network.report == 0:
+            mean_loss = sum(windowed_loss) / len(windowed_loss)
+            mean_acc = sum(windowed_acc) / len(windowed_acc)
+
+            print('step {}, loss={:.4f}, acc={:.4f}, w_loss={:.4f}, w_acc={:.4f}'.format(step, res[0], res[1], mean_loss, mean_acc))
+
+    print('Saving model to {}'.format(model_file))
+    if not os.path.exists(mode.CKPT_DIR):
+        os.makedirs(mode.CKPT_DIR)
+    network.model.save(model_file)
     print('-- End of training Session --', file=sys.stderr)
 
 
-def evaluate(mode, network):
-    ckpt_dir = os.path.join(mode.DATABASE, 'models', network)
+def testing(mode, network, window_size=1000):
+    model_file = os.path.join(mode.CKPT_DIR, str(network) + '.h5')
     print('-- New evaluating Session --', file=sys.stderr)
-    print(ckpt_dir, file=sys.stderr)
+    print(model_file, file=sys.stderr)
 
     network.build()
+    if not os.path.isfile(model_file):
+        print('Cannot find {}'.format(model_file))
+        return
+    network.model = keras.models.load_model(model_file)
     collector = dataCollector(mode, network.batch_size)
 
     step = 0
+    windowed_acc = []
     for x, y in collector.batchGenerator():
-        print('step {}'.format(step))
-        scores = network.model.evaluate(x, y)
-        print("\n%s: %.2f%%" % (network.model.metrics_names[1], scores[1] * 100))
+        step += 1
+        res = network.model.evaluate(x, y, verbose=0)
+
+        windowed_acc.append(res[1])
+        if len(windowed_acc) > window_size:
+            windowed_acc.pop(0)
+
+        if step % network.report == 0:
+            mean_acc = sum(windowed_acc) / len(windowed_acc)
+
+            print('step {}, acc={:.4f}, w_acc={:.4f}'.format(step, res[1], mean_acc))
 
     print('-- End of evaluating Session --', file=sys.stderr)
 
 
-def run(mode, network):
+def run(mode, network, restore):
     assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
     assert isinstance(network, Networks.BaseModel), 'Unrecognized network {}'.format(network)
 
-    train(mode, network)
+    training(mode, network, restore)
+    # The data should be tested on games that were not part of the training (to be sure the network cannot recognize the games)
+    # TODO As a workaround, it is possible to keep a file from being shuffled and use it as testing.
+    testing(mode, network)
 
 
 if __name__ == '__main__':
     m = Modes.BR_Mode()
-    run(m, Networks.DenseUniform(m, 5, 256))
+    run(m, Networks.DenseUniform(m, 5, 256, True), True)

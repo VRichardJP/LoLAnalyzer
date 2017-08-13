@@ -29,11 +29,11 @@ def validationInput(msg, validAns):
         print('Incorrect value. Only', validAns, 'are accepted')
 
 
-def run(mode, nb_files, reshuffle=True):
+def run(mode, nb_files):
     assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
     if os.path.isdir(mode.SHUFFLED_DIR):
         print('WARNING PREVIOUS SHUFFLED DATA FOUND', file=sys.stderr)
-        if not reshuffle or validationInput('Do you want to reshuffle the data anyway (take a while)? (y/n)', ['y', 'n']) == 'n':
+        if validationInput('Do you want to reshuffle the data anyway (take a while)? (y/n)', ['y', 'n']) == 'n':
             return
 
         import shutil

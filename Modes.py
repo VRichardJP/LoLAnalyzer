@@ -6,9 +6,8 @@ from collections import OrderedDict
 
 
 class Base_Mode:
-    def __init__(self, image=False, permutation=False):
+    def __init__(self, image=False):
         self.image = image
-        self.permutation = permutation
 
         # Downloader+
         self.config = configparser.ConfigParser()
@@ -31,16 +30,19 @@ class Base_Mode:
         self.PATCHES_SIZE = len(self.PATCHES)
         self.OUTPUT_SIZE = 1
 
+        # LEARNING+
+        self.CKPT_DIR = os.path.join(self.DATABASE, 'models')
+
     def __str__(self):
-        return 'Base_{}_{}'.format(self.image, self.permutation)
+        return 'Base_{}'.format(self.image)
 
     def __repr__(self):
-        return 'Base_Mode(*{!r})'.format(self.image, self.permutation)
+        return 'Base_Mode(*{!r})'.format(self.image)
 
 
 class ABOTJMCS_Mode(Base_Mode):
-    def __init__(self, image=False, permutation=False):
-        super().__init__(image, permutation)
+    def __init__(self, image=False):
+        super().__init__(image)
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_ABOTJMCS.txt')
         self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_ABOTJMCS')
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_ABOTJMCS')
@@ -63,15 +65,15 @@ class ABOTJMCS_Mode(Base_Mode):
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
 
     def __str__(self):
-        return 'ABOTJMCS_{}_{}'.format(self.image, self.permutation)
+        return 'ABOTJMCS_{}'.format(self.image)
 
     def __repr__(self):
-        return 'ABOTJMCS_Mode(*{!r})'.format(self.image, self.permutation)
+        return 'ABOTJMCS_Mode(*{!r})'.format(self.image)
 
 
 class ABOT_Mode(Base_Mode):
-    def __init__(self, image=False, permutation=False):
-        super().__init__(image, permutation)
+    def __init__(self, image=False):
+        super().__init__(image)
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_ABOT.txt')
         self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_ABOT')
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_ABOT')
@@ -94,15 +96,15 @@ class ABOT_Mode(Base_Mode):
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1)
 
     def __str__(self):
-        return 'ABOT_{}_{}'.format(self.image, self.permutation)
+        return 'ABOT_{}'.format(self.image)
 
     def __repr__(self):
-        return 'ABOT_Mode(*{!r})'.format(self.image, self.permutation)
+        return 'ABOT_Mode(*{!r})'.format(self.image)
 
 
 class BR_Mode(Base_Mode):
-    def __init__(self, image=False, permutation=False):
-        super().__init__(image, permutation)
+    def __init__(self, image=False):
+        super().__init__(image)
         self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_BR.txt')
         self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_BR')
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_BR')
@@ -123,7 +125,7 @@ class BR_Mode(Base_Mode):
             self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * (len(self.CHAMPIONS_STATUS) + len(self.PATCHES))
 
     def __str__(self):
-        return 'BR_{}_{}'.format(self.image, self.permutation)
+        return 'BR_{}'.format(self.image)
 
     def __repr__(self):
-        return 'BR_Mode(*{!r})'.format(self.image, self.permutation)
+        return 'BR_Mode(*{!r})'.format(self.image)
