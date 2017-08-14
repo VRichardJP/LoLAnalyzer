@@ -20,11 +20,10 @@ def run():
     else:
         def validationInput(msg, validAns):
             while True:
-                data = input(msg)
-                if data.lower() in validAns:
-                    return data
+                ans = input(msg)
+                if ans.lower() in validAns:
+                    return ans
                 print('Incorrect value. Only', validAns, 'are accepted')
-
 
         config.add_section('PARAMS')
         config.add_section('LEAGUES')
@@ -32,7 +31,6 @@ def run():
         config.add_section('PATCHES')
         config.add_section('CHAMPIONS')
         config.add_section('ROLES')
-
 
         print("No config file found. Let's set up a few parameters (you may change them anytime by manually editing config.ini).")
         API_KEY = input('API-KEY (https://developer.riotgames.com/): ')

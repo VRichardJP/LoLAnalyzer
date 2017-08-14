@@ -36,6 +36,7 @@ def run(mode, nb_files, keep_for_testing=True):
         import shutil
         if not os.access(mode.TRAINING_DIR, os.W_OK):
             # Is the error an access error ?
+            # noinspection PyUnresolvedReferences
             os.chmod(mode.TRAINING_DIR, os.stat.S_IWUSR)
         shutil.rmtree(mode.TRAINING_DIR)
     os.makedirs(mode.TRAINING_DIR)

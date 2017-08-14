@@ -16,6 +16,7 @@ def run(mode):
         data = pd.read_csv(csv_file, names=mode.COLUMNS, skiprows=1)
         for [champ, role_count] in champ_roles:
             counted_roles = data[champ].value_counts()
+            # noinspection PyCompatibility
             for (r, n) in counted_roles.iteritems():
                 role_count[r] += n
 

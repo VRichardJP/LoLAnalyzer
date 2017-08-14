@@ -92,4 +92,3 @@ class DenseRegressive(BaseModel):
     def __str__(self):
         # used to name model folder
         return '{!s}_DenseRegressive_{}_{}'.format(self.mode, self.n_hidden_layers, self.NN)
-

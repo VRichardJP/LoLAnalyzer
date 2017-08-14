@@ -2,7 +2,6 @@
 
 import os
 import sys
-import keras
 from PyQt5.QtWidgets import *
 from collections import OrderedDict
 
@@ -16,6 +15,7 @@ def my_exception_hook(exctype, value, traceback):
     # Print the error and traceback
     print(exctype, value, traceback)
     # Call the normal Exception hook after
+    # noinspection PyProtectedMember
     sys._excepthook(exctype, value, traceback)
     sys.exit(1)
 
@@ -25,6 +25,7 @@ sys.excepthook = my_exception_hook
 
 
 class App(QDialog):
+    # noinspection PyArgumentList
     def __init__(self, mode, network):
         super().__init__()
         self.title = 'LoLAnalyzer'
@@ -34,10 +35,7 @@ class App(QDialog):
         self.height = 400
         self.mode = mode
         self.network = network
-        self.initUI()
-        self.buildNetwork()
 
-    def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
@@ -149,6 +147,7 @@ class App(QDialog):
         bestPicksLayout.addWidget(self.yourTeam, 0, 1)
         self.evaluateButton = QPushButton('Wait...')
         self.evaluateButton.setEnabled(False)
+        # noinspection PyUnresolvedReferences
         self.evaluateButton.clicked.connect(lambda: self.evaluate())
         bestPicksLayout.addWidget(self.evaluateButton, 0, 2)
         yourRoleLabel = QLabel()
@@ -159,6 +158,7 @@ class App(QDialog):
         bestPicksLayout.addWidget(self.yourRole, 1, 1)
         self.generateButton = QPushButton('Wait...')
         self.generateButton.setEnabled(False)
+        # noinspection PyUnresolvedReferences
         self.generateButton.clicked.connect(lambda: self.generate())
         bestPicksLayout.addWidget(self.generateButton, 1, 2)
 
@@ -180,7 +180,10 @@ class App(QDialog):
 
         self.show()
 
+        self.buildNetwork()
+
     def buildNetwork(self):
+        import keras
         keras.backend.set_learning_phase(0)  # evaluation = testing phase
 
         model_file = os.path.join(self.mode.CKPT_DIR, str(self.network) + '.h5')

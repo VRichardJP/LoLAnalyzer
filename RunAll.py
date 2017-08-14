@@ -3,7 +3,6 @@
 import multiprocessing
 import Networks
 import Modes
-# Scripts import are made on the go to avoid flooding the memory when running on multiple cpu
 
 # Running options
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
@@ -21,9 +20,9 @@ network = Networks.DenseUniform(mode=mode, n_hidden_layers=3, NN=256, dropout=0.
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
     # 'ConfigUpdater',
-    'DataDownloader',  # run on multiple cpu
-    'DataExtractor',
-    'RoleUpdater',
+    # 'DataDownloader',  # run on multiple cpu
+    # 'DataExtractor',
+    # 'RoleUpdater',
     'DataProcessing',  # run on multiple cpu
     'DataShuffling',
     'Learner',  # run on gpu
