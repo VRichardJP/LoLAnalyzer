@@ -6,7 +6,7 @@ import Modes
 # Scripts import are made on the go to avoid flooding the memory when running on multiple cpu
 
 # Running options
-cpu = min(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
+cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
 shuffling_files = 37  # prime number to maximize spreading. Take a prime higher to the number of data files (e.g. If you have 32 data files, take 37)
 restore = False  # leave this to False, or your model will overfit the data (it will recognize the game and not learn why the game is won/loss)
 
