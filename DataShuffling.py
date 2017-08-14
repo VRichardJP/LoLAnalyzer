@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import sys
 import Modes
+import shutil
 
 
 def shuffling(mode, dataFile, nb_files):
@@ -26,14 +27,13 @@ def validationInput(msg, validAns):
         print('Incorrect value. Only', validAns, 'are accepted')
 
 
-def run(mode, nb_files, keep_for_testing=True):
+def run(mode, nb_files, keep_for_testing):
     assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
     if os.path.isdir(mode.TRAINING_DIR):
         print('WARNING PREVIOUS SHUFFLED DATA FOUND', file=sys.stderr)
         if validationInput('Do you want to reshuffle the data anyway (take a while)? (y/n)', ['y', 'n']) == 'n':
             return
 
-        import shutil
         if not os.access(mode.TRAINING_DIR, os.W_OK):
             # Is the error an access error ?
             # noinspection PyUnresolvedReferences
@@ -49,16 +49,12 @@ def run(mode, nb_files, keep_for_testing=True):
     l = sorted(range(len(l)), key=lambda k: l[k])
     preprocessed_files = [preprocessed_files[k] for k in l]
 
-    if keep_for_testing:
-        import shutil
-        testing_file = preprocessed_files.pop(0)  # keep data_1 for testing
+    for _ in range(keep_for_testing):
+        testing_file = preprocessed_files.pop(0)  # take data away for testing
         shutil.copyfile(os.path.join(mode.PREPROCESSED_DIR, testing_file), os.path.join(mode.TESTING_DIR, testing_file))
 
-        for file in preprocessed_files:
-            shuffling(mode, file, nb_files)
-    else:
-        for file in preprocessed_files:
-            shuffling(mode, file, nb_files)
+    for file in preprocessed_files:
+        shuffling(mode, file, nb_files)
 
 if __name__ == '__main__':
-    run(Modes.BR_Mode(), 37)
+    run(Modes.BR_Mode(), 37, 1)

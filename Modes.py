@@ -47,6 +47,7 @@ class Base_Mode:
         return 'Base_Mode()'.format()
 
 
+# The main mode. It contains all the information you can get from a draft
 class ABOTJMCS_Mode(Base_Mode):
     def __init__(self):
         super().__init__()
@@ -130,3 +131,32 @@ class BR_Mode(Base_Mode):
 
     def __repr__(self):
         return 'BR_Mode()'
+
+
+class OTJMCS_Mode(Base_Mode):
+    def __init__(self):
+        super().__init__()
+        self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_OTJMCS.txt')
+        self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_OTJMCS')
+        self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_OTJMCS')
+        self.TRAINING_DIR = os.path.join(self.DATABASE, 'training_OTJMCS')
+        self.TESTING_DIR = os.path.join(self.DATABASE, 'testing_OTJMCS')
+
+        self.COLUMNS = self.CHAMPIONS_LABEL[:]
+        self.COLUMNS.append('patch')
+        self.COLUMNS.append('team')
+        self.COLUMNS.append('win')
+        self.COLUMNS.append('file')
+        self.DTYPE = {champ: str for champ in self.CHAMPIONS_LABEL}
+        self.DTYPE['patch'] = str
+        self.DTYPE['team'] = int
+        self.DTYPE['win'] = int
+        self.DTYPE['file'] = str
+        self.CHAMPIONS_STATUS = ['O', 'T', 'J', 'M', 'C', 'S']
+        self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
+
+    def __str__(self):
+        return 'OTJMCS'
+
+    def __repr__(self):
+        return 'OTJMCS_Mode()'

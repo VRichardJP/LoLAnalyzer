@@ -239,6 +239,124 @@ def run(mode):
                     raw_data[key].append(value)
                 for key, value in redState.items():
                     raw_data[key].append(value)
+        elif type(mode) == Modes.OTJMCS_Mode:
+            # Blank, everything is available
+            blueState = OrderedDict()
+            redState = OrderedDict()
+            blueState['team'] = 0
+            redState['team'] = 1
+            blueState['win'] = int(blueWin)
+            redState['win'] = int(redWin)
+            blueState['patch'] = game_patch
+            redState['patch'] = game_patch
+            blueState['file'] = os.path.basename(gamePath)
+            redState['file'] = os.path.basename(gamePath)
+            blueState.update([(champ_name, 'N') for champ_name in mode.CHAMPIONS_LABEL])
+            redState.update([(champ_name, 'N') for champ_name in mode.CHAMPIONS_LABEL])
+            for key, value in blueState.items():
+                raw_data[key].append(value)
+            for key, value in redState.items():
+                raw_data[key].append(value)
+
+            # Smart lane-role
+            b_roles = OrderedDict()
+            r_roles = OrderedDict()
+
+            for i in range(0, 10):
+                p = participants[i]
+                lane = p['timeline']['lane']
+                if i < 5:
+                    if lane == 'TOP':
+                        b_roles[i] = 'T'
+                    elif lane == 'JUNGLE':
+                        b_roles[i] = 'J'
+                    elif lane == 'MIDDLE':
+                        b_roles[i] = 'M'
+                    elif lane == 'BOTTOM':
+                        b_roles[i] = 'C'
+                    else:
+                        raise Exception(p, lane)
+                else:
+                    if lane == 'TOP':
+                        r_roles[i] = 'T'
+                    elif lane == 'JUNGLE':
+                        r_roles[i] = 'J'
+                    elif lane == 'MIDDLE':
+                        r_roles[i] = 'M'
+                    elif lane == 'BOTTOM':
+                        r_roles[i] = 'C'
+                    else:
+                        raise Exception(p, lane)
+            # need to find the support in both team
+            b_doubleRole = Counter(b_roles.values()).most_common(1)[0][0]
+            b_doublei = [i for i, r in b_roles.items() if r == b_doubleRole]
+            if len(b_doublei) > 2:
+                print('fucked up roles', b_roles)
+                with open(extracted_file, 'a+') as f:
+                    f.write(gamePath)
+                    f.write('\n')
+                continue
+            if 'SUPPORT' in participants[b_doublei[0]]['timeline']['role']:
+                b_roles[b_doublei[0]] = 'S'
+            elif 'SUPPORT' in participants[b_doublei[1]]['timeline']['role']:
+                b_roles[b_doublei[1]] = 'S'
+            else:  # Last resort -> check cs
+                if 'creepsPerMinDeltas' in participants[b_doublei[0]]['timeline']:
+                    if participants[b_doublei[0]]['timeline']['creepsPerMinDeltas']['0-10'] < \
+                            participants[b_doublei[1]]['timeline']['creepsPerMinDeltas']['0-10']:
+                        b_roles[b_doublei[0]] = 'S'
+                    else:
+                        b_roles[b_doublei[1]] = 'S'
+                else:
+                    if participants[b_doublei[0]]['stats']['totalMinionsKilled'] < participants[b_doublei[1]]['stats']['totalMinionsKilled']:
+                        b_roles[b_doublei[0]] = 'S'
+                    else:
+                        b_roles[b_doublei[1]] = 'S'
+            r_doubleRole = Counter(r_roles.values()).most_common(1)[0][0]
+            r_doublei = [i for i, r in r_roles.items() if r == r_doubleRole]
+            if len(r_doublei) > 2:
+                print('fucked up roles', r_roles)
+                with open(extracted_file, 'a+') as f:
+                    f.write(gamePath)
+                    f.write('\n')
+                continue
+            if 'SUPPORT' in participants[r_doublei[0]]['timeline']['role']:
+                r_roles[r_doublei[0]] = 'S'
+            elif 'SUPPORT' in participants[r_doublei[1]]['timeline']['role']:
+                r_roles[r_doublei[1]] = 'S'
+            else:  # Last resort -> check cs
+                if 'creepsPerMinDeltas' in participants[r_doublei[0]]['timeline']:
+                    if participants[r_doublei[0]]['timeline']['creepsPerMinDeltas']['0-10'] < \
+                            participants[r_doublei[1]]['timeline']['creepsPerMinDeltas']['0-10']:
+                        r_roles[r_doublei[0]] = 'S'
+                    else:
+                        r_roles[r_doublei[1]] = 'S'
+                else:
+                    if participants[r_doublei[0]]['stats']['totalMinionsKilled'] < participants[r_doublei[1]]['stats']['totalMinionsKilled']:
+                        r_roles[r_doublei[0]] = 'S'
+                    else:
+                        r_roles[r_doublei[1]] = 'S'
+
+            roles = OrderedDict()
+            roles.update(b_roles)
+            roles.update(r_roles)
+            # Draft
+            DRAFT_ORDER = [0, 5, 6, 1, 2, 7, 8, 3, 4, 9]
+            for i in DRAFT_ORDER:
+                blueState = OrderedDict(blueState)
+                redState = OrderedDict(redState)
+                bluePick = i < 5
+                p = participants[i]
+                championId = p['championId']
+                for champ_name, champ_id in mode.CHAMPIONS_ID.items():
+                    if champ_id == championId:
+                        blueState[champ_name] = roles[i] if bluePick else 'O'
+                        redState[champ_name] = 'O' if bluePick else roles[i]
+                        break
+                for key, value in blueState.items():
+                    raw_data[key].append(value)
+                for key, value in redState.items():
+                    raw_data[key].append(value)
         elif type(mode) == Modes.ABOT_Mode:
             # The roles are not taken into account
             # Blank, everything is available

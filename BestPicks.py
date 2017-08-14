@@ -295,7 +295,7 @@ class App(QDialog):
             row_data.extend([1 if state[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for k in range(len(self.mode.CHAMPIONS_LABEL)) for s in
                              self.mode.CHAMPIONS_STATUS])
             row_data.extend(self.mode.PATCH)
-            if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
+            if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.OTJMCS_Mode]:
                 row_data.append(0 if yourTeam == 'Blue' else 1)
             data.append(row_data)
 

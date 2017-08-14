@@ -7,6 +7,7 @@ import Modes
 # Running options
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
 shuffling_files = 37  # prime number to maximize spreading. Take a prime higher to the number of data files (e.g. If you have 32 data files, take 37)
+keep_for_testing = 2  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
 restore = False  # leave this to False, or your model will overfit the data (it will recognize the game and not learn why the game is won/loss)
 
 # Mode and Network
@@ -48,7 +49,7 @@ if __name__ == '__main__':
         DataProcessing.run(mode, cpu)
     if 'DataShuffling' in to_execute:
         import DataShuffling
-        DataShuffling.run(mode, shuffling_files)
+        DataShuffling.run(mode, shuffling_files, keep_for_testing)
     if 'Learner' in to_execute:
         import Learner
         Learner.run(mode, network, restore)
