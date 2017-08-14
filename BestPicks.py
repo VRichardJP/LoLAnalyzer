@@ -229,14 +229,14 @@ class App(QDialog):
             print('You need to select a team!', file=sys.stderr)
             return
 
-        data = []
-        row_data = []
-        row_data.extend([1 if currentState[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for s in
-                         self.mode.CHAMPIONS_STATUS for k in range(self.mode.CHAMPIONS_SIZE)])
-        row_data.extend(self.mode.PATCH)
-        if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
-            row_data.append(0 if yourTeam == 'Blue' else 1)
-        data.append(row_data)
+        data = [self.mode.row_data(currentState, False, True)]
+        # row_data = []
+        # row_data.extend([1 if currentState[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for s in
+        #                  self.mode.CHAMPIONS_STATUS for k in range(self.mode.CHAMPIONS_SIZE)])
+        # row_data.extend(self.mode.PATCH)
+        # if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
+        #     row_data.append(0 if yourTeam == 'Blue' else 1)
+        # data.append()
 
         pred_values = self.network.model.predict(data, batch_size=len(data))
         self.results.setRowCount(1)
@@ -291,13 +291,13 @@ class App(QDialog):
         data = []
 
         for state in possibleStates:
-            row_data = []
-            row_data.extend([1 if state[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for s in
-                             self.mode.CHAMPIONS_STATUS for k in range(self.mode.CHAMPIONS_SIZE)])
-            row_data.extend(self.mode.PATCH)
-            if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.OTJMCS_Mode]:
-                row_data.append(0 if yourTeam == 'Blue' else 1)
-            data.append(row_data)
+            # row_data = []
+            # row_data.extend([1 if state[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for s in
+            #                  self.mode.CHAMPIONS_STATUS for k in range(self.mode.CHAMPIONS_SIZE)])
+            # row_data.extend(self.mode.PATCH)
+            # if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.OTJMCS_Mode]:
+            #     row_data.append(0 if yourTeam == 'Blue' else 1)
+            data.append(self.mode.row_data(currentState, False, True))
 
         pred_values = self.network.model.predict(data, batch_size=len(data))
         best_champs = [(champions[k], pred_values[k] if yourTeam == 'Blue' else 1 - pred_values[k]) for k in range(len(champions))]

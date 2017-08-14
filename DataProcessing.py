@@ -27,14 +27,14 @@ def processing(mode, dataFile):
             data = pd.DataFrame(columns=range(mode.INPUT_SIZE + mode.OUTPUT_SIZE))
 
         # data: win + champions status + patch
-        row = df.iloc[i]
-        row_data = list()
-        row_data.extend([1 if row[mode.CHAMPIONS_LABEL[k]] == s else 0 for s in mode.CHAMPIONS_STATUS for k in range(mode.CHAMPIONS_SIZE)])
-        row_data.extend([1 if row['patch'] == mode.PATCHES[k] else 0 for k in range(mode.PATCHES_SIZE)])
-        if type(mode) != Modes.BR_Mode:
-            row_data.append(row['team'])
-        row_data.append(row['win'])
-        data.loc[len(data)] = row_data
+        state = df.iloc[i]
+        # row_data = list()
+        # row_data.extend([1 if row[mode.CHAMPIONS_LABEL[k]] == s else 0 for s in mode.CHAMPIONS_STATUS for k in range(mode.CHAMPIONS_SIZE)])
+        # row_data.extend([1 if row['patch'] == mode.PATCHES[k] else 0 for k in range(mode.PATCHES_SIZE)])
+        # if type(mode) != Modes.BR_Mode:
+        #     row_data.append(row['team'])
+        # row_data.append(row['win'])
+        data.loc[len(data)] = mode.row_data(state, True)
     if len(data):
         data = data.astype(int)
         data.to_csv(currentFile, mode='a', header=False, index=False)

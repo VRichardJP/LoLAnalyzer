@@ -24,8 +24,11 @@ class Base_Mode:
         # Processing+
         self.SAVE = 1000
         self.PATCHES = list(map(lambda x: x.replace('.', '_'), os.listdir(os.path.join(self.DATABASE, 'patches'))))
+        self.PATCHES = sorted(self.PATCHES, key=lambda x: tuple(map(int, x.split('_'))))
         self.CHAMPIONS_SIZE = len(self.CHAMPIONS_LABEL)
         self.PATCHES_SIZE = len(self.PATCHES)
+        self.CURRENT_PATCH = self.PATCHES_SIZE * [0]
+        self.CURRENT_PATCH[-1] = 1  # Lastest patch
         self.OUTPUT_SIZE = 1
 
         # LEARNING+
@@ -33,8 +36,6 @@ class Base_Mode:
 
         # BESTPICKS+
         self.ROLES_CHAMP = self.config['ROLES']
-        self.PATCH = self.PATCHES_SIZE * [0]
-        self.PATCH[self.PATCHES_SIZE - 1] = 1  # current patch
         self.BP_ROLES = ['...', 'Top', 'Jungle', 'Mid', 'Carry', 'Support']
         self.BP_CHAMPIONS = ['...']
         self.BP_CHAMPIONS.extend(sorted(self.CHAMPIONS_LABEL))
@@ -70,6 +71,18 @@ class ABOTJMCS_Mode(Base_Mode):
         self.CHAMPIONS_STATUS = ['A', 'B', 'O', 'T', 'J', 'M', 'C', 'S']
         self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1
 
+    def row_data(self, state, with_output=True, current_patch=False):
+        row_data = []
+        row_data.extend([1 if state[self.CHAMPIONS_LABEL[k]] == s else 0 for s in self.CHAMPIONS_STATUS for k in range(self.CHAMPIONS_SIZE)])
+        if current_patch:
+            row_data.extend(self.CURRENT_PATCH)
+        else:
+            row_data.extend([1 if state['patch'] == self.PATCHES[k] else 0 for k in range(self.PATCHES_SIZE)])
+        row_data.append(state['team'])
+        if with_output:
+            row_data.append(state['win'])
+        return row_data
+
     def __str__(self):
         return 'ABOTJMCS'
 
@@ -99,6 +112,18 @@ class ABOT_Mode(Base_Mode):
         self.CHAMPIONS_STATUS = ['A', 'B', 'O', 'T']
         self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES) + 1
 
+    def row_data(self, state, with_output=True, current_patch=False):
+        row_data = []
+        row_data.extend([1 if state[self.CHAMPIONS_LABEL[k]] == s else 0 for s in self.CHAMPIONS_STATUS for k in range(self.CHAMPIONS_SIZE)])
+        if current_patch:
+            row_data.extend(self.CURRENT_PATCH)
+        else:
+            row_data.extend([1 if state['patch'] == self.PATCHES[k] else 0 for k in range(self.PATCHES_SIZE)])
+        row_data.append(state['team'])
+        if with_output:
+            row_data.append(state['win'])
+        return row_data
+
     def __str__(self):
         return 'ABOT'
 
@@ -125,6 +150,17 @@ class BR_Mode(Base_Mode):
         self.DTYPE['file'] = str
         self.CHAMPIONS_STATUS = ['B', 'R']
         self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
+
+    def row_data(self, state, with_output=True, current_patch=False):
+        row_data = []
+        row_data.extend([1 if state[self.CHAMPIONS_LABEL[k]] == s else 0 for s in self.CHAMPIONS_STATUS for k in range(self.CHAMPIONS_SIZE)])
+        if current_patch:
+            row_data.extend(self.CURRENT_PATCH)
+        else:
+            row_data.extend([1 if state['patch'] == self.PATCHES[k] else 0 for k in range(self.PATCHES_SIZE)])
+        if with_output:
+            row_data.append(state['win'])
+        return row_data
 
     def __str__(self):
         return 'BR'
@@ -154,6 +190,18 @@ class OTJMCS_Mode(Base_Mode):
         self.DTYPE['file'] = str
         self.CHAMPIONS_STATUS = ['O', 'T', 'J', 'M', 'C', 'S']
         self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
+
+    def row_data(self, state, with_output=True, current_patch=False):
+        row_data = []
+        row_data.extend([1 if state[self.CHAMPIONS_LABEL[k]] == s else 0 for s in self.CHAMPIONS_STATUS for k in range(self.CHAMPIONS_SIZE)])
+        if current_patch:
+            row_data.extend(self.CURRENT_PATCH)
+        else:
+            row_data.extend([1 if state['patch'] == self.PATCHES[k] else 0 for k in range(self.PATCHES_SIZE)])
+        row_data.append(state['team'])
+        if with_output:
+            row_data.append(state['win'])
+        return row_data
 
     def __str__(self):
         return 'OTJMCS'
