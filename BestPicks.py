@@ -2,6 +2,7 @@
 
 import os
 import sys
+import numpy as np
 from PyQt5.QtWidgets import *
 from collections import OrderedDict
 
@@ -9,6 +10,10 @@ import Modes
 import Networks
 
 sys._excepthook = sys.excepthook
+
+
+class UnrecognizedMode(Exception):
+    pass
 
 
 def my_exception_hook(exctype, value, traceback):
@@ -217,27 +222,35 @@ class App(QDialog):
                  (str(self.player8Pick.currentText()), 'Opp'), (str(self.player9Pick.currentText()), 'Opp'),
                  (str(self.player10Pick.currentText()), 'Opp')]
         print('picks', picks, file=sys.stderr)
-        for ban in bans:
-            if ban[0] != '.':
-                currentState[ban] = 'B'
-        for (pick, role) in picks:
-            if pick[0] != '.' and role[0] in self.mode.CHAMPIONS_STATUS:
-                currentState[pick] = role[0]
-
         yourTeam = str(self.yourTeam.currentText())
         if yourTeam == '...':
             print('You need to select a team!', file=sys.stderr)
             return
 
-        data = [self.mode.row_data(currentState, False, True)]
-        # row_data = []
-        # row_data.extend([1 if currentState[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for s in
-        #                  self.mode.CHAMPIONS_STATUS for k in range(self.mode.CHAMPIONS_SIZE)])
-        # row_data.extend(self.mode.PATCH)
-        # if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
-        #     row_data.append(0 if yourTeam == 'Blue' else 1)
-        # data.append()
+        if isinstance(self.mode, Modes.ABOTJMCS_Mode):
+            for ban in bans:
+                if ban[0] != '.':
+                    currentState[ban] = 'B'
+            for (pick, role) in picks:
+                if pick[0] != '.' and role[0] in self.mode.CHAMPIONS_STATUS:
+                    currentState[pick] = role[0]
+            currentState['team'] = 1 if yourTeam == 'Blue' else 0
+        elif isinstance(self.mode, Modes.ABOT_Mode):
+            for ban in bans:
+                if ban[0] != '.':
+                    currentState[ban] = 'B'
+            for (pick, role) in picks:
+                r = Modes.ABOT_Mode.from_ABOTJMCS(role[0])
+                if pick[0] != '.' and r in self.mode.CHAMPIONS_STATUS:
+                    currentState[pick] = r
+            currentState['team'] = 1 if yourTeam == 'Blue' else 0
+        elif isinstance(self.mode, Modes.BR_Mode):
+            for (pick, role) in picks:
+                r = Modes.BR_Mode.from_ABOTJMCS(role[0], yourTeam == 'Blue')
+                if pick[0] != '.' and r in self.mode.CHAMPIONS_STATUS:
+                    currentState[pick] = r
 
+        data = np.array([self.mode.row_data(currentState, False, True)])
         pred_values = self.network.model.predict(data, batch_size=len(data))
         self.results.setRowCount(1)
         self.results.setItem(0, 0, QTableWidgetItem('winrate'))
@@ -245,7 +258,7 @@ class App(QDialog):
 
     def generate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
-        currentState = OrderedDict([(champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
+
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
@@ -260,13 +273,6 @@ class App(QDialog):
                  (str(self.player8Pick.currentText()), 'Opp'), (str(self.player9Pick.currentText()), 'Opp'),
                  (str(self.player10Pick.currentText()), 'Opp')]
         print('picks', picks, file=sys.stderr)
-        for ban in bans:
-            if ban[0] != '.':
-                currentState[ban] = 'B'
-        for (pick, role) in picks:
-            if pick[0] != '.' and role[0] in self.mode.CHAMPIONS_STATUS:
-                currentState[pick] = role[0]
-
         yourRole = str(self.yourRole.currentText())
         if yourRole == '...':
             print('You need to select a role!', file=sys.stderr)
@@ -276,12 +282,42 @@ class App(QDialog):
             print('You need to select a team!', file=sys.stderr)
             return
 
+        if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode]:
+            currentState = OrderedDict([(champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
+        elif type(self.mode) in [Modes.BR_Mode]:
+            currentState = OrderedDict([(champ, 'N') for champ in self.mode.CHAMPIONS_LABEL])
+        else:
+            raise UnrecognizedMode
+
+        if isinstance(self.mode, Modes.ABOTJMCS_Mode):
+            for ban in bans:
+                if ban[0] != '.':
+                    currentState[ban] = 'B'
+            for (pick, role) in picks:
+                if pick[0] != '.' and role[0] in self.mode.CHAMPIONS_STATUS:
+                    currentState[pick] = role[0]
+            currentState['team'] = 1 if yourTeam == 'Blue' else 0
+        elif isinstance(self.mode, Modes.ABOT_Mode):
+            for ban in bans:
+                if ban[0] != '.':
+                    currentState[ban] = 'B'
+            for (pick, role) in picks:
+                r = Modes.ABOT_Mode.from_ABOTJMCS(role[0])
+                if pick[0] != '.' and r in self.mode.CHAMPIONS_STATUS:
+                    currentState[pick] = r
+            currentState['team'] = 1 if yourTeam == 'Blue' else 0
+        elif isinstance(self.mode, Modes.BR_Mode):
+            for (pick, role) in picks:
+                r = Modes.BR_Mode.from_ABOTJMCS(role[0], yourTeam == 'Blue')
+                if pick[0] != '.' and r in self.mode.CHAMPIONS_STATUS:
+                    currentState[pick] = r
+
         # print(currentState, file=sys.stderr)
         possibleStates = []
         champions = []
         POSSIBLE_CHAMPS = self.mode.ROLES_CHAMP[yourRole].split(',')
         for champ in POSSIBLE_CHAMPS:
-            if currentState[champ] != 'A':
+            if currentState[champ] not in 'AN':  # not available
                 continue
             state = OrderedDict(currentState)
             state[champ] = yourRole[0]
@@ -289,20 +325,12 @@ class App(QDialog):
             champions.append(champ)
 
         data = []
-
         for state in possibleStates:
-            # row_data = []
-            # row_data.extend([1 if state[self.mode.CHAMPIONS_LABEL[k]] == s else 0 for s in
-            #                  self.mode.CHAMPIONS_STATUS for k in range(self.mode.CHAMPIONS_SIZE)])
-            # row_data.extend(self.mode.PATCH)
-            # if type(self.mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.OTJMCS_Mode]:
-            #     row_data.append(0 if yourTeam == 'Blue' else 1)
-            data.append(self.mode.row_data(currentState, False, True))
+            data.append(self.mode.row_data(state, False, True))
 
-        pred_values = self.network.model.predict(data, batch_size=len(data))
+        pred_values = self.network.model.predict(np.array(data), batch_size=len(data))
         best_champs = [(champions[k], pred_values[k] if yourTeam == 'Blue' else 1 - pred_values[k]) for k in range(len(champions))]
         best_champs = sorted(best_champs, key=lambda x: x[1], reverse=True)
-
         print(best_champs, file=sys.stderr)
         self.results.setRowCount(len(best_champs))
         for k in range(len(best_champs)):

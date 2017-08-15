@@ -83,6 +83,10 @@ class ABOTJMCS_Mode(Base_Mode):
             row_data.append(state['win'])
         return row_data
 
+    @staticmethod
+    def from_ABOTJMCS(c):
+        return c
+
     def __str__(self):
         return 'ABOTJMCS'
 
@@ -124,6 +128,12 @@ class ABOT_Mode(Base_Mode):
             row_data.append(state['win'])
         return row_data
 
+    @staticmethod
+    def from_ABOTJMCS(c):
+        if c in 'TJMCS':
+            c = 'T'  # player's team
+        return c
+
     def __str__(self):
         return 'ABOT'
 
@@ -162,49 +172,18 @@ class BR_Mode(Base_Mode):
             row_data.append(state['win'])
         return row_data
 
+    @staticmethod
+    def from_ABOTJMCS(c, blue_team):
+        if c in 'TJMCS':
+            c = 'B' if blue_team else 'R'
+        elif c == 'O':
+            c = 'R' if blue_team else 'B'
+        else:
+            c = 'N'
+        return c
+
     def __str__(self):
         return 'BR'
 
     def __repr__(self):
         return 'BR_Mode()'
-
-
-class OTJMCS_Mode(Base_Mode):
-    def __init__(self):
-        super().__init__()
-        self.EXTRACTED_FILE = os.path.join(self.DATABASE, 'extracted_OTJMCS.txt')
-        self.EXTRACTED_DIR = os.path.join(self.DATABASE, 'extracted_OTJMCS')
-        self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_OTJMCS')
-        self.TRAINING_DIR = os.path.join(self.DATABASE, 'training_OTJMCS')
-        self.TESTING_DIR = os.path.join(self.DATABASE, 'testing_OTJMCS')
-
-        self.COLUMNS = self.CHAMPIONS_LABEL[:]
-        self.COLUMNS.append('patch')
-        self.COLUMNS.append('team')
-        self.COLUMNS.append('win')
-        self.COLUMNS.append('file')
-        self.DTYPE = {champ: str for champ in self.CHAMPIONS_LABEL}
-        self.DTYPE['patch'] = str
-        self.DTYPE['team'] = int
-        self.DTYPE['win'] = int
-        self.DTYPE['file'] = str
-        self.CHAMPIONS_STATUS = ['O', 'T', 'J', 'M', 'C', 'S']
-        self.INPUT_SIZE = len(self.CHAMPIONS_LABEL) * len(self.CHAMPIONS_STATUS) + len(self.PATCHES)
-
-    def row_data(self, state, with_output=True, current_patch=False):
-        row_data = []
-        row_data.extend([1 if state[self.CHAMPIONS_LABEL[k]] == s else 0 for s in self.CHAMPIONS_STATUS for k in range(self.CHAMPIONS_SIZE)])
-        if current_patch:
-            row_data.extend(self.CURRENT_PATCH)
-        else:
-            row_data.extend([1 if state['patch'] == self.PATCHES[k] else 0 for k in range(self.PATCHES_SIZE)])
-        row_data.append(state['team'])
-        if with_output:
-            row_data.append(state['win'])
-        return row_data
-
-    def __str__(self):
-        return 'OTJMCS'
-
-    def __repr__(self):
-        return 'OTJMCS_Mode()'

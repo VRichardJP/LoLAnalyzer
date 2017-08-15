@@ -8,6 +8,8 @@ import Modes
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
 shuffling_files = 37  # prime number to maximize spreading. Take a prime higher to the number of data files (e.g. If you have 32 data files, take 37)
 keep_for_testing = 2  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
+# Keep in mind testing on games that were not used for training is the only we can be sure the neural network is not recognizing games but has
+# actually learned to predict the winner.
 restore = False  # leave this to False, or your model will overfit the data (it will recognize the game and not learn why the game is won/loss)
 
 # Mode and Network
@@ -15,7 +17,7 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
 mode = Modes.ABOTJMCS_Mode()
-network = Networks.DenseUniform(mode=mode, n_hidden_layers=3, NN=256, dropout=0.2, batch_size=1000, report=10)
+network = Networks.DenseDegressive(mode=mode, n_hidden_layers=3, NN=1024, dropout=0.1, batch_size=1000, report=10)
 
 # Scripts to execute, comment useless ones
 # In particular, if you just want to run the app, comment all but 'BestPicks'
@@ -24,9 +26,9 @@ to_execute = [
     # 'DataDownloader',  # run on multiple cpu
     # 'DataExtractor',
     # 'RoleUpdater',
-    'DataProcessing',  # run on multiple cpu
-    'DataShuffling',
-    'Learner',  # run on gpu
+    # 'DataProcessing',  # run on multiple cpu
+    # 'DataShuffling',
+    # 'Learner',  # run on gpu
     'BestPicks',
 ]
 

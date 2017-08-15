@@ -21,7 +21,7 @@ class BaseModel(ABC):
         pass
 
 
-# Training/Testing accuracy: (best perfomance)
+# Training/Testing accuracy:
 # games=145358, options=(BR_Mode, 1, 256, 0.3): 0.5458/0.5321
 # games=145358, options=(BR_Mode, 2, 128, 0.2): 0.5427/0.5330
 # games=145358, options=(BR_Mode, 2, 256, 0.3): 0.5420/0.5332
@@ -30,6 +30,8 @@ class BaseModel(ABC):
 # games=145358, options=(BR_Mode, 3, 256, 0.3): 0.5426/0.5333
 # games=145358, options=(BR_Mode, 4, 256, 0.3): 0.5410/0.5323
 # games=145358, options=(BR_Mode, 5, 128, 0.3): 0.5354/0.5319
+# games=148883, options=(ABOTJMCS_Mode, 3, 512, 0.2): 0.5283/0.5265
+# games=148883, options=(ABOTJMCS_Mode, 3, 1024, 0.3): 0.5274/0.5257
 class DenseUniform(BaseModel):
     def __init__(self, mode, n_hidden_layers, NN, dropout, batch_size=1000, report=10):
         super().__init__(mode)
@@ -60,10 +62,14 @@ class DenseUniform(BaseModel):
         return '{!s}_DenseUniform_{}_{}'.format(self.mode, self.n_hidden_layers, self.NN)
 
 
-# Training/Testing accuracy: (best perfomance)
+# Training/Testing accuracy:
 # games=145358, options=(BR_Mode, 3, 256, 0.3): 0.5371/0.5327
 # games=145358, options=(BR_Mode, 3, 512, 0.3): 0.5319/0.5317
-class DenseRegressive(BaseModel):
+# games=148883 , options=(ABOTJMCS_Mode, 4, 512, 0.0): 0.5302/0.5272
+# games=148883, options=(ABOTJMCS_Mode, 3, 512, 0.2): 0.5274/0.5297
+# games=148883, options=(ABOTJMCS_Mode, 3, 1024, 0.3): 0.5274/0.5257
+# games=148883, options=(ABOTJMCS_Mode, 3, 1024, 0.1): 0.5313/0.5262
+class DenseDegressive(BaseModel):
     def __init__(self, mode, n_hidden_layers, NN, dropout, batch_size=1000, report=10):
         super().__init__(mode)
         self.n_hidden_layers = n_hidden_layers
@@ -87,8 +93,8 @@ class DenseRegressive(BaseModel):
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     def __repr__(self):
-        return 'DenseRegressive(*{!r})'.format(self.mode, self.n_hidden_layers, self.NN)
+        return 'DenseDegressive(*{!r})'.format(self.mode, self.n_hidden_layers, self.NN)
 
     def __str__(self):
         # used to name model folder
-        return '{!s}_DenseRegressive_{}_{}'.format(self.mode, self.n_hidden_layers, self.NN)
+        return '{!s}_DenseDegressive_{}_{}'.format(self.mode, self.n_hidden_layers, self.NN)
