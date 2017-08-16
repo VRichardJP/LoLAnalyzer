@@ -16,7 +16,7 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Look at Modes.py and Networks.py to see the list of available modes/networks
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
-mode = Modes.ABR_TJMCS_Mode()
+mode = Modes.ABR_Mode()
 network = Networks.DenseUniform(mode=mode, n_hidden_layers=3, NN=512, dropout=0.2, batch_size=200, report=10)
 
 # REMOVE OTJMCS -> use TJMCS for blue and red team
@@ -27,7 +27,7 @@ to_execute = [
     # 'ConfigUpdater',
     # 'DataDownloader',  # run on multiple cpu
     # 'DataExtractor',
-    'RoleUpdater',
+    # 'RoleUpdater',
     'DataProcessing',  # run on multiple cpu
     'DataShuffling',
     'Learner',  # run on gpu

@@ -111,7 +111,7 @@ class ABR_Mode(Base_Mode):
 
     def row_data(self, state, with_output=True, current_patch=False):
         row_data = []
-        row_data.extend([1 if state['status'][self.CHAMPIONS_LABEL[k]] == s else 0 for s in self.CHAMPIONS_STATUS for k in range(self.CHAMPIONS_SIZE)])
+        row_data.extend([1 if state['s_' + self.CHAMPIONS_LABEL[k]] == s else 0 for s in self.CHAMPIONS_STATUS for k in range(self.CHAMPIONS_SIZE)])
         if current_patch:
             row_data.extend(self.CURRENT_PATCH)
         else:
