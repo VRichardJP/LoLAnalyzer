@@ -348,5 +348,5 @@ def run(mode, network):
 
 
 if __name__ == '__main__':
-    m = Modes.BR_Mode()
+    m = Modes.ABR_TJMCS_Mode()
     run(m, Networks.DenseUniform(m, 5, 256, True))

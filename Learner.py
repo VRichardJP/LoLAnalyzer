@@ -112,7 +112,6 @@ def testing(mode, network):
 
 
 def run(mode, network, restore):
-    assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
     assert isinstance(network, Networks.BaseModel), 'Unrecognized network {}'.format(network)
 
     training(mode, network, restore)
@@ -120,5 +119,5 @@ def run(mode, network, restore):
 
 
 if __name__ == '__main__':
-    m = Modes.BR_Mode()
+    m = Modes.ABR_TJMCS_Mode()
     run(m, Networks.DenseUniform(m, 5, 256, True), True)

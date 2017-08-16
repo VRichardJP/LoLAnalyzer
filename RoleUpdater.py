@@ -4,18 +4,14 @@ import Modes
 
 
 def run(mode):
-    if type(mode) != Modes.ABOTJMCS_Mode:
-        print('RoleUpdater Only available in ABOTJMCS mode')
-        return
-
     print('-- Updating roles --')
     extracted_files = [f for f in os.listdir(mode.EXTRACTED_DIR)]
-    champ_roles = [[champ, {'A': 0, 'B': 0, 'O': 0, 'T': 0, 'J': 0, 'M': 0, 'C': 0, 'S': 0}] for champ in mode.CHAMPIONS_LABEL]
+    champ_roles = [[champ, {'N': 0, 'T': 0, 'J': 0, 'M': 0, 'C': 0, 'S': 0}] for champ in mode.CHAMPIONS_LABEL]
     for file in extracted_files:
         csv_file = os.path.join(mode.EXTRACTED_DIR, file)
         data = pd.read_csv(csv_file, names=mode.COLUMNS, skiprows=1)
         for [champ, role_count] in champ_roles:
-            counted_roles = data[champ].value_counts()
+            counted_roles = data['p_' + champ].value_counts()
             # noinspection PyCompatibility
             for (r, n) in counted_roles.iteritems():
                 role_count[r] += n
@@ -42,4 +38,4 @@ def run(mode):
         mode.config.write(configfile)
 
 if __name__ == '__main__':
-    run(Modes.BR_Mode())
+    run(Modes.ABR_TJMCS_Mode())

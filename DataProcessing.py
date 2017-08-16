@@ -26,15 +26,8 @@ def processing(mode, dataFile):
             data.to_csv(currentFile, mode='a', header=False, index=False)
             data = pd.DataFrame(columns=range(mode.INPUT_SIZE + mode.OUTPUT_SIZE))
 
-        # data: win + champions status + patch
         state = df.iloc[i]
-        # row_data = list()
-        # row_data.extend([1 if row[mode.CHAMPIONS_LABEL[k]] == s else 0 for s in mode.CHAMPIONS_STATUS for k in range(mode.CHAMPIONS_SIZE)])
-        # row_data.extend([1 if row['patch'] == mode.PATCHES[k] else 0 for k in range(mode.PATCHES_SIZE)])
-        # if type(mode) != Modes.BR_Mode:
-        #     row_data.append(row['team'])
-        # row_data.append(row['win'])
-        data.loc[len(data)] = mode.row_data(state, True)
+        data.loc[len(data)] = mode.row_data(state, with_output=True)
     if len(data):
         data = data.astype(int)
         data.to_csv(currentFile, mode='a', header=False, index=False)
@@ -42,8 +35,6 @@ def processing(mode, dataFile):
 
 
 def run(mode, cpu):
-    assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
-
     if not os.path.isdir(mode.PREPROCESSED_DIR):
         os.makedirs(mode.PREPROCESSED_DIR)
 
@@ -60,4 +51,4 @@ def run(mode, cpu):
     pool.join()
 
 if __name__ == '__main__':
-    run(Modes.BR_Mode(), multiprocessing.cpu_count())
+    run(Modes.ABR_TJMCS_Mode(), multiprocessing.cpu_count() - 1)

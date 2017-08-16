@@ -28,7 +28,6 @@ def validationInput(msg, validAns):
 
 
 def run(mode, nb_files, keep_for_testing):
-    assert type(mode) in [Modes.ABOTJMCS_Mode, Modes.ABOT_Mode, Modes.BR_Mode], 'Unrecognized mode {}'.format(mode)
     if os.path.isdir(mode.TRAINING_DIR):
         print('WARNING PREVIOUS SHUFFLED DATA FOUND', file=sys.stderr)
         if validationInput('Do you want to reshuffle the data anyway (take a while)? (y/n)', ['y', 'n']) == 'n':
@@ -57,4 +56,4 @@ def run(mode, nb_files, keep_for_testing):
         shuffling(mode, file, nb_files)
 
 if __name__ == '__main__':
-    run(Modes.BR_Mode(), 37, 1)
+    run(Modes.ABR_TJMCS_Mode(), 37, 2)
