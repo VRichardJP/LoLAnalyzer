@@ -17,7 +17,7 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
 mode = Modes.ABR_Mode()
-network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)  # 5324 5305 5300
+network = Networks.DenseDegressive(mode=mode, n_hidden_layers=2, NN=512, dropout=0.1, batch_size=200, report=10)  # 5327 5244
 # mode = Modes.ABR_TJMCS_Mode()
 # network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)  # 5324 5305 5300
 
@@ -33,7 +33,7 @@ to_execute = [
     # 'DataProcessing',  # run on multiple cpu
     # 'DataShuffling',
     'Learner',  # run on gpu
-    # 'BestPicks',
+    'BestPicks',
 ]
 
 
