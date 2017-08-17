@@ -17,7 +17,9 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
 mode = Modes.ABR_Mode()
-network = Networks.DenseUniform(mode=mode, n_hidden_layers=3, NN=512, dropout=0.2, batch_size=200, report=10)
+network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)  # 5324 5305 5300
+# mode = Modes.ABR_TJMCS_Mode()
+# network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)  # 5324 5305 5300
 
 # REMOVE OTJMCS -> use TJMCS for blue and red team
 
@@ -28,8 +30,8 @@ to_execute = [
     # 'DataDownloader',  # run on multiple cpu
     # 'DataExtractor',
     # 'RoleUpdater',
-    'DataProcessing',  # run on multiple cpu
-    'DataShuffling',
+    # 'DataProcessing',  # run on multiple cpu
+    # 'DataShuffling',
     'Learner',  # run on gpu
     # 'BestPicks',
 ]

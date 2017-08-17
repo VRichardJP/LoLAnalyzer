@@ -7,11 +7,19 @@ I know it would be cool to have a .exe to double-click, but python is not that e
 
 I may provide a demo network in a near future, but I can't maintain a network updated on a daily basis. I you want to seriously use this app you will have to train your own network. I would even recommend you to test and design your own networks.
 
+## Why another tool? and why machine learning?
+I am myself a LoL player. I play ranked a lot, and as many other players I want to become stronger. But becoming stronger is not all about picking Yasuo/Zed, making plays and carrying your team (of course don't forget to spam your champion mastery when you do). Sometimes, getting better at the game is simply about building a better team. Of course, you have your own preference: champions you like, champions you don't like. But how many times have you said to yourself you had lost a game by simply looking at your draft. Sometimes it's not your fault, you are first pick, you can't predict everything. But sometimes it is, and worse, you may not even realize it.
+
+So how can you make sure you're not the fail pick?
+
+Personally, I have been using op.gg for a long time. They provide a wide range of meaningful statistics for whoever wants to play ranked seriously. They give champions win ratio, matchups information, best builds, etc. But is it enough to choose the perfect champion for your team? Unfortunately, no. The reason is simple: since the analysis is made from large statistics, it does not take into account the most important information of a draft: what your team and the opponent team composition is. For instance, if you're top and op.gg says that Pantheon  has an average of 54.22% win rate and is the best top laner, but your team needs a tank, do you pick Pantheon anyway? The truth is that once you're in a draft, this number is not relevant anymore. 
+
+My goal is simple: I want a system that can provide me a precise information on my draft, so I know what champion suits the current draft the best.
 ## Requirements
 
 You need at least (pip/google is your best friend):
 - Python 3 
-- Tensorflow (GPU version recommended if your graphic card is compatible)
+- Keras/Tensorflow (GPU version recommended if your graphic card is compatible)
 - PyQt5
 - A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
 
