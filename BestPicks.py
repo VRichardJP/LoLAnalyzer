@@ -122,22 +122,37 @@ class App(QDialog):
 
         # Ennemy team picks Layout
         ennemyTeamGB = QGroupBox('Ennemy Team')
-        ennemyTeamLayout = QVBoxLayout()
+        ennemyTeamLayout = QGridLayout()
         self.player6Pick = QComboBox()
         self.player6Pick.addItems(self.mode.BP_CHAMPIONS)
-        ennemyTeamLayout.addWidget(self.player6Pick)
+        ennemyTeamLayout.addWidget(self.player6Pick, 0, 0)
+        self.player6Role = QComboBox()
+        self.player6Role.addItems(self.mode.BP_ROLES)
+        ennemyTeamLayout.addWidget(self.player6Role, 0, 1)
         self.player7Pick = QComboBox()
         self.player7Pick.addItems(self.mode.BP_CHAMPIONS)
-        ennemyTeamLayout.addWidget(self.player7Pick)
+        ennemyTeamLayout.addWidget(self.player7Pick, 1, 0)
+        self.player7Role = QComboBox()
+        self.player7Role.addItems(self.mode.BP_ROLES)
+        ennemyTeamLayout.addWidget(self.player7Role, 1, 1)
         self.player8Pick = QComboBox()
         self.player8Pick.addItems(self.mode.BP_CHAMPIONS)
-        ennemyTeamLayout.addWidget(self.player8Pick)
+        ennemyTeamLayout.addWidget(self.player8Pick, 2, 0)
+        self.player8Role = QComboBox()
+        self.player8Role.addItems(self.mode.BP_ROLES)
+        ennemyTeamLayout.addWidget(self.player8Role, 2, 1)
         self.player9Pick = QComboBox()
         self.player9Pick.addItems(self.mode.BP_CHAMPIONS)
-        ennemyTeamLayout.addWidget(self.player9Pick)
+        ennemyTeamLayout.addWidget(self.player9Pick, 3, 0)
+        self.player9Role = QComboBox()
+        self.player9Role.addItems(self.mode.BP_ROLES)
+        ennemyTeamLayout.addWidget(self.player9Role, 3, 1)
         self.player10Pick = QComboBox()
         self.player10Pick.addItems(self.mode.BP_CHAMPIONS)
-        ennemyTeamLayout.addWidget(self.player10Pick)
+        ennemyTeamLayout.addWidget(self.player10Pick, 4, 0)
+        self.player10Role = QComboBox()
+        self.player10Role.addItems(self.mode.BP_ROLES)
+        ennemyTeamLayout.addWidget(self.player10Role, 4, 1)
         ennemyTeamGB.setLayout(ennemyTeamLayout)
         mainBoxLayout.addWidget(ennemyTeamGB, 1, 2)
 
@@ -219,11 +234,11 @@ class App(QDialog):
             (str(self.player3Pick.currentText()), str(self.player3Role.currentText()), 1),
             (str(self.player4Pick.currentText()), str(self.player4Role.currentText()), 1),
             (str(self.player5Pick.currentText()), str(self.player5Role.currentText()), 1),
-            (str(self.player6Pick.currentText()), 'Opp', 0),
-            (str(self.player7Pick.currentText()), 'Opp', 0),
-            (str(self.player8Pick.currentText()), 'Opp', 0),
-            (str(self.player9Pick.currentText()), 'Opp', 0),
-            (str(self.player10Pick.currentText()), 'Opp', 0),
+            (str(self.player6Pick.currentText()), str(self.player6Role.currentText()), 0),
+            (str(self.player7Pick.currentText()), str(self.player7Role.currentText()), 0),
+            (str(self.player8Pick.currentText()), str(self.player8Role.currentText()), 0),
+            (str(self.player9Pick.currentText()), str(self.player9Role.currentText()), 0),
+            (str(self.player10Pick.currentText()), str(self.player10Role.currentText()), 0),
         ]
         print('picks', picks, file=sys.stderr)
         yourTeam = str(self.yourTeam.currentText())
@@ -239,7 +254,7 @@ class App(QDialog):
             if ban[0] != '.':
                 currentState['s_' + ban] = 'N'
         for (pick, role, team) in picks:
-            if pick[0] != '.' and role[0] != '.':
+            if pick[0] != '.':
                 if yourTeam == 'Blue':
                     currentState['s_' + pick] = 'B' if team else 'R'
                 else:
@@ -247,10 +262,13 @@ class App(QDialog):
                 currentState['p_' + pick] = role[0]
 
         data = np.array([self.mode.row_data(currentState, False, True)])
-        pred_values = self.network.model.predict(data, batch_size=len(data))
+        pred_values = self.network.model.predict(data, batch_size=len(data))[0]
+        if yourTeam == 'Red':
+            pred_values = 1 - pred_values
+        pred_values *= 100
         self.results.setRowCount(1)
         self.results.setItem(0, 0, QTableWidgetItem('winrate'))
-        self.results.setItem(0, 1, QTableWidgetItem('%.2f' % (pred_values[0] * 100)))
+        self.results.setItem(0, 1, QTableWidgetItem('%.2f' % (pred_values)))
 
     def generate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
@@ -260,14 +278,18 @@ class App(QDialog):
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
                 str(self.player10Ban.currentText())]
         print('bans', bans, file=sys.stderr)
-        picks = [(str(self.player1Pick.currentText()), str(self.player1Role.currentText())),
-                 (str(self.player2Pick.currentText()), str(self.player2Role.currentText())),
-                 (str(self.player3Pick.currentText()), str(self.player3Role.currentText())),
-                 (str(self.player4Pick.currentText()), str(self.player4Role.currentText())),
-                 (str(self.player5Pick.currentText()), str(self.player5Role.currentText())),
-                 (str(self.player6Pick.currentText()), 'Opp'), (str(self.player7Pick.currentText()), 'Opp'),
-                 (str(self.player8Pick.currentText()), 'Opp'), (str(self.player9Pick.currentText()), 'Opp'),
-                 (str(self.player10Pick.currentText()), 'Opp')]
+        picks = [
+            (str(self.player1Pick.currentText()), str(self.player1Role.currentText()), 1),
+            (str(self.player2Pick.currentText()), str(self.player2Role.currentText()), 1),
+            (str(self.player3Pick.currentText()), str(self.player3Role.currentText()), 1),
+            (str(self.player4Pick.currentText()), str(self.player4Role.currentText()), 1),
+            (str(self.player5Pick.currentText()), str(self.player5Role.currentText()), 1),
+            (str(self.player6Pick.currentText()), str(self.player6Role.currentText()), 0),
+            (str(self.player7Pick.currentText()), str(self.player7Role.currentText()), 0),
+            (str(self.player8Pick.currentText()), str(self.player8Role.currentText()), 0),
+            (str(self.player9Pick.currentText()), str(self.player9Role.currentText()), 0),
+            (str(self.player10Pick.currentText()), str(self.player10Role.currentText()), 0),
+        ]
         print('picks', picks, file=sys.stderr)
         yourRole = str(self.yourRole.currentText())
         if yourRole == '...':
@@ -286,7 +308,7 @@ class App(QDialog):
             if ban[0] != '.':
                 currentState['s_' + ban] = 'N'
         for (pick, role, team) in picks:
-            if pick[0] != '.' and role[0] != '.':
+            if pick[0] != '.':
                 if yourTeam == 'Blue':
                     currentState['s_' + pick] = 'B' if team else 'R'
                 else:
@@ -301,7 +323,8 @@ class App(QDialog):
             if currentState['s_' + champ] not in 'AN':  # not available
                 continue
             state = OrderedDict(currentState)
-            state['s_' + champ] = yourRole[0]
+            state['s_' + champ] = yourTeam[0]
+            state['p_' + champ] = yourRole[0]
             possibleStates.append(state)
             champions.append(champ)
 
@@ -310,13 +333,13 @@ class App(QDialog):
             data.append(self.mode.row_data(state, False, True))
 
         pred_values = self.network.model.predict(np.array(data), batch_size=len(data))
-        best_champs = [(champions[k], pred_values[k] if yourTeam == 'Blue' else 1 - pred_values[k]) for k in range(len(champions))]
+        best_champs = [(champions[k], 100*(pred_values[k] if yourTeam == 'Blue' else 1 - pred_values[k])) for k in range(len(champions))]
         best_champs = sorted(best_champs, key=lambda x: x[1], reverse=True)
         print(best_champs, file=sys.stderr)
         self.results.setRowCount(len(best_champs))
         for k in range(len(best_champs)):
             self.results.setItem(k, 0, QTableWidgetItem(best_champs[k][0]))
-            self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1] * 100)))
+            self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1])))
 
 
 def run(mode, network):
