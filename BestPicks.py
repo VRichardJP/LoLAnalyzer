@@ -332,6 +332,7 @@ class App(QDialog):
                 currentState['p_' + pick] = role[0]
 
         data = np.array([self.mode.row_data(currentState, False, True)])
+        print(self.mode.row_data(currentState, False, True))
         pred_values = self.network.model.predict(data, batch_size=len(data))[0]
         if self.yourTeam == 'R':
             pred_values = 1 - pred_values
