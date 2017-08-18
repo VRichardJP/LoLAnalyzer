@@ -30,7 +30,7 @@ sys.excepthook = my_exception_hook
 
 
 class App(QDialog):
-    # noinspection PyArgumentList
+    # noinspection PyArgumentList,PyUnresolvedReferences
     def __init__(self, mode, network):
         super().__init__()
         self.title = 'LoLAnalyzer'
@@ -40,6 +40,8 @@ class App(QDialog):
         self.height = 400
         self.mode = mode
         self.network = network
+        self.yourTeam = None
+        self.pick_order = None
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
@@ -89,30 +91,35 @@ class App(QDialog):
         yourTeamLayout = QGridLayout()
         self.player1Pick = QComboBox()
         self.player1Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player1Pick.currentTextChanged.connect(self.pick)
         yourTeamLayout.addWidget(self.player1Pick, 0, 0)
         self.player1Role = QComboBox()
         self.player1Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player1Role, 0, 1)
         self.player2Pick = QComboBox()
         self.player2Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player2Pick.currentTextChanged.connect(self.pick)
         yourTeamLayout.addWidget(self.player2Pick, 1, 0)
         self.player2Role = QComboBox()
         self.player2Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player2Role, 1, 1)
         self.player3Pick = QComboBox()
         self.player3Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player3Pick.currentTextChanged.connect(self.pick)
         yourTeamLayout.addWidget(self.player3Pick, 2, 0)
         self.player3Role = QComboBox()
         self.player3Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player3Role, 2, 1)
         self.player4Pick = QComboBox()
         self.player4Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player4Pick.currentTextChanged.connect(self.pick)
         yourTeamLayout.addWidget(self.player4Pick, 3, 0)
         self.player4Role = QComboBox()
         self.player4Role.addItems(self.mode.BP_ROLES)
         yourTeamLayout.addWidget(self.player4Role, 3, 1)
         self.player5Pick = QComboBox()
         self.player5Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player5Pick.currentTextChanged.connect(self.pick)
         yourTeamLayout.addWidget(self.player5Pick, 4, 0)
         self.player5Role = QComboBox()
         self.player5Role.addItems(self.mode.BP_ROLES)
@@ -125,30 +132,35 @@ class App(QDialog):
         ennemyTeamLayout = QGridLayout()
         self.player6Pick = QComboBox()
         self.player6Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player6Pick.currentTextChanged.connect(self.pick)
         ennemyTeamLayout.addWidget(self.player6Pick, 0, 0)
         self.player6Role = QComboBox()
         self.player6Role.addItems(self.mode.BP_ROLES)
         ennemyTeamLayout.addWidget(self.player6Role, 0, 1)
         self.player7Pick = QComboBox()
         self.player7Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player7Pick.currentTextChanged.connect(self.pick)
         ennemyTeamLayout.addWidget(self.player7Pick, 1, 0)
         self.player7Role = QComboBox()
         self.player7Role.addItems(self.mode.BP_ROLES)
         ennemyTeamLayout.addWidget(self.player7Role, 1, 1)
         self.player8Pick = QComboBox()
         self.player8Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player8Pick.currentTextChanged.connect(self.pick)
         ennemyTeamLayout.addWidget(self.player8Pick, 2, 0)
         self.player8Role = QComboBox()
         self.player8Role.addItems(self.mode.BP_ROLES)
         ennemyTeamLayout.addWidget(self.player8Role, 2, 1)
         self.player9Pick = QComboBox()
         self.player9Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player9Pick.currentTextChanged.connect(self.pick)
         ennemyTeamLayout.addWidget(self.player9Pick, 3, 0)
         self.player9Role = QComboBox()
         self.player9Role.addItems(self.mode.BP_ROLES)
         ennemyTeamLayout.addWidget(self.player9Role, 3, 1)
         self.player10Pick = QComboBox()
         self.player10Pick.addItems(self.mode.BP_CHAMPIONS)
+        self.player10Pick.currentTextChanged.connect(self.pick)
         ennemyTeamLayout.addWidget(self.player10Pick, 4, 0)
         self.player10Role = QComboBox()
         self.player10Role.addItems(self.mode.BP_ROLES)
@@ -159,12 +171,16 @@ class App(QDialog):
         # Best picks Layout
         bestPicksGB = QGroupBox('Best Picks')
         bestPicksLayout = QGridLayout()
-        yourTeamLabel = QLabel()
-        yourTeamLabel.setText('Your team:')
-        bestPicksLayout.addWidget(yourTeamLabel, 0, 0)
-        self.yourTeam = QComboBox()
-        self.yourTeam.addItems(self.mode.BP_TEAMS)
-        bestPicksLayout.addWidget(self.yourTeam, 0, 1)
+        yourTeamButtonGroup = QButtonGroup()
+        blueTeamButton = QRadioButton('Blue Team')
+        redTeamButton = QRadioButton('Red Team')
+        blueTeamButton.setChecked(True)
+        yourTeamButtonGroup.addButton(blueTeamButton)
+        yourTeamButtonGroup.addButton(redTeamButton)
+        yourTeamButtonGroup.buttonClicked['QAbstractButton *'].connect(self.teamChoice)
+        bestPicksLayout.addWidget(blueTeamButton, 0, 0)
+        bestPicksLayout.addWidget(redTeamButton, 0, 1)
+        self.teamChoice(blueTeamButton)
         self.evaluateButton = QPushButton('Wait...')
         self.evaluateButton.setEnabled(False)
         # noinspection PyUnresolvedReferences
@@ -201,6 +217,64 @@ class App(QDialog):
         self.show()
 
         self.buildNetwork()
+
+    def teamChoice(self, button):
+        self.yourTeam = button.text()[0]
+
+        self.player1Pick.setEnabled(False)
+        self.player1Pick.setCurrentIndex(0)
+        self.player1Role.setEnabled(True)
+        self.player1Role.setCurrentIndex(0)
+        self.player2Pick.setEnabled(False)
+        self.player2Pick.setCurrentIndex(0)
+        self.player2Role.setEnabled(True)
+        self.player2Role.setCurrentIndex(0)
+        self.player3Pick.setEnabled(False)
+        self.player3Pick.setCurrentIndex(0)
+        self.player3Role.setEnabled(True)
+        self.player3Role.setCurrentIndex(0)
+        self.player4Pick.setEnabled(False)
+        self.player4Pick.setCurrentIndex(0)
+        self.player4Role.setEnabled(True)
+        self.player4Role.setCurrentIndex(0)
+        self.player5Pick.setEnabled(False)
+        self.player5Pick.setCurrentIndex(0)
+        self.player5Role.setEnabled(True)
+        self.player5Role.setCurrentIndex(0)
+        self.player6Pick.setEnabled(False)
+        self.player6Pick.setCurrentIndex(0)
+        self.player6Role.setEnabled(True)
+        self.player6Role.setCurrentIndex(0)
+        self.player7Pick.setEnabled(False)
+        self.player7Pick.setCurrentIndex(0)
+        self.player7Role.setEnabled(True)
+        self.player7Role.setCurrentIndex(0)
+        self.player8Pick.setEnabled(False)
+        self.player8Pick.setCurrentIndex(0)
+        self.player8Role.setEnabled(True)
+        self.player8Role.setCurrentIndex(0)
+        self.player9Pick.setEnabled(False)
+        self.player9Pick.setCurrentIndex(0)
+        self.player9Role.setEnabled(True)
+        self.player9Role.setCurrentIndex(0)
+        self.player10Pick.setEnabled(False)
+        self.player10Pick.setCurrentIndex(0)
+        self.player10Role.setEnabled(True)
+        self.player10Role.setCurrentIndex(0)
+
+        if self.yourTeam == 'B':
+            self.player1Pick.setEnabled(True)
+            self.pick_order = [self.player1Pick, self.player6Pick, self.player7Pick, self.player2Pick, self.player3Pick, self.player8Pick,
+                               self.player9Pick, self.player4Pick, self.player5Pick, self.player10Pick]
+        else:
+            self.player6Pick.setEnabled(True)
+            self.pick_order = [self.player6Pick, self.player1Pick, self.player2Pick, self.player7Pick, self.player8Pick, self.player3Pick,
+                               self.player4Pick, self.player9Pick, self.player10Pick, self.player5Pick]
+
+    def pick(self):
+        i = self.pick_order.index(self.sender())
+        if i+1 < len(self.pick_order):
+            self.pick_order[i+1].setEnabled(True)
 
     def buildNetwork(self):
         import keras
@@ -241,10 +315,6 @@ class App(QDialog):
             (str(self.player10Pick.currentText()), str(self.player10Role.currentText()), 0),
         ]
         print('picks', picks, file=sys.stderr)
-        yourTeam = str(self.yourTeam.currentText())
-        if yourTeam == '...':
-            print('You need to select a team!', file=sys.stderr)
-            return
 
         currentState = OrderedDict()
         currentState.update([('s_' + champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
@@ -255,7 +325,7 @@ class App(QDialog):
                 currentState['s_' + ban] = 'N'
         for (pick, role, team) in picks:
             if pick[0] != '.':
-                if yourTeam == 'Blue':
+                if self.yourTeam == 'B':
                     currentState['s_' + pick] = 'B' if team else 'R'
                 else:
                     currentState['s_' + pick] = 'R' if team else 'B'
@@ -263,12 +333,12 @@ class App(QDialog):
 
         data = np.array([self.mode.row_data(currentState, False, True)])
         pred_values = self.network.model.predict(data, batch_size=len(data))[0]
-        if yourTeam == 'Red':
+        if self.yourTeam == 'R':
             pred_values = 1 - pred_values
         pred_values *= 100
         self.results.setRowCount(1)
         self.results.setItem(0, 0, QTableWidgetItem('winrate'))
-        self.results.setItem(0, 1, QTableWidgetItem('%.2f' % (pred_values)))
+        self.results.setItem(0, 1, QTableWidgetItem('%.2f' % pred_values))
 
     def generate(self):
         print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
@@ -295,10 +365,6 @@ class App(QDialog):
         if yourRole == '...':
             print('You need to select a role!', file=sys.stderr)
             return
-        yourTeam = str(self.yourTeam.currentText())
-        if yourTeam == '...':
-            print('You need to select a team!', file=sys.stderr)
-            return
 
         currentState = OrderedDict()
         currentState.update([('s_' + champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
@@ -309,7 +375,7 @@ class App(QDialog):
                 currentState['s_' + ban] = 'N'
         for (pick, role, team) in picks:
             if pick[0] != '.':
-                if yourTeam == 'Blue':
+                if self.yourTeam == 'B':
                     currentState['s_' + pick] = 'B' if team else 'R'
                 else:
                     currentState['s_' + pick] = 'R' if team else 'B'
@@ -323,7 +389,7 @@ class App(QDialog):
             if currentState['s_' + champ] not in 'AN':  # not available
                 continue
             state = OrderedDict(currentState)
-            state['s_' + champ] = yourTeam[0]
+            state['s_' + champ] = self.yourTeam
             state['p_' + champ] = yourRole[0]
             possibleStates.append(state)
             champions.append(champ)
@@ -333,7 +399,7 @@ class App(QDialog):
             data.append(self.mode.row_data(state, False, True))
 
         pred_values = self.network.model.predict(np.array(data), batch_size=len(data))
-        best_champs = [(champions[k], 100*(pred_values[k] if yourTeam == 'Blue' else 1 - pred_values[k])) for k in range(len(champions))]
+        best_champs = [(champions[k], 100 * (pred_values[k] if self.yourTeam == 'B' else 1 - pred_values[k])) for k in range(len(champions))]
         best_champs = sorted(best_champs, key=lambda x: x[1], reverse=True)
         print(best_champs, file=sys.stderr)
         self.results.setRowCount(len(best_champs))
