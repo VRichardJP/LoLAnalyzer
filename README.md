@@ -1,7 +1,7 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
-![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+![demo](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/demo.PNG)
 
 
 Warning: I don't guarantee that all the scripts will run on your computer. You will need to install quite a bunch of big libraries to make it work. 
