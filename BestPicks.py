@@ -36,8 +36,8 @@ class App(QDialog):
         self.title = 'LoLAnalyzer'
         self.left = 10
         self.top = 10
-        self.width = 660
-        self.height = 400
+        self.width = 700
+        self.height = 600
         self.mode = mode
         self.network = network
         self.yourTeam = None
@@ -198,7 +198,7 @@ class App(QDialog):
         self.results.setColumnCount(2)
         self.results.horizontalHeader().hide()
         self.results.verticalHeader().hide()
-        bestPicksLayout.addWidget(self.results, 2, 0, 1, 3)
+        bestPicksLayout.addWidget(self.results, 2, 0, 1, 2)
 
         bestPicksGB.setLayout(bestPicksLayout)
         mainBoxLayout.addWidget(bestPicksGB, 1, 1)
@@ -314,8 +314,6 @@ class App(QDialog):
         self.evaluateButton.setEnabled(True)
 
     def evaluate(self):
-        print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
-
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),

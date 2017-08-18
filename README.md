@@ -1,6 +1,9 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
+![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+
+
 Warning: I don't guarantee that all the scripts will run on your computer. You will need to install quite a bunch of big libraries to make it work. 
 
 I know it would be cool to have a .exe to double-click, but python is not that easy to distribute, so I won't provide any executable
