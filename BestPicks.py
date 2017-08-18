@@ -41,7 +41,9 @@ class App(QDialog):
         self.mode = mode
         self.network = network
         self.yourTeam = None
+        self.yourRole = None
         self.pick_order = None
+        self.role_order = None
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
@@ -179,24 +181,17 @@ class App(QDialog):
         yourTeamButtonGroup.addButton(redTeamButton)
         yourTeamButtonGroup.buttonClicked['QAbstractButton *'].connect(self.teamChoice)
         bestPicksLayout.addWidget(blueTeamButton, 0, 0)
-        bestPicksLayout.addWidget(redTeamButton, 0, 1)
-        self.teamChoice(blueTeamButton)
+        bestPicksLayout.addWidget(redTeamButton, 1, 0)
         self.evaluateButton = QPushButton('Wait...')
         self.evaluateButton.setEnabled(False)
         # noinspection PyUnresolvedReferences
         self.evaluateButton.clicked.connect(lambda: self.evaluate())
-        bestPicksLayout.addWidget(self.evaluateButton, 0, 2)
-        yourRoleLabel = QLabel()
-        yourRoleLabel.setText('Your role:')
-        bestPicksLayout.addWidget(yourRoleLabel, 1, 0)
-        self.yourRole = QComboBox()
-        self.yourRole.addItems(self.mode.BP_ROLES)
-        bestPicksLayout.addWidget(self.yourRole, 1, 1)
+        bestPicksLayout.addWidget(self.evaluateButton, 0, 1)
         self.generateButton = QPushButton('Wait...')
         self.generateButton.setEnabled(False)
         # noinspection PyUnresolvedReferences
         self.generateButton.clicked.connect(lambda: self.generate())
-        bestPicksLayout.addWidget(self.generateButton, 1, 2)
+        bestPicksLayout.addWidget(self.generateButton, 1, 1)
 
         self.results = QTableWidget()
         # self.results.setRowCount(4)
@@ -216,6 +211,7 @@ class App(QDialog):
 
         self.show()
 
+        self.teamChoice(blueTeamButton)
         self.buildNetwork()
 
     def teamChoice(self, button):
@@ -264,17 +260,40 @@ class App(QDialog):
 
         if self.yourTeam == 'B':
             self.player1Pick.setEnabled(True)
+            self.generateButton.setEnabled(True)
             self.pick_order = [self.player1Pick, self.player6Pick, self.player7Pick, self.player2Pick, self.player3Pick, self.player8Pick,
                                self.player9Pick, self.player4Pick, self.player5Pick, self.player10Pick]
+            self.role_order = [self.player1Role, self.player6Role, self.player7Role, self.player2Role, self.player3Role, self.player8Role,
+                               self.player9Role, self.player4Role, self.player5Role, self.player10Role]
         else:
             self.player6Pick.setEnabled(True)
+            self.generateButton.setEnabled(False)
             self.pick_order = [self.player6Pick, self.player1Pick, self.player2Pick, self.player7Pick, self.player8Pick, self.player3Pick,
                                self.player4Pick, self.player9Pick, self.player10Pick, self.player5Pick]
+            self.role_order = [self.player6Role, self.player1Role, self.player2Role, self.player7Role, self.player8Role, self.player3Role,
+                               self.player4Role, self.player9Role, self.player10Role, self.player5Role]
 
     def pick(self):
         i = self.pick_order.index(self.sender())
-        if i+1 < len(self.pick_order):
-            self.pick_order[i+1].setEnabled(True)
+        if self.sender().currentIndex() != 0:
+            if i + 1 < len(self.pick_order):
+                self.pick_order[i + 1].setEnabled(True)
+        else:
+            for j in range(i + 1, len(self.pick_order)):
+                self.pick_order[i + 1].setCurrentIndex(0)
+                self.pick_order[i + 1].setEnabled(False)
+                self.role_order[i + 1].setCurrentIndex(0)
+
+        # get the last available combobox, if in player 1-5 then we set self.yourRole, else disable generation
+        l = [playerPick.isEnabled() for playerPick in self.pick_order]
+        currentPickIndex = -1 if False not in l else l.index(False) - 1
+        if currentPickIndex >= 0 and self.pick_order[currentPickIndex] in [self.player1Pick, self.player2Pick, self.player3Pick, self.player4Pick,
+                                                                           self.player5Pick]:
+            self.generateButton.setEnabled(True)
+            self.yourRole = self.role_order[currentPickIndex]
+        else:
+            self.generateButton.setEnabled(False)
+            self.yourRole = None
 
     def buildNetwork(self):
         import keras
