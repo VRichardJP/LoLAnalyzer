@@ -35,29 +35,10 @@ class DataDownloader:
         else:
             self.downloadedGames = []
         self.summonerIDs = []
-        if leagues['challenger']:
-            challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
-            for e in challLeague['entries']:
-                self.summonerIDs.append(e['playerOrTeamId'])
-        if leagues['master']:
-            masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
-            for e in masterLeague['entries']:
-                self.summonerIDs.append(e['playerOrTeamId'])
-        if leagues['diamond']:
-            print('WARNING: data dl for diamond players not implemented', file=sys.stderr)
-            pass
-        if leagues['platinum']:
-            print('WARNING: data dl for platinum players not implemented', file=sys.stderr)
-            pass
-        if leagues['gold']:
-            print('WARNING: data dl for gold players not implemented', file=sys.stderr)
-            pass
-        if leagues['silver']:
-            print('WARNING: data dl for silver players not implemented', file=sys.stderr)
-            pass
-        if leagues['bronze']:
-            print('WARNING: data dl for bronze players not implemented', file=sys.stderr)
-            pass
+        for league in leagues:
+            file = os.path.join(database, 'players_{}_{}'.format(region, league))
+            self.summonerIDs.extend(pickle.load(open(file, 'rb')))
+
         random.shuffle(self.summonerIDs)
 
     def downloadData(self):
@@ -202,12 +183,11 @@ def run(mode):
         last_seen_from_patch[key] = list(map(int, value.split(',')))  # first seen and last seen
 
     kdprocs = []
-    for region, enabled in mode.REGIONS.items():
-        if enabled == 'yes':
-            kdprocs.append(
-                multiprocessing.Process(target=keepDownloading,
-                                        args=(mode.DATABASE, mode.PATCHES_TO_DOWNLOAD, region, mode.LEAGUES, last_seen_from_patch)))
-            kdprocs[-1].start()
+    for region in mode.REGIONS:
+        kdprocs.append(
+            multiprocessing.Process(target=keepDownloading,
+                                    args=(mode.DATABASE, mode.PATCHES_TO_DOWNLOAD, region, mode.LEAGUES, last_seen_from_patch)))
+        kdprocs[-1].start()
 
     slsproc = multiprocessing.Process(target=saveLastSeen, args=(last_seen_from_patch, 300, endUpdate))
     slsproc.start()

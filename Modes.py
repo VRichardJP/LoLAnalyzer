@@ -13,7 +13,7 @@ class Base_Mode:
         self.DATABASE = self.config['PARAMS']['database']
         self.PATCHES_TO_DOWNLOAD = self.config['PARAMS']['download_patches'].split(',')
         self.LEAGUES = {league: enabled == 'yes' for (league, enabled) in self.config['LEAGUES'].items()}
-        self.REGIONS = self.config['REGIONS']
+        self.REGIONS = {region: enabled == 'yes' for (region, enabled) in self.config['REGIONS'].items()}
 
         # Extractor+
         self.DATA_LINES = 100000

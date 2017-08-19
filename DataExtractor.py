@@ -20,8 +20,8 @@ def run(mode):
 
     gamesPath = []
     for patch in mode.GAME_FILES:
-        for region, enabled in mode.REGIONS.items():
-            if enabled == 'yes' and os.path.isdir(os.path.join(mode.DATABASE, 'patches', patch, region)):
+        for region in mode.REGIONS:
+            if os.path.isdir(os.path.join(mode.DATABASE, 'patches', patch, region)):
                 gamesPath.extend(
                     [os.path.join(mode.DATABASE, 'patches', patch, region, f) for f in
                      os.listdir(os.path.join(mode.DATABASE, 'patches', patch, region))])
