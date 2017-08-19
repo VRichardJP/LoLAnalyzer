@@ -32,16 +32,18 @@ You need at least (pip/google is your best friend):
 
 ## How to use
 
-0. RunAll.py : All the steps from 1 to 7 at once. You can comment steps you've already done.
+1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit
+2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program)
 
 or in details
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit
-2. DataDownloader.py : download raw game files according to the parameters in config.ini (patches, regions, leagues)
-3. DataExtractor.py : extract and collect all the downloaded data
-4. DataProcessing.py : pre-process the extrated data
-5. DataShuffling.py : shuffling the data
-6. Learner.py: train a neural network
-7. BestPick.py: a very simple GUI so you can enter your draft and the role you want
+2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini)
+3. DataDownloader.py : download raw game files played by the listed players and that meet the requirements in config.ini
+4. DataExtractor.py : extract and collect all the downloaded data
+5. DataProcessing.py : pre-process the extrated data
+6. DataShuffling.py : shuffling the data
+7. Learner.py: train a neural network
+8. BestPick.py: a very simple GUI so you can enter your draft and the role you want
 
 
 ## Miscellaneous

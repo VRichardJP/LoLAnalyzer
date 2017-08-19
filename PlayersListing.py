@@ -42,10 +42,11 @@ class PlayerListing:
     def explore(self):
         while self.to_explore:
             sumID = self.to_explore.pop(0)  # highest rank player
+            print(self.region, len(self.to_explore), 'left')
             try:
                 accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
                 games = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})['matches']
-                leagueList = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/leagues/by-summoner/%s' % (self.region, sumID))['accountId']
+                playerLeagueList = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/leagues/by-summoner/%s' % (self.region, sumID))
             except ApiError403 as e:
                 print(e, file=sys.stderr)
                 return e
@@ -55,14 +56,14 @@ class PlayerListing:
 
             # we check that the summoner is in one of the leagues we want
             playerLeague = None
-            for league in leagueList:
+            for league in playerLeagueList:
                 if league['queue'] == 'RANKED_SOLO_5x5' and league['tier'].lower():
                     playerLeague = league['tier'].lower()
             if playerLeague not in self.leagues:
-                print(self.region, sumID, 'refused:', playerLeague)
+                print('refused:', self.region, sumID, playerLeague)
                 continue
             self.players[playerLeague].append(sumID)
-            print(self.region, sumID, 'added:', playerLeague)
+            print('added:', self.region, sumID, playerLeague)
 
             for game in games:  # from most recent to oldest
                 gameID = str(game['gameId'])
@@ -126,8 +127,9 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
             break
 
     # we finally save the players list
-    print(region, 'Saving players list')
-    pl.save()
+    if pl is not None:
+        print(region, 'Saving players list')
+        pl.save()
     print(region, 'Listing complete')
 
 
@@ -146,4 +148,4 @@ def run(mode):
 
 
 if __name__ == '__main__':
-    run(Modes.ABR_Mode())
+    run(Modes.Base_Mode())

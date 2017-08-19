@@ -26,7 +26,6 @@ network = Networks.DenseDegressive(mode=mode, n_hidden_layers=2, NN=512, dropout
 # Scripts to execute, comment useless ones
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
-    # 'ConfigUpdater',
     # 'PlayersListing'
     # 'DataDownloader',  # run on multiple cpu
     # 'DataExtractor',
@@ -39,9 +38,6 @@ to_execute = [
 
 
 if __name__ == '__main__':
-    if 'ConfigUpdater' in to_execute:
-        import ConfigUpdater
-        ConfigUpdater.run()
     if 'PlayersListing' in to_execute:
         import PlayersListing
         PlayersListing.run(mode)
