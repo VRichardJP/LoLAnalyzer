@@ -74,7 +74,7 @@ class DataDownloader:
                 if next_patch in self.timestamped_patches and self.timestamped_patches[next_patch][0] < timestamp:  # game is too recent
                     continue  # need to go further
 
-                # Already downloaded ?
+                # Already downloaded ? This means we are up-to-date
                 if gameID in self.downloadedGames:
                     break
 

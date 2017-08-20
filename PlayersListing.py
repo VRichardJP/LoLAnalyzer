@@ -12,7 +12,7 @@ import sys
 from InterfaceAPI import InterfaceAPI, ApiError403, ApiError, ApiError404
 import Modes
 
-MAX_DEPTH = 1000*(time.time() - 86400 * 3)  # up to 1 week
+MAX_DEPTH = 1000*(time.time() - 86400 * 3)  # up to 3 days
 ATTEMPTS = 3
 SAVE = 100
 
@@ -25,7 +25,7 @@ class PlayerListing:
         self.region = region
 
         if os.path.exists(os.path.join(database, '{}_players'.format(region))):
-            self.players = pickle.load(open(os.path.join(database, '{}_players'.format(region)), 'rb'))
+            self.players = pickle.load(open(os.path.join(database, 'playerListing', '{}_players'.format(region)), 'rb'))
         else:
             self.players = {}
             for league in leagues:
@@ -33,15 +33,15 @@ class PlayerListing:
 
         # to make sure we don't explore several time the same player/ games
         if os.path.exists(os.path.join(database, '{}_exploredPlayers'.format(region))):
-            self.exploredPlayers = pickle.load(open(os.path.join(database, '{}_exploredPlayers'.format(region)), 'rb'))
+            self.exploredPlayers = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredPlayers'.format(region)), 'rb'))
         else:
             self.exploredPlayers = []
         if os.path.exists(os.path.join(database, '{}_exploredGames'.format(region))):
-            self.exploredGames = pickle.load(open(os.path.join(database, '{}_exploredGames'.format(region)), 'rb'))
+            self.exploredGames = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredGames'.format(region)), 'rb'))
         else:
             self.exploredGames = []
         if os.path.exists(os.path.join(database, '{}_to_explore'.format(region))):
-            self.to_explore = pickle.load(open(os.path.join(database, '{}_to_explore'.format(region)), 'rb'))
+            self.to_explore = pickle.load(open(os.path.join(database, 'playerListing', '{}_to_explore'.format(region)), 'rb'))
         else:
             self.to_explore = []
 
@@ -128,10 +128,10 @@ class PlayerListing:
         return None  # everything explored
 
     def save(self):
-        pickle.dump(self.players, open(os.path.join(self.database, '{}_players'.format(self.region)), 'wb'))
-        pickle.dump(self.exploredPlayers, open(os.path.join(self.database, '{}_exploredPlayers'.format(self.region)), 'wb'))
-        pickle.dump(self.exploredGames, open(os.path.join(self.database, '{}_exploredGames'.format(self.region)), 'wb'))
-        pickle.dump(self.to_explore, open(os.path.join(self.database, '{}_to_explore'.format(self.region)), 'rb'))
+        pickle.dump(self.players, open(os.path.join(self.database, 'playerListing', '{}_players'.format(self.region)), 'wb'))
+        pickle.dump(self.exploredPlayers, open(os.path.join(self.database, 'playerListing', '{}_exploredPlayers'.format(self.region)), 'wb'))
+        pickle.dump(self.exploredGames, open(os.path.join(self.database, 'playerListing', '{}_exploredGames'.format(self.region)), 'wb'))
+        pickle.dump(self.to_explore, open(os.path.join(self.database, 'playerListing', '{}_to_explore'.format(self.region)), 'wb'))
 
 
 def keepExploring(database, leagues, region, attempts=ATTEMPTS):
