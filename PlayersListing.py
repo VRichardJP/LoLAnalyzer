@@ -12,7 +12,7 @@ import sys
 from InterfaceAPI import InterfaceAPI, ApiError403, ApiError, ApiError404
 import Modes
 
-MAX_DEPTH = 1000*(time.time() - 86400 * 7)  # up to 7 day
+MAX_DEPTH = 1000*(time.time() - 86400 * 3)  # up to 1 week
 ATTEMPTS = 3
 SAVE = 100
 
@@ -23,25 +23,37 @@ class PlayerListing:
         self.database = database
         self.leagues = leagues
         self.region = region
-        self.players = {}  # summoner ID
-        self.exploredPlayers = []  # to make sure we don't explore several time the same player
-        self.exploredGames = []
-        for league in leagues:
-            self.players[league] = []
-        self.to_explore = []
+
+        if os.path.exists(os.path.join(database, '{}_players'.format(region))):
+            self.players = pickle.load(open(os.path.join(database, '{}_players'.format(region)), 'rb'))
+        else:
+            self.players = {}
+            for league in leagues:
+                self.players[league] = []
+
+        # to make sure we don't explore several time the same player/ games
+        if os.path.exists(os.path.join(database, '{}_exploredPlayers'.format(region))):
+            self.exploredPlayers = pickle.load(open(os.path.join(database, '{}_exploredPlayers'.format(region)), 'rb'))
+        else:
+            self.exploredPlayers = []
+        if os.path.exists(os.path.join(database, '{}_exploredGames'.format(region))):
+            self.exploredGames = pickle.load(open(os.path.join(database, '{}_exploredGames'.format(region)), 'rb'))
+        else:
+            self.exploredGames = []
+        if os.path.exists(os.path.join(database, '{}_to_explore'.format(region))):
+            self.to_explore = pickle.load(open(os.path.join(database, '{}_to_explore'.format(region)), 'rb'))
+        else:
+            self.to_explore = []
+
         self.counter = 0
 
-        if fast:
-            # we start with the challenger and master league
+        if fast:  # only the challenger and master league, no need to explore anything
             challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
             for e in challLeague['entries']:
                 self.players['challenger'].append(e['playerOrTeamId'])
-                self.to_explore.append(e['playerOrTeamId'])
             masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
             for e in masterLeague['entries']:
                 self.players['master'].append(e['playerOrTeamId'])
-                self.to_explore.append(e['playerOrTeamId'])
-            self.exploredPlayers.extend(self.to_explore)
         else:
             challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
             for e in challLeague['entries']:
@@ -55,11 +67,11 @@ class PlayerListing:
         while self.to_explore:
             self.counter += 1
             if self.counter % SAVE == 0:
-                print(self.region, len(self.to_explore), 'left')
+                print(self.region, len(self.to_explore), 'left to explore')
                 print(self.region, 'saving...')
                 self.save()
 
-            sumID = self.to_explore.pop(0)  # highest rank player
+            sumID = self.to_explore.pop()  # lowest rank player, better chances to find new players
             try:
                 accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
                 games = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})['matches']
@@ -67,7 +79,7 @@ class PlayerListing:
             except ApiError403 as e:
                 print(e, file=sys.stderr)
                 return e
-            except ApiError as e:
+            except (ApiError, ConnectionError) as e:
                 print(e, file=sys.stderr)
                 continue
 
@@ -101,7 +113,7 @@ class PlayerListing:
                 except ApiError404 as e:
                     print(e, file=sys.stderr)
                     break
-                except ApiError as e:
+                except (ApiError, ConnectionError) as e:
                     print(e, file=sys.stderr)
                     continue
 
@@ -116,9 +128,10 @@ class PlayerListing:
         return None  # everything explored
 
     def save(self):
-        for league in self.leagues:
-            file = os.path.join(self.database, 'players_{}_{}'.format(self.region, league))
-            pickle.dump(self.players[league], open(file, 'wb'))
+        pickle.dump(self.players, open(os.path.join(self.database, '{}_players'.format(self.region)), 'wb'))
+        pickle.dump(self.exploredPlayers, open(os.path.join(self.database, '{}_exploredPlayers'.format(self.region)), 'wb'))
+        pickle.dump(self.exploredGames, open(os.path.join(self.database, '{}_exploredGames'.format(self.region)), 'wb'))
+        pickle.dump(self.to_explore, open(os.path.join(self.database, '{}_to_explore'.format(self.region)), 'rb'))
 
 
 def keepExploring(database, leagues, region, attempts=ATTEMPTS):
@@ -132,7 +145,7 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                 except ApiError403 as e:
                     print('FATAL ERROR', region, e, file=sys.stderr)
                     break
-                except ApiError as e:
+                except (ApiError, ConnectionError) as e:
                     print(e, file=sys.stderr)
                     attempts -= 1
                     if attempts <= 0:
