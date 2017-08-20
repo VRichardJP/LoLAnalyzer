@@ -12,9 +12,9 @@ import sys
 from InterfaceAPI import InterfaceAPI, ApiError403, ApiError, ApiError404
 import Modes
 
-MAX_DEPTH = 1000*(time.time() - 86400 * 3)  # up to 3 days
+MAX_DEPTH = 1000 * (time.time() - 86400 * 7)  # up to 1 week
 ATTEMPTS = 3
-SAVE = 100
+SAVE = 600  # save every 10 minutes
 
 
 class PlayerListing:
@@ -23,6 +23,7 @@ class PlayerListing:
         self.database = database
         self.leagues = leagues
         self.region = region
+        self.nextSave = time.time() + SAVE
 
         if os.path.exists(os.path.join(database, '{}_players'.format(region))):
             self.players = pickle.load(open(os.path.join(database, 'playerListing', '{}_players'.format(region)), 'rb'))
@@ -45,8 +46,6 @@ class PlayerListing:
         else:
             self.to_explore = []
 
-        self.counter = 0
-
         if fast:  # only the challenger and master league, no need to explore anything
             challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
             for e in challLeague['entries']:
@@ -65,21 +64,23 @@ class PlayerListing:
 
     def explore(self):
         while self.to_explore:
-            self.counter += 1
-            if self.counter % SAVE == 0:
+            if time.time() > self.nextSave:
                 print(self.region, len(self.to_explore), 'left to explore')
                 print(self.region, 'saving...')
                 self.save()
+                self.nextSave = time.time() + SAVE
 
             sumID = self.to_explore.pop()  # lowest rank player, better chances to find new players
             try:
                 accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
-                games = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})['matches']
+                games = \
+                    self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})[
+                        'matches']
                 playerLeagueList = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/leagues/by-summoner/%s' % (self.region, sumID))
             except ApiError403 as e:
                 print(e, file=sys.stderr)
                 return e
-            except (ApiError, ConnectionError) as e:
+            except (ApiError, Exception) as e:
                 print(e, file=sys.stderr)
                 continue
 
@@ -113,7 +114,7 @@ class PlayerListing:
                 except ApiError404 as e:
                     print(e, file=sys.stderr)
                     break
-                except (ApiError, ConnectionError) as e:
+                except (ApiError, Exception) as e:
                     print(e, file=sys.stderr)
                     continue
 
@@ -123,11 +124,13 @@ class PlayerListing:
                     if sumID not in self.exploredPlayers:
                         self.to_explore.append(sumID)
                         self.exploredPlayers.append(sumID)
-            print(self.region, sumID, useful_games, 'useful games explored')
+                        # print(self.region, sumID, useful_games, 'useful games explored')
 
         return None  # everything explored
 
     def save(self):
+        if not os.path.isdir(os.path.join(self.database, 'playerListing')):
+            os.makedirs(os.path.join(self.database, 'playerListing'))
         pickle.dump(self.players, open(os.path.join(self.database, 'playerListing', '{}_players'.format(self.region)), 'wb'))
         pickle.dump(self.exploredPlayers, open(os.path.join(self.database, 'playerListing', '{}_exploredPlayers'.format(self.region)), 'wb'))
         pickle.dump(self.exploredGames, open(os.path.join(self.database, 'playerListing', '{}_exploredGames'.format(self.region)), 'wb'))
@@ -145,7 +148,7 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                 except ApiError403 as e:
                     print('FATAL ERROR', region, e, file=sys.stderr)
                     break
-                except (ApiError, ConnectionError) as e:
+                except (ApiError, Exception) as e:
                     print(e, file=sys.stderr)
                     attempts -= 1
                     if attempts <= 0:
