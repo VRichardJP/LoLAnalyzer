@@ -63,6 +63,7 @@ class PlayerListing:
             self.exploredPlayers.extend(self.to_explore)
 
     def explore(self):
+        print(self.region, len(self.to_explore), 'left to explore')
         while self.to_explore:
             if time.time() > self.nextSave:
                 print(self.region, len(self.to_explore), 'left to explore')

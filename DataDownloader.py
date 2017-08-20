@@ -35,9 +35,9 @@ class DataDownloader:
         else:
             self.downloadedGames = []
         self.summonerIDs = []
+        players = pickle.load(open(os.path.join(database, 'playerListing', '{}_players'.format(region)), 'rb'))
         for league in leagues:
-            file = os.path.join(database, 'players_{}_{}'.format(region, league))
-            self.summonerIDs.extend(pickle.load(open(file, 'rb')))
+            self.summonerIDs.extend(players[league])
 
         random.shuffle(self.summonerIDs)
 

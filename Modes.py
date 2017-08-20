@@ -12,8 +12,8 @@ class Base_Mode:
         self.config.read('config.ini')
         self.DATABASE = self.config['PARAMS']['database']
         self.PATCHES_TO_DOWNLOAD = self.config['PARAMS']['download_patches'].split(',')
-        self.LEAGUES = {league: enabled == 'yes' for (league, enabled) in self.config['LEAGUES'].items()}
-        self.REGIONS = {region: enabled == 'yes' for (region, enabled) in self.config['REGIONS'].items()}
+        self.LEAGUES = [league for (league, enabled) in self.config['LEAGUES'].items() if enabled == 'yes']
+        self.REGIONS = [region for (region, enabled) in self.config['REGIONS'].items() if enabled == 'yes']
 
         # Extractor+
         self.DATA_LINES = 100000
