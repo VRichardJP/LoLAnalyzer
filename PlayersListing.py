@@ -25,7 +25,7 @@ class PlayerListing:
         self.region = region
         self.nextSave = time.time() + SAVE
 
-        if os.path.exists(os.path.join(database, '{}_players'.format(region))):
+        if os.path.exists(os.path.join(database, 'playerListing', '{}_players'.format(region))):
             self.players = pickle.load(open(os.path.join(database, 'playerListing', '{}_players'.format(region)), 'rb'))
         else:
             self.players = {}
@@ -33,34 +33,36 @@ class PlayerListing:
                 self.players[league] = []
 
         # to make sure we don't explore several time the same player/ games
-        if os.path.exists(os.path.join(database, '{}_exploredPlayers'.format(region))):
+        if os.path.exists(os.path.join(database, 'playerListing', '{}_exploredPlayers'.format(region))):
             self.exploredPlayers = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredPlayers'.format(region)), 'rb'))
         else:
             self.exploredPlayers = []
-        if os.path.exists(os.path.join(database, '{}_exploredGames'.format(region))):
+        if os.path.exists(os.path.join(database, 'playerListing', '{}_exploredGames'.format(region))):
             self.exploredGames = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredGames'.format(region)), 'rb'))
         else:
             self.exploredGames = []
-        if os.path.exists(os.path.join(database, '{}_to_explore'.format(region))):
+        if os.path.exists(os.path.join(database, 'playerListing', '{}_to_explore'.format(region))):
             self.to_explore = pickle.load(open(os.path.join(database, 'playerListing', '{}_to_explore'.format(region)), 'rb'))
         else:
             self.to_explore = []
 
-        if fast:  # only the challenger and master league, no need to explore anything
-            challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
-            for e in challLeague['entries']:
-                self.players['challenger'].append(e['playerOrTeamId'])
-            masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
-            for e in masterLeague['entries']:
-                self.players['master'].append(e['playerOrTeamId'])
-        else:
-            challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
-            for e in challLeague['entries']:
-                self.to_explore.append(e['playerOrTeamId'])
-            masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
-            for e in masterLeague['entries']:
-                self.to_explore.append(e['playerOrTeamId'])
-            self.exploredPlayers.extend(self.to_explore)
+        if not self.exploredPlayers:
+            # only the first time
+            if fast:  # only the challenger and master league, no need to explore anything
+                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
+                for e in challLeague['entries']:
+                    self.players['challenger'].append(e['playerOrTeamId'])
+                masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                for e in masterLeague['entries']:
+                    self.players['master'].append(e['playerOrTeamId'])
+            else:
+                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
+                for e in challLeague['entries']:
+                    self.to_explore.append(e['playerOrTeamId'])
+                masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                for e in masterLeague['entries']:
+                    self.to_explore.append(e['playerOrTeamId'])
+                self.exploredPlayers.extend(self.to_explore)
 
     def explore(self):
         print(self.region, len(self.to_explore), 'left to explore')
