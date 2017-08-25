@@ -9,19 +9,19 @@ import sys
 import time
 
 DEBUG = False
-OFFSET = 2
+OFFSET = 0
 # OFFSET is just a security to avoid error 429. Prevent also the first request from reaching the rate-limit
 # we have no way to check the rate limit but to request something
-TIME_LIMIT_WAIT = 120  # If we still get an error 429, wait for a reset. It's painful so it's better to not have to deal with this
+TIME_LIMIT_WAIT = 60  # If we still get an error 429, wait a little. It's painful so it's better to not have to deal with this
 BYPASS_FIRST_WAIT = False  # Warning: only use if you haven't used the script for a while and you know there has been a reset.
 
 
 # The scripts have different behaviour depending on the errors
-# 403 -> stop everything (wrong a pi-key)
+# 403 -> stop everything (wrong a api-key)
 # 404 -> usually a summoner is not found, just ignore it and analyze the next one
 # 429 -> time limit error. I'm still wondering why this is happening, but w/e, if that happens we just wait  little.
 # Any other -> just ignore current game and get the next one (we don't want the script to be stuck so we never ask twice the same information)
-# It is highly possible that some games where missed during a first scan (because of a random error). Downloading games a second time will eventualy
+# It is highly possible that some games were missing during a first scan (because of a random error). Downloading games a second time will eventualy
 # fix the problem (onlly download new games)
 
 
@@ -75,13 +75,15 @@ class InterfaceAPI:
                 for r in resp.headers['X-App-Rate-Limit-Count'].split(','):  # we use the api value to be precise
                     [c, t] = list(map(int, r.split(':')))
                     wait = max(wait, t) if c > 1 else wait
+            for r in resp.headers['X-App-Rate-Limit'].split(','):
+                [l, t] = list(map(int, r.split(':')))
+                self.resets[t] = collections.deque(l * [0], l)
+            if DEBUG:
+                print('limitations found:', resp.headers['X-App-Rate-Limit'], file=sys.stderr)
             if wait:
                 if DEBUG:
                     print('Initial synchronization - waiting for', wait, file=sys.stderr)
                 time.sleep(wait)
-            for r in resp.headers['X-App-Rate-Limit'].split(','):
-                [l, t] = list(map(int, r.split(':')))
-                self.resets[t] = collections.deque(l * [0], l)
 
         # update current state
         for t in self.resets:
