@@ -14,7 +14,7 @@ import Modes
 
 MAX_DEPTH = 1000 * (time.time() - 86400 * 7)  # up to 1 week
 ATTEMPTS = 3
-SAVE = 600  # save every 10 minutes
+SAVE = 60  # save every minute
 
 
 class PlayerListing:
@@ -47,6 +47,7 @@ class PlayerListing:
             self.to_explore = []
 
         if not self.exploredPlayers:
+            print('First time exploration, checking challenger and master leagues', file=sys.stderr)
             # only the first time
             if fast:  # only the challenger and master league, no need to explore anything
                 challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
@@ -62,18 +63,18 @@ class PlayerListing:
                 masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in masterLeague['entries']:
                     self.to_explore.append(e['playerOrTeamId'])
-                self.exploredPlayers.extend(self.to_explore)
+                self.exploredPlayers = list(self.to_explore)
 
     def explore(self):
         print(self.region, len(self.to_explore), 'left to explore')
         while self.to_explore:
             if time.time() > self.nextSave:
-                print(self.region, len(self.to_explore), 'left to explore')
-                print(self.region, 'saving...')
+                print(self.region, len(self.to_explore), 'left to explore', file=sys.stderr)
+                print(self.region, 'saving...', file=sys.stderr)
                 self.save()
                 self.nextSave = time.time() + SAVE
 
-            sumID = self.to_explore.pop()  # lowest rank player, better chances to find new players
+            sumID = self.to_explore.pop(0)  # strongest players first
             try:
                 accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
                 games = \
@@ -90,13 +91,14 @@ class PlayerListing:
             # we check that the summoner is in one of the leagues we want
             playerLeague = None
             for league in playerLeagueList:
-                if league['queue'] == 'RANKED_SOLO_5x5' and league['tier'].lower():
+                if league['queue'] == 'RANKED_SOLO_5x5':
                     playerLeague = league['tier'].lower()
+                    break
             if playerLeague not in self.leagues:
                 print('refused:', self.region, sumID, playerLeague)
                 continue
             self.players[playerLeague].append(sumID)
-            print('added:', self.region, sumID, playerLeague)
+            print('accepted:', self.region, sumID, playerLeague)
 
             useful_games = 0
             for game in games:  # from most recent to oldest
@@ -114,9 +116,6 @@ class PlayerListing:
                 except ApiError403 as e:
                     print(e, file=sys.stderr)
                     return e
-                except ApiError404 as e:
-                    print(e, file=sys.stderr)
-                    break
                 except (ApiError, Exception) as e:
                     print(e, file=sys.stderr)
                     continue
@@ -164,8 +163,8 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
             e = pl.explore()
             if e is not None:
                 print('FATAL ERROR', region, e, file=sys.stderr)
-                break
-            print(region, 'all players explored downloaded', file=sys.stderr)
+            else:
+                print(region, 'all players explored downloaded', file=sys.stderr)
             break
     else:  # only master/challenger league
         while True:
@@ -191,9 +190,8 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
 
     # we finally save the players list
     if pl is not None:
-        print(region, 'Saving players list')
+        print(region, 'Saving players list', file=sys.stderr)
         pl.save()
-    print(region, 'Listing complete')
 
 
 def run(mode):

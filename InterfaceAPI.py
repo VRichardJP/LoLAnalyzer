@@ -9,7 +9,7 @@ import sys
 import time
 
 DEBUG = False
-OFFSET = 0
+OFFSET = 2
 # OFFSET is just a security to avoid error 429. Prevent also the first request from reaching the rate-limit
 # we have no way to check the rate limit but to request something
 TIME_LIMIT_WAIT = 60  # If we still get an error 429, wait a little. It's painful so it's better to not have to deal with this
