@@ -43,7 +43,7 @@ def run():
         if config['LEAGUES']['master'] == 'yes':
             config['LEAGUES']['diamond'] = 'yes' if validationInput('diamond (not recommended): ', ['y', 'n']) == 'y' else 'no'
         if config['LEAGUES']['diamond'] == 'yes':
-            config['LEAGUES']['platinum'] = 'yes' if validationInput('platinum (not recommended) (not recommended): ', ['y', 'n']) == 'y' else 'no'
+            config['LEAGUES']['platinum'] = 'yes' if validationInput('platinum (not recommended): ', ['y', 'n']) == 'y' else 'no'
         if config['LEAGUES']['platinum'] == 'yes':
             config['LEAGUES']['gold'] = 'yes' if validationInput('gold (not recommended): ', ['y', 'n']) == 'y' else 'no'
         if config['LEAGUES']['gold'] == 'yes':
