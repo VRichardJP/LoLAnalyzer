@@ -153,6 +153,7 @@ def run(mode):
                     r_roles[i] = 'C'
                 else:
                     raise Exception(p, lane)
+
         # need to find the support in both team
         b_doubleRole = Counter(b_roles.values()).most_common(1)[0][0]
         b_doublei = [i for i, r in b_roles.items() if r == b_doubleRole]

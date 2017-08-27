@@ -12,9 +12,9 @@ import sys
 from InterfaceAPI import InterfaceAPI, ApiError403, ApiError, ApiError404
 import Modes
 
-MAX_DEPTH = 1000 * (time.time() - 86400 * 7)  # up to 1 week
+MAX_DEPTH = 1000 * (time.time() - 86400 * 3)  # up to 3 days
 ATTEMPTS = 3
-SAVE = 60  # save every minute
+SAVE = 600  # save every 10 minutes
 
 
 class PlayerListing:
@@ -23,7 +23,7 @@ class PlayerListing:
         self.database = database
         self.leagues = leagues
         self.region = region
-        self.nextSave = time.time() + SAVE
+        self.nextSave = 0  # time.time() + SAVE
 
         if os.path.exists(os.path.join(database, 'playerListing', '{}_players'.format(region))):
             self.players = pickle.load(open(os.path.join(database, 'playerListing', '{}_players'.format(region)), 'rb'))
@@ -50,23 +50,22 @@ class PlayerListing:
             print('First time exploration, checking challenger and master leagues', file=sys.stderr)
             # only the first time
             if fast:  # only the challenger and master league, no need to explore anything
-                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
+                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in challLeague['entries']:
-                    self.players['challenger'].append(e['playerOrTeamId'])
+                    self.players['challenger'].append(int(e['playerOrTeamId']))
                 masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in masterLeague['entries']:
-                    self.players['master'].append(e['playerOrTeamId'])
+                    self.players['master'].append(int(e['playerOrTeamId']))
             else:
-                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % region)
+                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in challLeague['entries']:
-                    self.to_explore.append(e['playerOrTeamId'])
+                    self.to_explore.append(int(e['playerOrTeamId']))
                 masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in masterLeague['entries']:
-                    self.to_explore.append(e['playerOrTeamId'])
+                    self.to_explore.append(int(e['playerOrTeamId']))
                 self.exploredPlayers = list(self.to_explore)
 
     def explore(self):
-        print(self.region, len(self.to_explore), 'left to explore')
         while self.to_explore:
             if time.time() > self.nextSave:
                 print(self.region, len(self.to_explore), 'left to explore', file=sys.stderr)
@@ -102,9 +101,9 @@ class PlayerListing:
 
             useful_games = 0
             for game in games:  # from most recent to oldest
-                if game in self.exploredGames:
+                if game['gameId'] in self.exploredGames:
                     continue
-                self.exploredGames.append(game)
+                self.exploredGames.append(game['gameId'])
                 gameID = str(game['gameId'])
                 timestamp = game['timestamp']
                 if timestamp < MAX_DEPTH:  # game is too old?
@@ -198,7 +197,8 @@ def run(mode):
     assert isinstance(mode, Modes.Base_Mode), 'Unrecognized mode {}'.format(mode)
 
     keprocs = []
-    for region in mode.REGIONS:
+    # for region in mode.REGIONS:
+    for region in mode.REGIONS[:1]:
         keprocs.append(multiprocessing.Process(target=keepExploring, args=(mode.DATABASE, mode.LEAGUES, region)))
         keprocs[-1].start()
 
