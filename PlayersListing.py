@@ -197,8 +197,7 @@ def run(mode):
     assert isinstance(mode, Modes.Base_Mode), 'Unrecognized mode {}'.format(mode)
 
     keprocs = []
-    # for region in mode.REGIONS:
-    for region in mode.REGIONS[:1]:
+    for region in mode.REGIONS:
         keprocs.append(multiprocessing.Process(target=keepExploring, args=(mode.DATABASE, mode.LEAGUES, region)))
         keprocs[-1].start()
 
