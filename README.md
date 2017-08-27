@@ -35,10 +35,10 @@ You need at least (pip/google is your best friend):
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit
 2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program)
 
-or in details
-1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit
-2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini)
-3. DataDownloader.py : download raw game files played by the listed players and that meet the requirements in config.ini
+Or in details:
+1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. It determines most of the scripts behaviour.
+2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini). This step is really long if you don't limit yourself to top leagues (challenger & master)
+3. DataDownloader.py : download raw game files played by the listed players
 4. DataExtractor.py : extract and collect all the downloaded data
 5. DataProcessing.py : pre-process the extrated data
 6. DataShuffling.py : shuffling the data

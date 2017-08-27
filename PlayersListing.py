@@ -12,7 +12,9 @@ import sys
 from InterfaceAPI import InterfaceAPI, ApiError403, ApiError, ApiError404
 import Modes
 
-MAX_DEPTH = 1000 * (time.time() - 86400 * 3)  # up to 3 days
+MAX_DAYS = 3  # up to how many days we look up
+# Note it's not important that we get every single player, since we only need one participant for each game
+MAX_DEPTH = 1000 * (time.time() - 86400 * MAX_DAYS)
 ATTEMPTS = 3
 SAVE = 600  # save every 10 minutes
 
