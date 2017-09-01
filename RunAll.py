@@ -46,7 +46,7 @@ if __name__ == '__main__':
         DataDownloader.run(mode)
     if 'DataExtractor' in to_execute:
         import DataExtractor
-        DataExtractor.run(mode)
+        DataExtractor.run(mode, cpu)
     if 'RoleUpdater' in to_execute:
         import RoleUpdater
         RoleUpdater.run(mode)
