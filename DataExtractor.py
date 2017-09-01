@@ -208,7 +208,9 @@ def run(mode):
         roles.update(b_roles)
         roles.update(r_roles)
         # Draft
-        DRAFT_ORDER = [0, 5, 6, 1, 2, 7, 8, 3, 4, 9]
+        DRAFT_ORDER = [0, 5, 6, 1, 2, 7, 8, 3, 4, 9]  # This is not exact. This order is not pick order but end-draft order: if some players
+        # trade, this order is wrong. Unfortunatelly there is no way to know the real pick order. So we just assume people don't trade often and
+        # that trading does not have a huge impact anyway.
         for i in DRAFT_ORDER:
             state = OrderedDict(state)
             bluePick = i < 5
