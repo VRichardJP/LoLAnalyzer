@@ -3,10 +3,11 @@
 
 import pickle
 import os
+import queue
 import sys
 from collections import OrderedDict
 import multiprocessing
-from multiprocessing.managers import BaseManager
+from multiprocessing.managers import BaseManager, NamespaceProxy
 import time
 import Modes
 import pandas as pd
@@ -17,8 +18,11 @@ CHUNK_SIZE = 100
 
 def extracted_writer(extracted_file, q, stop):
     with open(extracted_file, 'a+') as f:
-        while not stop.isSet():
-            game_path = q.get(timeout=1)
+        while not stop.is_set():
+            try:
+                game_path = q.get(timeout=1)
+            except queue.Empty:
+                continue
             f.write(game_path)
             f.write('\n')
         print('Closing writer', file=sys.stderr)
@@ -31,10 +35,10 @@ class Extractor:
         self.writing_q = writing_q
 
         self.current_index = current_index
-        if len(extracted_files) > self.current_index:  # the file already exist
-            self.csv_file = os.path.join(mode.EXTRACTED_DIR, extracted_files[self.current_index - 1])
+        if len(extracted_files) > self.current_index >= 0:  # the file already exist
+            self.csv_file = os.path.join(mode.EXTRACTED_DIR, extracted_files[self.current_index])
             self.csv_index = len(pd.read_csv(self.csv_file, skiprows=1))
-            print('lines', self.csv_index)
+            print(self.csv_file, 'lines', self.csv_index, file=sys.stderr)
         else:
             self.csv_file = None
             self.csv_index = mode.DATA_LINES
@@ -43,7 +47,11 @@ class Extractor:
 class ExManager(BaseManager):
     pass
 
-ExManager.register('Extractor', Extractor)
+
+class ExProxy(NamespaceProxy):
+    _exposed_ = ('__getattribute__', '__setattr__', '__delattr__', 'b')
+
+ExManager.register('Extractor', Extractor, ExProxy)
 
 
 def run(mode, cpu):
@@ -61,9 +69,9 @@ def run(mode, cpu):
                 gamePaths.extend(
                     [os.path.join(mode.DATABASE, 'patches', patch, region, f) for f in
                      os.listdir(os.path.join(mode.DATABASE, 'patches', patch, region))])
-    print('%d game files found' % len(gamePaths))
+    print('%d game files found' % len(gamePaths), file=sys.stderr)
     gamePaths = list(set(gamePaths) - set(extracted_list))
-    print('%d new games to extract' % len(gamePaths))
+    print('%d new games to extract' % len(gamePaths), file=sys.stderr)
 
     if not os.path.isdir(mode.EXTRACTED_DIR):
         os.makedirs(mode.EXTRACTED_DIR)
@@ -85,8 +93,8 @@ def run(mode, cpu):
     ex_manager.start()
     available_extractors = []
     running_extractors = []
-    for _ in range(cpu):
-        current_index = len(extracted_files) - cpu
+    for i in range(cpu):
+        current_index = len(extracted_files) - i
         # noinspection PyUnresolvedReferences
         available_extractors.append(ex_manager.Extractor(mode, extracted_files, current_index, cpu, writing_q))
 
@@ -124,13 +132,13 @@ def analyze_game(ex, gamePaths):
         raw_data['patch'] = []
         raw_data['win'] = []
         raw_data['file'] = []
-        print(gamePath)
+        print(ex.current_index, gamePath)
         game = pickle.load(open(gamePath, 'rb'))
         bans = []
         game_patch = '_'.join(game['gameVersion'].split('.')[:2])
 
         if game['gameDuration'] < 300:
-            print('FF afk', game['gameDuration'])
+            print(gamePath, 'FF afk', game['gameDuration'], file=sys.stderr)
             ex.writing_q.put(gamePath)
             return
 
@@ -142,7 +150,7 @@ def analyze_game(ex, gamePaths):
             elif team['teamId'] == 200:
                 redTeam = team
             else:
-                print('Unrecognized team %d' % team['teamId'], file=sys.stderr)
+                print(gamePath, 'Unrecognized team %d' % team['teamId'], file=sys.stderr)
                 ex.writing_q.put(gamePath)
                 continue
 
@@ -151,7 +159,7 @@ def analyze_game(ex, gamePaths):
                 if championId not in bans:
                     bans.append(championId)
         if not blueTeam or not redTeam:
-            print('Teams are not recognized', file=sys.stderr)
+            print(gamePath, 'Teams are not recognized', file=sys.stderr)
             ex.writing_q.put(gamePath)
             return
 
@@ -160,7 +168,7 @@ def analyze_game(ex, gamePaths):
         blueWin = blueTeam['win'] == 'Win'
         redWin = redTeam['win'] == 'Win'
         if not blueWin ^ redWin:
-            print('No winner found', blueWin, redWin, file=sys.stderr)
+            print(gamePath, 'No winner found', blueWin, redWin, file=sys.stderr)
             ex.writing_q.put(gamePath)
             return
         participants = game['participants']
@@ -221,7 +229,7 @@ def analyze_game(ex, gamePaths):
         b_doubleRole = Counter(b_roles.values()).most_common(1)[0][0]
         b_doublei = [i for i, r in b_roles.items() if r == b_doubleRole]
         if len(b_doublei) > 2:
-            print('fucked up roles', b_roles)
+            print(gamePath, 'fucked up roles', b_roles, file=sys.stderr)
             ex.writing_q.put(gamePath)
             return
         if 'SUPPORT' in participants[b_doublei[0]]['timeline']['role']:
@@ -243,7 +251,7 @@ def analyze_game(ex, gamePaths):
         r_doubleRole = Counter(r_roles.values()).most_common(1)[0][0]
         r_doublei = [i for i, r in r_roles.items() if r == r_doubleRole]
         if len(r_doublei) > 2:
-            print('fucked up roles', r_roles)
+            print(gamePath, 'fucked up roles', r_roles, file=sys.stderr)
             ex.writing_q.put(gamePath)
             return
         if 'SUPPORT' in participants[r_doublei[0]]['timeline']['role']:

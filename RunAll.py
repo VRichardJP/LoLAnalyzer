@@ -27,12 +27,12 @@ network = Networks.DenseDegressive(mode=mode, n_hidden_layers=2, NN=512, dropout
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
     # 'PlayersListing'
-    'DataDownloader',  # run on multiple cpu
-    'DataExtractor',
+    # 'DataDownloader',  # runs on multiple cpu
+    'DataExtractor',  # runs on multiple cpu
     'RoleUpdater',
-    'DataProcessing',  # run on multiple cpu
+    'DataProcessing',  # runs on multiple cpu
     'DataShuffling',
-    'Learner',  # run on gpu
+    'Learner',  # runs on gpu
     'BestPicks',
 ]
 
