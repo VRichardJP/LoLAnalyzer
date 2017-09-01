@@ -113,11 +113,22 @@ class DataDownloader:
 
                 # saving game
                 file_path = os.path.join(self.db, gameID)
-                pickle.dump(gameData, open(file_path, 'wb'))
+                try:
+                    pickle.dump(gameData, open(file_path, 'wb'))
+                except FileNotFoundError as e:
+                    print(e, file=sys.stderr)
+                    time.sleep(1)
+                    continue
                 self.downloadedGames.append(gameID)
                 print(self.patch, self.region, gameID)
-                with open(self.downloadedGamesPath, 'a+') as f:
-                    f.write(gameID + '\n')
+                try:
+                    with open(self.downloadedGamesPath, 'a+') as f:
+                        f.write(gameID + '\n')
+                except FileNotFoundError as e:
+                    print(e, file=sys.stderr)
+                    time.sleep(1)
+                    continue
+
         return None  # No data left to download
 
 
