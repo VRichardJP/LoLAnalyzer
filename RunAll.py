@@ -6,7 +6,7 @@ import Modes
 
 # Running options
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
-shuffling_files = 23  # prime number to maximize spreading. Take a prime higher to the number of data files (e.g. If you have 32 data files, take 37)
+shuffling_files = 59  # prime number to maximize spreading. Take a prime higher to the number of data files (e.g. If you have 32 data files, take 37)
 keep_for_testing = 1  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
 # Keep in mind testing on games that were not used for training is the only we can be sure the neural network is not recognizing games but has
 # actually learned to predict the winner.

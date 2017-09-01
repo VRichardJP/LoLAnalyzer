@@ -1,5 +1,6 @@
 # moving consecutive lines from the same file in different files
-# it's not a real shuffle but it spreads the data as much as possible
+# it's not a real shuffle from random but it spreads the data as much as possible so its the same
+# It's difficult to use multiple cpu since the process is memory-heavy and there's little computation (mainly IO)
 
 import pandas as pd
 import os
