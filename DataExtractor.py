@@ -35,8 +35,8 @@ class Extractor:
         self.writing_q = writing_q
 
         self.current_index = current_index
-        if len(extracted_files) > self.current_index >= 0:  # the file already exist
-            self.csv_file = os.path.join(mode.EXTRACTED_DIR, extracted_files[self.current_index])
+        if len(extracted_files) >= self.current_index > 0:  # the file already exist
+            self.csv_file = os.path.join(mode.EXTRACTED_DIR, extracted_files[self.current_index - 1])
             self.csv_index = len(pd.read_csv(self.csv_file, skiprows=1))
             print(self.csv_file, 'lines', self.csv_index, file=sys.stderr)
         else:
@@ -118,8 +118,8 @@ def run(mode, cpu):
         running_extractors.append((p, ex))
         p.start()
 
-    for ex in available_extractors:
-        ex.join()
+    for p, ex in running_extractors:
+        p.join()
 
     stop.set()
     writer.join()

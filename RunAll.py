@@ -29,7 +29,7 @@ to_execute = [
     # 'PlayersListing'
     # 'DataDownloader',  # runs on multiple cpu
     'DataExtractor',  # runs on multiple cpu
-    'RoleUpdater',
+    # 'RoleUpdater',
     'DataProcessing',  # runs on multiple cpu
     'DataShuffling',
     'Learner',  # runs on gpu
