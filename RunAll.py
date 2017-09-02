@@ -55,7 +55,7 @@ if __name__ == '__main__':
         DataProcessing.run(mode, cpu)
     if 'DataShuffling' in to_execute:
         import DataShuffling
-        DataShuffling.run(mode, shuffling_files, keep_for_testing)
+        DataShuffling.run(mode, shuffling_files, keep_for_testing, cpu)
     if 'Learner' in to_execute:
         import Learner
         Learner.run(mode, network, restore)

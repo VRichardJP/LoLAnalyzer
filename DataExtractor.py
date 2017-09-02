@@ -102,6 +102,7 @@ def run(mode, cpu):
         # we work with chunks in order to save time (no need to hand over the extractor for every single game
         chunk = gamePaths[:CHUNK_SIZE]
         gamePaths = gamePaths[CHUNK_SIZE:]
+        print(len(gamePaths), 'left', file=sys.stderr)
 
         while not available_extractors:  # wait until an extractor is available
             for p, ex in running_extractors:
@@ -140,7 +141,7 @@ def analyze_game(ex, gamePaths):
         if game['gameDuration'] < 300:
             print(gamePath, 'FF afk', game['gameDuration'], file=sys.stderr)
             ex.writing_q.put(gamePath)
-            return
+            continue
 
         blueTeam = None
         redTeam = None
@@ -151,8 +152,7 @@ def analyze_game(ex, gamePaths):
                 redTeam = team
             else:
                 print(gamePath, 'Unrecognized team %d' % team['teamId'], file=sys.stderr)
-                ex.writing_q.put(gamePath)
-                continue
+                break
 
             for ban in team['bans']:
                 championId = ban['championId']
@@ -161,7 +161,7 @@ def analyze_game(ex, gamePaths):
         if not blueTeam or not redTeam:
             print(gamePath, 'Teams are not recognized', file=sys.stderr)
             ex.writing_q.put(gamePath)
-            return
+            continue
 
         # not sure what is written for voided games, so it's safer to check both
         # if we get something else than true/false or false/true we just ignore the file
@@ -170,7 +170,7 @@ def analyze_game(ex, gamePaths):
         if not blueWin ^ redWin:
             print(gamePath, 'No winner found', blueWin, redWin, file=sys.stderr)
             ex.writing_q.put(gamePath)
-            return
+            continue
         participants = game['participants']
 
         # Blank, everything is available
@@ -231,7 +231,7 @@ def analyze_game(ex, gamePaths):
         if len(b_doublei) > 2:
             print(gamePath, 'fucked up roles', b_roles, file=sys.stderr)
             ex.writing_q.put(gamePath)
-            return
+            continue
         if 'SUPPORT' in participants[b_doublei[0]]['timeline']['role']:
             b_roles[b_doublei[0]] = 'S'
         elif 'SUPPORT' in participants[b_doublei[1]]['timeline']['role']:
@@ -253,7 +253,7 @@ def analyze_game(ex, gamePaths):
         if len(r_doublei) > 2:
             print(gamePath, 'fucked up roles', r_roles, file=sys.stderr)
             ex.writing_q.put(gamePath)
-            return
+            continue
         if 'SUPPORT' in participants[r_doublei[0]]['timeline']['role']:
             r_roles[r_doublei[0]] = 'S'
         elif 'SUPPORT' in participants[r_doublei[1]]['timeline']['role']:
