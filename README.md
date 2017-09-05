@@ -1,7 +1,7 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
-![demo](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/demo.PNG)
+![demo](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo.PNG)
 
 
 Warning: I don't guarantee that all the scripts will run on your computer. You will need to install quite a bunch of big libraries to make it work. 
@@ -81,7 +81,12 @@ Note that some parameters of the network are only used for the training and have
 
 ## Results
 
-Under Construction
+Example of failpick situation: my team is full AD with 3 squishies.
+![demo_failpick](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo_failpick.PNG)
+
+Example of best pick for a given draft:
+![demo_bestpick](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo_bestpick.PNG)
+
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py

@@ -32,7 +32,7 @@ to_execute = [
     # 'RoleUpdater',
     # 'DataProcessing',  # runs on multiple cpu
     # 'DataShuffling',
-    'Learner',  # runs on gpu
+    # 'Learner',  # runs on gpu
     'BestPicks',
 ]
 
