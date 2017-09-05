@@ -17,22 +17,22 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
 mode = Modes.ABR_TJMCS_Mode()
-network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)  # 5327 5244
+network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
 # mode = Modes.ABR_TJMCS_Mode()
-# network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)  # 5324 5305 5300
+# network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)
 
 # REMOVE OTJMCS -> use TJMCS for blue and red team
 
 # Scripts to execute, comment useless ones
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
-    # 'PlayersListing'
-    # 'DataDownloader',  # runs on multiple cpu
-    # 'DataExtractor',  # runs on multiple cpu
-    # 'RoleUpdater',
-    # 'DataProcessing',  # runs on multiple cpu
-    # 'DataShuffling',
-    # 'Learner',  # runs on gpu
+    'PlayersListing'
+    'DataDownloader',  # runs on multiple cpu
+    'DataExtractor',  # runs on multiple cpu
+    'RoleUpdater',
+    'DataProcessing',  # runs on multiple cpu
+    'DataShuffling',
+    'Learner',  # runs on gpu
     'BestPicks',
 ]
 

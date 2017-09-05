@@ -443,5 +443,6 @@ def run(mode, network):
 
 
 if __name__ == '__main__':
-    m = Modes.ABR_TJMCS_Mode()
-    run(m, Networks.DenseUniform(m, 5, 256, True))
+    mode = Modes.ABR_TJMCS_Mode()
+    network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
+    run(mode, network)
