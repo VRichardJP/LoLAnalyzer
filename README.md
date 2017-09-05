@@ -81,7 +81,7 @@ Note that some parameters of the network are only used for the training and have
 
 ## Results
 
-Example of failpick situation: my team is full AD with 3 squishies.
+Example of fail pick situation: my team is full AD with 3 squishies. Spoiler alert: we /ff @20
 ![demo_failpick](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo_failpick.PNG)
 
 Example of best pick for a given draft:
