@@ -33,7 +33,7 @@ You need at least (pip/google is your best friend):
 ## How to use
 
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. You can also use the one provided as example.
-2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program)
+2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program, but you can also directly run BestPicks.py)
 
 Or in details:
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. It determines most of the scripts behaviour.
@@ -46,29 +46,43 @@ Or in details:
 8. BestPick.py: a very simple GUI so you can enter your draft and the role you want
 
 
-## Folder tree
+## Example
 
 If you plan to go ahead with the example files, keep in mind you have to respect the following architecture: (if you start from scratch the tree will be created automaticaly)
-From YOUR_DATABASE (defined in config.ini):  
+
+- config.ini has to be in the same folder than the scripts.
+ - From YOUR_DATABASE (defined in config.ini):
+   
+   
     .  
     +-- data_ABR_TJMCS  
     |   +-- data_X  
     |   +-- ...  
     +-- extracted  
-    |   +-- data_X  
     |   +-- ...  
     +-- models  
     |   +-- ABR_TJMCS_DenseUniform_5_1024.h5  
+    |   +-- ...
     +-- patches  
-    +-- playerListing  
+    |   +-- ...
+    +-- playerListing 
+    |   +-- ...
     +-- testing_ABR_TJMCS  
-    |   +-- data_X  
     |   +-- ...  
     +-- training_ABR_TJMCS  
-    |   +-- data_X  
     |   +-- ...  
-    +-- extracted  
+    +-- extracted.txt  
 
+You may have to change the default model used in BestPicks.py or RunAll.py to make sure it correspond to the model you are using. For example, if you want to use ABR_TJMCS_DenseUniform_5_1024.h5, makes sure the scripts use these parameters:  
+
+    mode = Modes.ABR_TJMCS_Mode()  
+    network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)  
+
+Note that some parameters of the network are only used for the training and have no impact during evaluation (dropout, batch_size, report)
+
+## Results
+
+Under Construction
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
