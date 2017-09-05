@@ -53,8 +53,7 @@ If you plan to go ahead with the example files, keep in mind you have to respect
 - config.ini has to be in the same folder than the scripts.
 - From YOUR_DATABASE (defined in config.ini):
 
-   
-   
+
     .  
     +-- data_ABR_TJMCS  
     |   +-- data_X  
