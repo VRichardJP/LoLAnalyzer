@@ -50,9 +50,8 @@ Or in details:
 
 If you plan to go ahead with the example files, keep in mind you have to respect the following architecture: (if you start from scratch the tree will be created automaticaly)
 
-- config.ini has to be in the same folder than the scripts.
-- From YOUR_DATABASE (defined in config.ini):
-
+config.ini has to be in the same folder than the scripts.
+From YOUR_DATABASE (defined in config.ini):  
 
     .  
     +-- data_ABR_TJMCS  
