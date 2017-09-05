@@ -265,6 +265,7 @@ class App(QDialog):
                                self.player9Pick, self.player4Pick, self.player5Pick, self.player10Pick]
             self.role_order = [self.player1Role, self.player6Role, self.player7Role, self.player2Role, self.player3Role, self.player8Role,
                                self.player9Role, self.player4Role, self.player5Role, self.player10Role]
+            self.yourRole = self.player1Role  # blue team is first pick
         else:
             self.player6Pick.setEnabled(True)
             self.generateButton.setEnabled(False)
@@ -272,6 +273,7 @@ class App(QDialog):
                                self.player4Pick, self.player9Pick, self.player10Pick, self.player5Pick]
             self.role_order = [self.player6Role, self.player1Role, self.player2Role, self.player7Role, self.player8Role, self.player3Role,
                                self.player4Role, self.player9Role, self.player10Role, self.player5Role]
+            self.yourRole = None
 
     def pick(self):
         i = self.pick_order.index(self.sender())
@@ -314,6 +316,7 @@ class App(QDialog):
         self.evaluateButton.setEnabled(True)
 
     def evaluate(self):
+        print('evaluating for team', str(self.yourTeam), file=sys.stderr)
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
                 str(self.player7Ban.currentText()), str(self.player8Ban.currentText()), str(self.player9Ban.currentText()),
@@ -359,7 +362,15 @@ class App(QDialog):
         self.results.setItem(0, 1, QTableWidgetItem('%.2f' % pred_values))
 
     def generate(self):
-        print('generating for:', str(self.yourRole.currentText()), file=sys.stderr)
+        if not self.yourRole:
+            print('Analysis only available for your team', file=sys.stderr)
+            return
+
+        yourRole = str(self.yourRole.currentText())
+        if yourRole == '...':
+            print('You need to select a role!', file=sys.stderr)
+            return
+        print('generating for:', yourRole, file=sys.stderr)
 
         bans = [str(self.player1Ban.currentText()), str(self.player2Ban.currentText()), str(self.player3Ban.currentText()),
                 str(self.player4Ban.currentText()), str(self.player5Ban.currentText()), str(self.player6Ban.currentText()),
@@ -379,10 +390,6 @@ class App(QDialog):
             (str(self.player10Pick.currentText()), str(self.player10Role.currentText()), 0),
         ]
         print('picks', picks, file=sys.stderr)
-        yourRole = str(self.yourRole.currentText())
-        if yourRole == '...':
-            print('You need to select a role!', file=sys.stderr)
-            return
 
         currentState = OrderedDict()
         currentState.update([('s_' + champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])

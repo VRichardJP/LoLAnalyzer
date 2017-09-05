@@ -59,6 +59,7 @@ def run(mode, nb_files, keep_for_testing, cpu):
 
     for _ in range(keep_for_testing):
         testing_file = preprocessed_files.pop(0)  # take data away for testing
+        # no need to shuffle since it's a test
         shutil.copyfile(os.path.join(mode.PREPROCESSED_DIR, testing_file), os.path.join(mode.TESTING_DIR, testing_file))
 
     for file in preprocessed_files:

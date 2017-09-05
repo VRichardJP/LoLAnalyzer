@@ -32,7 +32,7 @@ You need at least (pip/google is your best friend):
 
 ## How to use
 
-1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit
+1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. You can also use the one provided as example.
 2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program)
 
 Or in details:
@@ -46,6 +46,30 @@ Or in details:
 8. BestPick.py: a very simple GUI so you can enter your draft and the role you want
 
 
+## Folder tree
+
+If you plan to go ahead with the example files, keep in mind you have to respect the following architecture: (if you start from scratch the tree will be created automaticaly)
+From YOUR_DATABASE (defined in config.ini):  
+    .  
+    +-- data_ABR_TJMCS  
+    |   +-- data_X  
+    |   +-- ...  
+    +-- extracted  
+    |   +-- data_X  
+    |   +-- ...  
+    +-- models  
+    |   +-- ABR_TJMCS_DenseUniform_5_1024.h5  
+    +-- patches  
+    +-- playerListing  
+    +-- testing_ABR_TJMCS  
+    |   +-- data_X  
+    |   +-- ...  
+    +-- training_ABR_TJMCS  
+    |   +-- data_X  
+    |   +-- ...  
+    +-- extracted  
+
+
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
 - You can delete config.ini to start with a clean config but it's easier to simply edit the file
@@ -53,6 +77,6 @@ Or in details:
 - When you download games, you may experience some errors (see https://developer.riotgames.com/response-codes.html), most often: 404/503 if the data was not found/service is unavailable, 403 means your API-KEY has expired (edit config.ini with a new one from https://developer.riotgames.com/).
 - The downloaded games are located under DATABASE_ROOT/patches/PATCH/REGION/. You can change the patch/regions you're downloading games from by simply editing config.ini. 
 - Extracted data location is DATABASE_ROOT/extracted/ and DATABASE_ROOT/extracted.txt and contains all the data you've downloaded (all patches/all regions)
-- Preprocessed data location is DATABASE_ROOT/data/. The pre-processing can take a lot of time
-- Only DATABASE_ROOT/shuffled/ is used for the training, so if you need to free some space on your hard drive you can delete the data files from a patch you've already fully extracted (under DATABASE_ROOT/patches/). Keep in mind if you don't configure the app properly, it may re-download games you've already used for training
-- The models you train are located under DATABASE_ROOT/model.
+- Preprocessed data location is DATABASE_ROOT/data_XXXX/.
+- Only DATABASE_ROOT/training_XXXX/ is used for the training, so if you need to free some space on your hard drive you can delete the data files from a patch you've already fully extracted (under DATABASE_ROOT/patches/). Keep in mind if you don't configure the app properly, it may re-download games you've already used for training
+- The models you train are located under DATABASE_ROOT/models.

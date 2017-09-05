@@ -7,7 +7,7 @@ import Modes
 # Running options
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
 shuffling_files = 67  # prime number to maximize spreading. Take a prime higher to the number of data files (e.g. If you have 32 data files, take 37)
-keep_for_testing = 1  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
+keep_for_testing = 6  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
 # Keep in mind testing on games that were not used for training is the only we can be sure the neural network is not recognizing games but has
 # actually learned to predict the winner.
 restore = False  # leave this to False, or your model will overfit the data (it will recognize the game and not learn why the game is won/loss)
@@ -16,8 +16,8 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Look at Modes.py and Networks.py to see the list of available modes/networks
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
-mode = Modes.ABR_Mode()
-network = Networks.DenseDegressive(mode=mode, n_hidden_layers=2, NN=512, dropout=0.3, batch_size=200, report=10)  # 5327 5244
+mode = Modes.ABR_TJMCS_Mode()
+network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)  # 5327 5244
 # mode = Modes.ABR_TJMCS_Mode()
 # network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)  # 5324 5305 5300
 
@@ -30,8 +30,8 @@ to_execute = [
     # 'DataDownloader',  # runs on multiple cpu
     # 'DataExtractor',  # runs on multiple cpu
     # 'RoleUpdater',
-    'DataProcessing',  # runs on multiple cpu
-    'DataShuffling',
+    # 'DataProcessing',  # runs on multiple cpu
+    # 'DataShuffling',
     'Learner',  # runs on gpu
     'BestPicks',
 ]
