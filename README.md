@@ -50,27 +50,10 @@ Or in details:
 
 If you plan to go ahead with the example files, keep in mind you have to respect the following architecture: (if you start from scratch the tree will be created automaticaly)
 
-config.ini has to be in the same folder than the scripts.
-From YOUR_DATABASE (defined in config.ini):  
+- config.ini has to be in the same folder than the scripts.
+- models you download have to be put in YOUR_DATABASE/models/xxx.h5
 
-    .  
-    +-- data_ABR_TJMCS  
-    |   +-- data_X  
-    |   +-- ...  
-    +-- extracted  
-    |   +-- ...  
-    +-- models  
-    |   +-- ABR_TJMCS_DenseUniform_5_1024.h5  
-    |   +-- ...
-    +-- patches  
-    |   +-- ...
-    +-- playerListing 
-    |   +-- ...
-    +-- testing_ABR_TJMCS  
-    |   +-- ...  
-    +-- training_ABR_TJMCS  
-    |   +-- ...  
-    +-- extracted.txt  
+It is not necessary to get an API-KEY if you only want to run a model.
 
 You may have to change the default model used in BestPicks.py or RunAll.py to make sure it correspond to the model you are using. For example, if you want to use ABR_TJMCS_DenseUniform_5_1024.h5, makes sure the scripts use these parameters:  
 
