@@ -31,6 +31,11 @@ def run():
         config.add_section('PATCHES')
         config.add_section('CHAMPIONS')
         config.add_section('ROLES')
+        config.add_section('TOP')
+        config.add_section('JUNGLE')
+        config.add_section('MID')
+        config.add_section('CARRY')
+        config.add_section('SUPPORT')
 
         print("No config file found. Let's set up a few parameters (you may change them anytime by manually editing config.ini).")
         API_KEY = input('API-KEY (https://developer.riotgames.com/): ')

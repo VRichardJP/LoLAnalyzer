@@ -19,6 +19,7 @@ def run(mode):
             for (r, n) in counted_roles.iteritems():
                 role_count[r] += n
 
+    # updating list of champions for each role
     ROLES = {'Top': [], 'Jungle': [], 'Mid': [], 'Carry': [], 'Support': []}
     POSSIBLE_ROLES = ['Top', 'Jungle', 'Mid', 'Carry', 'Support']
     for [champ, role_count] in champ_roles:
@@ -33,9 +34,17 @@ def run(mode):
         for role in role_ratio:
             if role_ratio[role] > 0.1:
                 ROLES[role].append(champ)
-
     for role in ROLES:
         mode.config['ROLES'][role] = ','.join(ROLES[role])
+
+    # now we update the popularity of the champ for the role (reversed pov)
+    for role in POSSIBLE_ROLES:
+        s = 0
+        for [_, role_count] in champ_roles:
+            s += role_count[role[0]]
+
+        for [champ, role_count] in champ_roles:
+            mode.config[role][champ] = role_count[role[0]] / s  # % of popularity of the champ
 
     with open('config.ini', 'w') as configfile:
         mode.config.write(configfile)
