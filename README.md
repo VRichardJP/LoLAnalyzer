@@ -23,7 +23,7 @@ My goal is simple: I want a system that can provide me a precise information on 
 ## Requirements
 
 You need at least (pip/google is your best friend):
-- Python 3 
+- Python 3 (for  convenience you can start with package like Anaconda so there are fewer libraries to download)
 - Keras/Tensorflow (GPU version recommended if your graphic card is compatible and you plan to train your own network)
 - PyQt5
 - A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
