@@ -410,7 +410,7 @@ class App(QDialog):
         champions = []
         POSSIBLE_CHAMPS = self.mode.ROLES_CHAMP[yourRole].split(',')
         for champ in POSSIBLE_CHAMPS:
-            if currentState['s_' + champ] not in 'AN':  # not available
+            if currentState['s_' + champ] == 'N':  # not available (banned)
                 continue
             state = OrderedDict(currentState)
             state['s_' + champ] = self.yourTeam
