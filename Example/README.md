@@ -5,7 +5,7 @@ servers: all
 leagues: challenger, master, diamond  
 patches: 7.16, 7.17 (up to 06/09/17)  
 testing accuracy: 52.85  
-size: 74.8 MB
+size: 74.8 MB  
 parameters:  
 
     mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
@@ -17,7 +17,7 @@ servers: all
 leagues: challenger, master, diamond  
 patches: 7.16, 7.17 (up to 06/09/17)  
 testing accuracy: 52.85  
-size: 21.4 MB
+size: 21.4 MB  
 parameters:  
 
     mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
