@@ -86,7 +86,7 @@ class App(QDialog):
         self.player10Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player10Ban, 1, 4)
         bansGB.setLayout(BansLayout)
-        mainBoxLayout.addWidget(bansGB, 0, 0, 1, 5)
+        mainBoxLayout.addWidget(bansGB, 0, 0, 1, 6)
 
         # Your team picks Layout
         yourTeamGB = QGroupBox('Your Team')
@@ -168,7 +168,7 @@ class App(QDialog):
         self.player10Role.addItems(self.mode.BP_ROLES)
         enemyTeamLayout.addWidget(self.player10Role, 4, 1)
         enemyTeamGB.setLayout(enemyTeamLayout)
-        mainBoxLayout.addWidget(enemyTeamGB, 1, 4)
+        mainBoxLayout.addWidget(enemyTeamGB, 1, 5)
 
         # Best picks Layout
         bestPicksGB = QGroupBox('Best Picks')
@@ -200,7 +200,7 @@ class App(QDialog):
         bestPicksLayout.addWidget(self.results, 2, 0, 1, 2)
 
         bestPicksGB.setLayout(bestPicksLayout)
-        mainBoxLayout.addWidget(bestPicksGB, 1, 1, 1, 3)
+        mainBoxLayout.addWidget(bestPicksGB, 1, 1, 1, 4)
 
         # Centering window
         qtRectangle = self.frameGeometry()
