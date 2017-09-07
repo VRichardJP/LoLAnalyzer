@@ -74,7 +74,7 @@ From YOUR_DATABASE (defined in config.ini):
 
 You may have to change the default model used in BestPicks.py or RunAll.py to make sure it correspond to the model you are using. For example, if you want to use ABR_TJMCS_DenseUniform_5_1024.h5, makes sure the scripts use these parameters:  
 
-    mode = Modes.ABR_TJMCS_Mode()  
+    mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])  
     network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)  
 
 Note that some parameters of the network are only used for the training and have no impact during evaluation (dropout, batch_size, report)
