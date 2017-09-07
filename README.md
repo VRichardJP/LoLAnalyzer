@@ -30,7 +30,7 @@ You need at least (pip/google is your best friend):
 
 ...and maybe some others libraries, just google/pip if something is missing.
 
-## How to use
+## How to use (from scratch)
 
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. You can also use the one provided as example.
 2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program, but you can also directly run BestPicks.py)
@@ -46,7 +46,7 @@ Or in details:
 8. BestPick.py: a very simple GUI so you can enter your draft and the role you want
 
 
-## Example
+## How to use (from example)
 
 If you plan to go ahead with the example files, keep in mind you have to respect the following architecture: (if you start from scratch the tree will be created automaticaly)
 
@@ -60,7 +60,9 @@ You may have to change the default model used in BestPicks.py or RunAll.py to ma
     mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])  
     network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)  
 
+Then you simply need to run one of the 2 scripts to start the GUI (it is necessary to comment some lines in RunAll.py)
 Note that some parameters of the network are only used for the training and have no impact during evaluation (dropout, batch_size, report)
+
 
 ## Results
 
