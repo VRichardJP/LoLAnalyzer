@@ -4,9 +4,14 @@ import configparser
 import os
 from collections import OrderedDict
 
+MAX_PATCHES = 10  # after 10 patches we consider the data is too old
+
 
 class Base_Mode:
-    def __init__(self):
+    def __init__(self, learning_patches=None):
+        if learning_patches is None:
+            learning_patches = []
+
         # Downloader+
         self.config = configparser.ConfigParser()
         self.config.read('config.ini')
@@ -23,9 +28,12 @@ class Base_Mode:
 
         # Processing+
         self.SAVE = 1000
-        self.PATCHES = list(map(lambda x: x.replace('.', '_'), os.listdir(os.path.join(self.DATABASE, 'patches'))))
-        self.PATCHES = sorted(self.PATCHES, key=lambda x: tuple(map(int, x.split('_'))))
         self.CHAMPIONS_SIZE = len(self.CHAMPIONS_LABEL)
+        # self.PATCHES = list(map(lambda x: x.replace('.', '_'), os.listdir(os.path.join(self.DATABASE, 'patches'))))
+        # self.PATCHES = sorted(self.PATCHES, key=lambda x: tuple(map(int, x.split('_'))))
+        # self.PATCHES = self.PATCHES[-MAX_PATCHES:]
+        # self.PATCHES.extend([None] * (MAX_PATCHES - len(self.PATCHES)))
+        self.PATCHES = list(map(lambda x: x.replace('.', '_'), learning_patches))
         self.PATCHES_SIZE = len(self.PATCHES)
         self.CURRENT_PATCH = self.PATCHES_SIZE * [0]
         self.CURRENT_PATCH[-1] = 1  # Lastest patch
@@ -69,8 +77,8 @@ class Base_Mode:
 # Available, Blue, Red (status)
 # Top, Jungle, Mid, Carry, Support (position)
 class ABR_TJMCS_Mode(Base_Mode):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, learning_patches=None):
+        super().__init__(learning_patches)
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_ABR_TJMCS')
         self.TRAINING_DIR = os.path.join(self.DATABASE, 'training_ABR_TJMCS')
         self.TESTING_DIR = os.path.join(self.DATABASE, 'testing_ABR_TJMCS')
@@ -100,8 +108,8 @@ class ABR_TJMCS_Mode(Base_Mode):
 
 # Minimalist mode, without roles
 class ABR_Mode(Base_Mode):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, learning_patches=None):
+        super().__init__(learning_patches)
         self.PREPROCESSED_DIR = os.path.join(self.DATABASE, 'data_ABR')
         self.TRAINING_DIR = os.path.join(self.DATABASE, 'training_ABR')
         self.TESTING_DIR = os.path.join(self.DATABASE, 'testing_ABR')

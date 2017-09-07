@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import sys
+
 import Modes
 
 
@@ -8,6 +10,7 @@ def run(mode):
     extracted_files = [f for f in os.listdir(mode.EXTRACTED_DIR)]
     champ_roles = [[champ, {'N': 0, 'T': 0, 'J': 0, 'M': 0, 'C': 0, 'S': 0}] for champ in mode.CHAMPIONS_LABEL]
     for file in extracted_files:
+        print(file, file=sys.stderr)
         csv_file = os.path.join(mode.EXTRACTED_DIR, file)
         data = pd.read_csv(csv_file, names=mode.COLUMNS, skiprows=1)
         for [champ, role_count] in champ_roles:

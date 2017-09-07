@@ -6,7 +6,7 @@
 
 Warning: I don't guarantee that all the scripts will run on your computer. You will need to install quite a bunch of big libraries to make it work. 
 
-I know it would be cool to have a .exe to double-click, but python is not that easy to distribute, so I won't provide any executable
+I know it would be cool to have a .exe to double-click, but python is not that easy to distribute, so I won't provide any executable. Besides, you don't really want to download a 2Gb .exe, do you? (numpy, tensorflow and many others libraries are really heavy). However, I might create a pip package in a near future.
 
 I may provide a demo network in a near future, but I can't maintain a network updated on a daily basis. I you want to seriously use this app you will have to train your own network. I would even recommend you to test and design your own networks.
 
@@ -24,7 +24,7 @@ My goal is simple: I want a system that can provide me a precise information on 
 
 You need at least (pip/google is your best friend):
 - Python 3 
-- Keras/Tensorflow (GPU version recommended if your graphic card is compatible)
+- Keras/Tensorflow (GPU version recommended if your graphic card is compatible and you plan to train your own network)
 - PyQt5
 - A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
 

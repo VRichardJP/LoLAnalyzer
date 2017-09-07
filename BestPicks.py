@@ -289,7 +289,7 @@ class App(QDialog):
         # get the last available combobox, if in player 1-5 then we set self.yourRole, else disable generation
         l = [playerPick.isEnabled() for playerPick in self.pick_order]
         currentPickIndex = -1 if False not in l else l.index(False) - 1
-        if currentPickIndex >= 0 and self.pick_order[currentPickIndex] in [self.player1Pick, self.player2Pick, self.player3Pick, self.player4Pick,
+        if self.pick_order[currentPickIndex] in [self.player1Pick, self.player2Pick, self.player3Pick, self.player4Pick,
                                                                            self.player5Pick]:
             self.generateButton.setEnabled(True)
             self.yourRole = self.role_order[currentPickIndex]
