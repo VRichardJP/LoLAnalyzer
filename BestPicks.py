@@ -36,7 +36,7 @@ class App(QDialog):
         self.title = 'LoLAnalyzer'
         self.left = 10
         self.top = 10
-        self.width = 700
+        self.width = 800
         self.height = 600
         self.mode = mode
         self.network = network
@@ -86,7 +86,7 @@ class App(QDialog):
         self.player10Ban.addItems(self.mode.BP_CHAMPIONS)
         BansLayout.addWidget(self.player10Ban, 1, 4)
         bansGB.setLayout(BansLayout)
-        mainBoxLayout.addWidget(bansGB, 0, 0, 1, 3)
+        mainBoxLayout.addWidget(bansGB, 0, 0, 1, 5)
 
         # Your team picks Layout
         yourTeamGB = QGroupBox('Your Team')
@@ -168,7 +168,7 @@ class App(QDialog):
         self.player10Role.addItems(self.mode.BP_ROLES)
         enemyTeamLayout.addWidget(self.player10Role, 4, 1)
         enemyTeamGB.setLayout(enemyTeamLayout)
-        mainBoxLayout.addWidget(enemyTeamGB, 1, 2)
+        mainBoxLayout.addWidget(enemyTeamGB, 1, 4)
 
         # Best picks Layout
         bestPicksGB = QGroupBox('Best Picks')
@@ -200,7 +200,7 @@ class App(QDialog):
         bestPicksLayout.addWidget(self.results, 2, 0, 1, 2)
 
         bestPicksGB.setLayout(bestPicksLayout)
-        mainBoxLayout.addWidget(bestPicksGB, 1, 1)
+        mainBoxLayout.addWidget(bestPicksGB, 1, 1, 1, 3)
 
         # Centering window
         qtRectangle = self.frameGeometry()
@@ -430,7 +430,7 @@ class App(QDialog):
         for k in range(len(best_champs)):
             self.results.setItem(k, 0, QTableWidgetItem(best_champs[k][0]))
             self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1])))
-            self.results.setItem(k, 2, QTableWidgetItem(mode.config[yourRole][best_champs[k][0]]))
+            self.results.setItem(k, 2, QTableWidgetItem(self.mode.config[yourRole.upper()][best_champs[k][0]]))
 
 
 def run(mode, network):
