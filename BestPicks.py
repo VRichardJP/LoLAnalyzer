@@ -194,8 +194,7 @@ class App(QDialog):
         bestPicksLayout.addWidget(self.generateButton, 1, 1)
 
         self.results = QTableWidget()
-        # self.results.setRowCount(4)
-        self.results.setColumnCount(2)
+        self.results.setColumnCount(3)
         self.results.horizontalHeader().hide()
         self.results.verticalHeader().hide()
         bestPicksLayout.addWidget(self.results, 2, 0, 1, 2)
@@ -431,6 +430,7 @@ class App(QDialog):
         for k in range(len(best_champs)):
             self.results.setItem(k, 0, QTableWidgetItem(best_champs[k][0]))
             self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1])))
+            self.results.setItem(k, 2, QTableWidgetItem(mode.config[yourRole][best_champs[k][0]]))
 
 
 def run(mode, network):
