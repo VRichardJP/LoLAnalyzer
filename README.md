@@ -42,7 +42,7 @@ You need at least (pip/google is your best friend):
 
 Or in details:
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. It determines most of the scripts behaviour.
-2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini). This step is really long if you don't limit yourself to top leagues (challenger & master). I would not recommend to take more than challenger and master if you don't have a decent limit-rate on your API key.
+2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini). This step is really long if you don't limit yourself to top leagues (challenger & master). I would not recommend to take more than challenger and master if you don't have a decent limit-rate on your API key
 3. DataDownloader.py : download raw game files played by the listed players
 4. DataExtractor.py : extract and collect all the downloaded data
 5. DataProcessing.py : pre-process the extrated data

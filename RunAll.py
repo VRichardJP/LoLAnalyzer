@@ -5,7 +5,6 @@ import Networks
 import Modes
 
 # Running options
-learning_patches = ['7.16', '7.17']  # what patches are going to be used for the machine learning. From oldest to most recent
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
 # I recommend to leave at least 1 cpu free so you can still work on your computer
 shuffling_files = 101  # prime number to maximize spreading. Take a prime higher to the number of data files to limit the file size
@@ -18,12 +17,9 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Look at Modes.py and Networks.py to see the list of available modes/networks
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
-mode = Modes.ABR_TJMCS_Mode(learning_patches)
-network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.3, batch_size=1000, report=1)
-# mode = Modes.ABR_TJMCS_Mode()
-# network = Networks.DenseDegressive(mode=mode, n_hidden_layers=4, NN=1024, dropout=0.0, batch_size=200, report=10)
+mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
+network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
 
-# REMOVE OTJMCS -> use TJMCS for blue and red team
 
 # Scripts to execute, comment useless ones
 # In particular, if you just want to run the app, comment all but 'BestPicks'

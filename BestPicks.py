@@ -443,6 +443,6 @@ def run(mode, network):
 
 
 if __name__ == '__main__':
-    mode = Modes.ABR_TJMCS_Mode()
+    mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
     network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
     run(mode, network)
