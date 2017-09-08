@@ -30,7 +30,7 @@ You need at least (pip/google is your best friend):
 
 ...and maybe some others libraries, just google/pip if something is missing.
 
-## How to use (from scratch)
+## How to use - The hard way (from scratch)
 
 1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. You can also use the one provided as example.
 2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program, but you can also directly run BestPicks.py)
@@ -46,7 +46,7 @@ Or in details:
 8. BestPick.py: a very simple GUI so you can enter your draft and the role you want
 
 
-## How to use (from example)
+## How to use - The easy way (from example)
 
 If you plan to go ahead with the example files, keep in mind you have to respect the following architecture: (if you start from scratch the tree will be created automaticaly)
 

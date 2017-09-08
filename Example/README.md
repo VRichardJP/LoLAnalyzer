@@ -5,7 +5,7 @@ servers: all
 leagues: challenger, master, diamond  
 patches: 7.16, 7.17 (up to 06/09/17)  
 number of games: ~600,000  
-testing accuracy: 52.85  
+testing accuracy: 52.93  
 size: 74.8 MB  
 parameters:  
 
@@ -18,7 +18,7 @@ servers: all
 leagues: challenger, master, diamond  
 patches: 7.16, 7.17 (up to 06/09/17)  
 number of games: ~600,000  
-testing accuracy: 52.85  
+testing accuracy: 52.37  
 size: 21.4 MB  
 parameters:  
 
