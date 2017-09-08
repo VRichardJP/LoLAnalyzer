@@ -20,15 +20,20 @@ Personally, I have been using op.gg for a long time. They provide a wide range o
 My goal is simple: I want a system that can provide me a precise information on my draft, so I know what champion suits the current draft the best. And this is were machine learning is stronger than pure statistics. The strength of a machine learning based system is that it can predict the outcome of games it has never encounter, whereas a statistical tool need to see the same situation over and over to predict the outcome efficiently. How does it work? Well its rather simple: let's imagine your team is composed of Jarvan top, Sejuani jungle, Zilean mid, Janna support and that you won by picking Kog'maw adc. The system will not learn that Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'maw adc is a good composition; instead, it will learn that this kind of team works well: a lot of cc, peels and one hyper-carry. You can replace Jarvan for Maokai, Sejuani for Amumu or Kog'Maw for Vayne, it doesn't chance the nature of the team, and from the neural network perspective, there are almost the same. Hence, the only thing you need to do is to make sure the neural networks has been trained in a lot of different drafts, so it understands what are the characteristics of each champion and what is needed in all kind of situations
 
 
-## Requirements
+## Requirements - Setup
 
 You need at least (pip/google is your best friend):
 - Python 3 (for  convenience you can start with package like Anaconda so there are fewer libraries to download)
-- Keras/Tensorflow (GPU version recommended if your graphic card is compatible and you plan to train your own network)
+- Keras (GPU version recommended if your graphic card is compatible and you plan to train your own network)
 - PyQt5
 - A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
 
-...and maybe some others libraries, just google/pip if something is missing.
+...you can try this command from a fresh installation of python:
+
+    pip install numpy pandas PyQt5 configparser python-slugify requests keras
+
+...but I may have forgotten some libraries, just google/pip if something is missing (if the program crashes during an import)...
+
 
 ## How to use - The hard way (from scratch)
 
