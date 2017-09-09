@@ -58,6 +58,10 @@ class DataDownloader:
             for game in games:  # from most recent to oldest
                 gameID = str(game['gameId'])
 
+                # Already downloaded ? This means we are up-to-date
+                if gameID in self.downloadedGames:
+                    break
+
                 # Wrong timestamp?
                 timestamp = game['timestamp']
                 previous_patch = self.patch
@@ -73,10 +77,6 @@ class DataDownloader:
                 next_patch = '.'.join(next_patch)
                 if next_patch in self.timestamped_patches and self.timestamped_patches[next_patch][0] < timestamp:  # game is too recent
                     continue  # need to go further
-
-                # Already downloaded ? This means we are up-to-date
-                if gameID in self.downloadedGames:
-                    break
 
                 try:
                     gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))

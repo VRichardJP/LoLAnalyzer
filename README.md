@@ -8,7 +8,7 @@ Warning: I don't guarantee that all the scripts will run on your computer. You w
 
 I know it would be cool to have a .exe to double-click, but python is not that easy to distribute, so I won't provide any executable. Besides, you don't really want to download a 2Gb .exe, do you? (numpy, tensorflow and many others libraries are really heavy). However, I might create a pip package in a near future.
 
-I may provide a demo network in a near future, but I can't maintain a network updated on a daily basis. I you want to seriously use this app you will have to train your own network. I would even recommend you to test and design your own networks.
+I have provided a demo network for for the patch 7.17, but I can't maintain it updated on a daily basis. I you want to seriously use this app you will have to train your own network. I would even recommend you to test and design your own networks.
 
 ## Why another tool? and why machine learning?
 I am myself a LoL player. I play ranked a lot, and as many other players I want to become stronger. But becoming stronger is not all about picking Yasuo/Zed, making plays and carrying your team (of course don't forget to spam your champion mastery when you do). Sometimes, getting better at the game is simply about building a better team. Of course, you have your own preference: champions you like, champions you don't like. But how many times have you said to yourself you had lost a game by simply looking at your draft. Sometimes it's not your fault, you are first pick, you can't predict everything. But sometimes it is, and worse, you may not even realize it.
@@ -69,12 +69,14 @@ Then you simply need to run one of the 2 scripts to start the GUI (it is necessa
 Note that some parameters of the network are only used for the training and have no impact during evaluation (dropout, batch_size, report)
 
 
-## Results
+## Demo & Results
 
-Example of fail pick situation: my team is full AD with 3 squishies. Spoiler alert: we /ff @20
+Example of fail pick situation. My team is full AD with 3 squishies. Spoiler alert: we /ff @20.  
+Here I use the evaluation function to predict the winner of the game. Normally you would expect the win% between something like 45% and 55%. Note I haven't entered what the banned champions were. This is not that important anymore when the draft is complete.
 ![demo_failpick](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo_failpick.PNG)
 
-Example of best pick for a given draft:
+Example of best pick evaluation for a given draft.  
+Here I use the analysis function to predict the best champion to pick. The analysis only works for the player's team (left) and need you to precise what role the player is supposed to take. The results are sorted by win%. The last column shows the popularity of the champion for the role. It is more or less the same alue you can find on op.gg or so and I would recommend you to take this number into account when you take a decision. For instance, you may prefer to pick a popular champ with a lower win% than one which is played by only a couple of zealous OTP (let's say heimer jungle for example). 
 ![demo_bestpick](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo_bestpick.PNG)
 
 

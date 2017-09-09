@@ -20,7 +20,7 @@ def split_to_file(mode, df, nb_files, i):
 
 def shuffling(mode, dataFile, nb_files, cpu):
     df = pd.read_csv(os.path.join(mode.PREPROCESSED_DIR, dataFile), header=None)
-    pool = multiprocessing.Pool(processes=cpu)
+    pool = multiprocessing.Pool(processes=max(cpu//2, 1))  # I get MemoryError when running on too many proc, need to find where the leak is.
     fun = partial(split_to_file, mode, df, nb_files)
     pool.map(fun, range(nb_files), chunksize=1)
     pool.close()
@@ -39,8 +39,9 @@ def validationInput(msg, validAns):
 def run(mode, nb_files, keep_for_testing, cpu):
     if os.path.isdir(mode.TRAINING_DIR):
         print('WARNING PREVIOUS SHUFFLED DATA FOUND', file=sys.stderr)
-        if validationInput('Do you want to reshuffle the data anyway (take a while)? (y/n)', ['y', 'n']) == 'n':
-            return
+        # validation is annoying
+        # if validationInput('Do you want to reshuffle the data anyway (take a while)? (y/n)', ['y', 'n']) == 'n':
+        #     return
 
         if not os.access(mode.TRAINING_DIR, os.W_OK):
             # Is the error an access error ?
@@ -66,4 +67,4 @@ def run(mode, nb_files, keep_for_testing, cpu):
         shuffling(mode, file, nb_files, cpu)
 
 if __name__ == '__main__':
-    run(Modes.ABR_TJMCS_Mode(), 37, 2, cpu=multiprocessing.cpu_count() - 1)
+    run(Modes.ABR_TJMCS_Mode(['7.16', '7.17']), 53, 2, cpu=max(multiprocessing.cpu_count() - 1, 1))

@@ -50,4 +50,4 @@ def run(mode):
         mode.config.write(configfile)
 
 if __name__ == '__main__':
-    run(Modes.ABR_TJMCS_Mode())
+    run(Modes.ABR_TJMCS_Mode(['7.16', '7.17']))

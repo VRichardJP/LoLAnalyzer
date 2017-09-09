@@ -33,7 +33,7 @@ class App(QDialog):
     # noinspection PyArgumentList,PyUnresolvedReferences
     def __init__(self, mode, network):
         super().__init__()
-        self.title = 'LoLAnalyzer'
+        self.title = 'LoLAnalyzer - patch {}'.format(mode.learning_patches[-1])
         self.left = 10
         self.top = 10
         self.width = 800

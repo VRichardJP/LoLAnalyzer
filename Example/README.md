@@ -3,10 +3,10 @@ Here are some info about the models I provide.
 #### ABR_TJMCS_DenseUniform_5_1024.h5: 
 servers: all  
 leagues: challenger, master, diamond  
-patches: 7.16, 7.17 (up to 06/09/17)  
-number of games: ~600,000  
-testing accuracy: 53.07  
-size: 74.8 MB  
+patches: 7.16, 7.17 (up to 09/09/17)  
+number of games: ~520,000  
+testing accuracy: 50.00 
+size: 0.0 MB  
 parameters:  
 
     mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
@@ -16,10 +16,10 @@ parameters:
 #### ABR_TJMCS_DenseDegressive_5_1024.h5: 
 servers: all  
 leagues: challenger, master, diamond  
-patches: 7.16, 7.17 (up to 06/09/17)  
-number of games: ~600,000  
-testing accuracy: 52.37  
-size: 21.4 MB  
+patches: 7.16, 7.17 (up to 09/09/17)  
+number of games: ~520,000  
+testing accuracy: 50.00  
+size: 0.0 MB  
 parameters:  
 
     mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])

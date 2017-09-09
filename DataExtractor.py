@@ -63,7 +63,7 @@ def run(mode, cpu):
         extracted_list = []
 
     gamePaths = []
-    for patch in mode.GAME_FILES:
+    for patch in mode.learning_patches:
         for region in mode.REGIONS:
             if os.path.isdir(os.path.join(mode.DATABASE, 'patches', patch, region)):
                 gamePaths.extend(
@@ -133,7 +133,7 @@ def analyze_game(ex, gamePaths):
         raw_data['patch'] = []
         raw_data['win'] = []
         raw_data['file'] = []
-        print(ex.current_index, gamePath)
+        print(ex.csv_file, gamePath)
         game = pickle.load(open(gamePath, 'rb'))
         bans = []
         game_patch = '_'.join(game['gameVersion'].split('.')[:2])
@@ -312,4 +312,4 @@ def analyze_game(ex, gamePaths):
 
 
 if __name__ == '__main__':
-    run(Modes.ABR_TJMCS_Mode(), multiprocessing.cpu_count() - 1)
+    run(Modes.ABR_TJMCS_Mode(['7.16', '7.17']), max(multiprocessing.cpu_count() - 1, 1))

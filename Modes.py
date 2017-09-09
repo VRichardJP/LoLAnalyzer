@@ -4,13 +4,15 @@ import configparser
 import os
 from collections import OrderedDict
 
-MAX_PATCHES = 10  # after 10 patches we consider the data is too old
+# MAX_PATCHES = 10  # after 10 patches we consider the data is too old
 
 
 class Base_Mode:
     def __init__(self, learning_patches=None):
         if learning_patches is None:
             learning_patches = []
+
+        self.learning_patches = learning_patches
 
         # Downloader+
         self.config = configparser.ConfigParser()
@@ -22,7 +24,7 @@ class Base_Mode:
 
         # Extractor+
         self.DATA_LINES = 100000
-        self.GAME_FILES = os.listdir(os.path.join(self.DATABASE, 'patches'))
+        # self.GAME_FILES = os.listdir(os.path.join(self.DATABASE, 'patches'))
         self.CHAMPIONS_ID = OrderedDict([(champ_name, int(champ_id)) for (champ_name, champ_id) in self.config['CHAMPIONS'].items()])
         self.CHAMPIONS_LABEL = self.config['PARAMS']['sortedChamps'].split(',')
 
