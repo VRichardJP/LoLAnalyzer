@@ -5,7 +5,7 @@ import Networks
 import Modes
 
 # Running options
-cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
+cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use. I always leave 1 free so I can still use my computer
 # I recommend to leave at least 1 cpu free so you can still work on your computer
 shuffling_files = 67  # prime number to maximize spreading. Take a prime higher to the number of data files to limit the file size
 keep_for_testing = 7  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
@@ -24,13 +24,13 @@ network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0
 # Scripts to execute, comment useless ones
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
-    # 'PlayersListing'
+    'PlayersListing'
     # 'DataDownloader',  # runs on multiple cpu
     # 'DataExtractor',  # runs on multiple cpu
     # 'RoleUpdater',
     # 'DataProcessing',  # runs on multiple cpu
     # 'DataShuffling',
-    'Learner',  # runs on gpu
+    # 'Learner',  # runs on gpu
     # 'BestPicks',
 ]
 

@@ -12,7 +12,7 @@ import sys
 from InterfaceAPI import InterfaceAPI, ApiError403, ApiError, ApiError404
 import Modes
 
-MAX_DAYS = 3  # up to how many days we look up
+MAX_DAYS = 1  # up to how many days we look up
 # Note it's not important that we get every single player, since we only need one participant for each game
 MAX_DEPTH = 1000 * (time.time() - 86400 * MAX_DAYS)
 ATTEMPTS = 3
@@ -47,6 +47,10 @@ class PlayerListing:
             self.to_explore = pickle.load(open(os.path.join(database, 'playerListing', '{}_to_explore'.format(region)), 'rb'))
         else:
             self.to_explore = []
+        if os.path.exists(os.path.join(database, 'playerListing', '{}_exploredLeagues'.format(region))):
+            self.exploredLeagues = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredLeagues'.format(region))), 'rb')
+        else:
+            self.exploredLeagues = []
 
         if not self.exploredPlayers:
             print('First time exploration, checking challenger and master leagues', file=sys.stderr)
@@ -90,19 +94,37 @@ class PlayerListing:
                 continue
 
             # we check that the summoner is in one of the leagues we want
-            playerLeague = None
+            playerSoloQLeague = None
             for league in playerLeagueList:
                 if league['queue'] == 'RANKED_SOLO_5x5':
-                    playerLeague = league['tier'].lower()
+                    playerSoloQLeague = league
                     break
-            if playerLeague not in self.leagues:
-                print('refused:', self.region, sumID, playerLeague)
+            if not playerSoloQLeague:
+                print('no soloQ rank: ',self.region, sumID)
                 continue
-            self.players[playerLeague].append(sumID)
-            print('accepted:', self.region, sumID, playerLeague)
+            playerLeagueTier = playerSoloQLeague['tier'].lower()
+            playerLeagueName = playerSoloQLeague['name']
+            if playerLeagueTier not in self.leagues:
+                print('refused tier:', self.region, sumID, playerLeagueTier)
+                continue
 
-            useful_games = 0
+            self.players[playerLeagueTier].append(sumID)
+            print('accepted:', self.region, sumID, playerLeagueTier)
+
+            # We add all the people in the same league for exploration
+            if playerLeagueName not in self.exploredLeagues:
+                self.exploredLeagues.append(playerLeagueName)
+                print('new league found:', self.region, playerLeagueTier, playerLeagueName)
+                for e in playerSoloQLeague['entries']:
+                    sumID = int(e['playerOrTeamId'])
+                    if sumID not in self.exploredPlayers:
+                        self.to_explore.append(sumID)
+                        self.exploredPlayers.append(sumID)
+
+            # We have to explore some games to get to other leagues
+            # We hope that at least 1 player of each league has played within the time window
             for game in games:  # from most recent to oldest
+                # the same game can come up to 10 times, so it's better to not make useless API calls
                 if game['gameId'] in self.exploredGames:
                     continue
                 self.exploredGames.append(game['gameId'])
@@ -111,7 +133,6 @@ class PlayerListing:
                 if timestamp < MAX_DEPTH:  # game is too old?
                     break
 
-                useful_games += 1
                 try:
                     gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
                 except ApiError403 as e:
@@ -127,7 +148,6 @@ class PlayerListing:
                     if sumID not in self.exploredPlayers:
                         self.to_explore.append(sumID)
                         self.exploredPlayers.append(sumID)
-                        # print(self.region, sumID, useful_games, 'useful games explored')
 
         return None  # everything explored
 
@@ -136,6 +156,7 @@ class PlayerListing:
             os.makedirs(os.path.join(self.database, 'playerListing'))
         pickle.dump(self.players, open(os.path.join(self.database, 'playerListing', '{}_players'.format(self.region)), 'wb'))
         pickle.dump(self.exploredPlayers, open(os.path.join(self.database, 'playerListing', '{}_exploredPlayers'.format(self.region)), 'wb'))
+        pickle.dump(self.exploredLeagues, open(os.path.join(self.database, 'playerListing', '{}_exploredLeagues'.format(self.region)), 'wb'))
         pickle.dump(self.exploredGames, open(os.path.join(self.database, 'playerListing', '{}_exploredGames'.format(self.region)), 'wb'))
         pickle.dump(self.to_explore, open(os.path.join(self.database, 'playerListing', '{}_to_explore'.format(self.region)), 'wb'))
 
