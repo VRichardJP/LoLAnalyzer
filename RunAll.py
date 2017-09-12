@@ -25,7 +25,7 @@ network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
     'PlayersListing'
-    # 'DataDownloader',  # runs on multiple cpu
+    'DataDownloader',  #  runs on multiple cpu
     # 'DataExtractor',  # runs on multiple cpu
     # 'RoleUpdater',
     # 'DataProcessing',  # runs on multiple cpu
@@ -37,33 +37,25 @@ to_execute = [
 if __name__ == '__main__':
     if 'PlayersListing' in to_execute:
         import PlayersListing
-
         PlayersListing.run(mode)
     if 'DataDownloader' in to_execute:
         import DataDownloader
-
         DataDownloader.run(mode)
     if 'DataExtractor' in to_execute:
         import DataExtractor
-
         DataExtractor.run(mode, cpu)
     if 'RoleUpdater' in to_execute:
         import RoleUpdater
-
         RoleUpdater.run(mode)
     if 'DataProcessing' in to_execute:
         import DataProcessing
-
         DataProcessing.run(mode, cpu)
     if 'DataShuffling' in to_execute:
         import DataShuffling
-
         DataShuffling.run(mode, shuffling_files, keep_for_testing, cpu)
     if 'Learner' in to_execute:
         import Learner
-
         Learner.run(mode, network, restore)
     if 'BestPicks' in to_execute:
         import BestPicks
-
         BestPicks.run(mode, network)
