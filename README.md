@@ -26,11 +26,11 @@ You need at least (pip/google is your best friend):
 - Python 3 (for  convenience you can start with package like Anaconda so there are fewer libraries to download)
 - Keras (GPU version recommended if your graphic card is compatible and you plan to train your own network)
 - PyQt5
-- A developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
+- If you want to build your own networks, a developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
 
 ...you can try this command from a fresh installation of python:
 
-    pip install numpy pandas PyQt5 configparser python-slugify requests keras
+    pip install numpy pandas PyQt5 configparser python-slugify requests keras tensorflow h5py
 
 ...but I may have forgotten some libraries, just google/pip if something is missing (if the program crashes during an import)...
 
@@ -90,3 +90,7 @@ Here I use the analysis function to predict the best champion to pick. The analy
 - Preprocessed data location is DATABASE_ROOT/data_XXXX/.
 - Only DATABASE_ROOT/training_XXXX/ is used for the training, so if you need to free some space on your hard drive you can delete the data files from a patch you've already fully extracted (under DATABASE_ROOT/patches/). Keep in mind if you don't configure the app properly, it may re-download games you've already used for training
 - The models you train are located under DATABASE_ROOT/models.
+
+## TODO List
+- Faster player listing (current is really slow)
+- GUI improvwments

@@ -51,4 +51,4 @@ def run(mode, cpu):
     pool.join()
 
 if __name__ == '__main__':
-    run(Modes.ABR_TJMCS_Mode(), multiprocessing.cpu_count() - 1)
+    run(Modes.ABR_TJMCS_Mode(), max(multiprocessing.cpu_count() - 1, 1))

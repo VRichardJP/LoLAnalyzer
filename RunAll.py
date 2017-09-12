@@ -7,7 +7,7 @@ import Modes
 # Running options
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use.
 # I recommend to leave at least 1 cpu free so you can still work on your computer
-shuffling_files = 53  # prime number to maximize spreading. Take a prime higher to the number of data files to limit the file size
+shuffling_files = 67  # prime number to maximize spreading. Take a prime higher to the number of data files to limit the file size
 keep_for_testing = 7  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
 # Keep in mind testing on games that were not used for training is the only we can be sure the neural network is not recognizing games but has
 # actually learned to predict the winner.
@@ -26,10 +26,10 @@ network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0
 to_execute = [
     # 'PlayersListing'
     # 'DataDownloader',  # runs on multiple cpu
-    'DataExtractor',  # runs on multiple cpu
-    'RoleUpdater',
-    'DataProcessing',  # runs on multiple cpu
-    'DataShuffling',
+    # 'DataExtractor',  # runs on multiple cpu
+    # 'RoleUpdater',
+    # 'DataProcessing',  # runs on multiple cpu
+    # 'DataShuffling',
     'Learner',  # runs on gpu
     # 'BestPicks',
 ]
