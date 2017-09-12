@@ -24,8 +24,8 @@ network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0
 # Scripts to execute, comment useless ones
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
-    'PlayersListing'
-    'DataDownloader',  #  runs on multiple cpu
+    'PlayersListing',
+    'DataDownloader',  # runs on multiple cpu
     # 'DataExtractor',  # runs on multiple cpu
     # 'RoleUpdater',
     # 'DataProcessing',  # runs on multiple cpu
