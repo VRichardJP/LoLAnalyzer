@@ -26,11 +26,11 @@ network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0
 to_execute = [
     'PlayersListing',
     'DataDownloader',  # runs on multiple cpu
-    # 'DataExtractor',  # runs on multiple cpu
-    # 'RoleUpdater',
-    # 'DataProcessing',  # runs on multiple cpu
-    # 'DataShuffling',
-    # 'Learner',  # runs on gpu
+    'DataExtractor',  # runs on multiple cpu
+    'RoleUpdater',
+    'DataProcessing',  # runs on multiple cpu
+    'DataShuffling',
+    'Learner',  # runs on gpu
     # 'BestPicks',
 ]
 
