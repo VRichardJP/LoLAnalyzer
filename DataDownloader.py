@@ -35,7 +35,7 @@ class DataDownloader:
         else:
             self.downloadedGames = []
         self.summonerIDs = []
-        players = pickle.load(open(os.path.join(database, 'playerListing', '{}_players'.format(region)), 'rb'))
+        players = pickle.load(open(os.path.join(database, 'player_listing', region, 'players'), 'rb'))
         for league in leagues:
             self.summonerIDs.extend(players[league])
 
