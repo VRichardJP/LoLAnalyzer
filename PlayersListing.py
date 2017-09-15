@@ -8,8 +8,9 @@ import time
 import pickle
 
 import sys
+from pickle import PickleError
 
-from InterfaceAPI import InterfaceAPI, ApiError403, ApiError, ApiError404
+from InterfaceAPI import InterfaceAPI, ApiError403, ApiError
 import Modes
 
 MAX_DAYS = 1  # up to how many days we look up
@@ -17,6 +18,11 @@ MAX_DAYS = 1  # up to how many days we look up
 MAX_DEPTH = 1000 * (time.time() - 86400 * MAX_DAYS)
 ATTEMPTS = 3
 SAVE = 600  # save every 10 minutes
+DATABASE_WAIT = 60  # if the database cannot be reached, wait
+
+
+class DatabaseNotFound(Exception):
+    pass
 
 
 class PlayerListing:
@@ -25,35 +31,41 @@ class PlayerListing:
         self.database = database
         self.leagues = leagues
         self.region = region
-        self.nextSave = 0  # time.time() + SAVE
+        self.nextSave = time.time() + SAVE
 
-        if os.path.exists(os.path.join(database, 'playerListing', '{}_players'.format(region))):
-            self.players = pickle.load(open(os.path.join(database, 'playerListing', '{}_players'.format(region)), 'rb'))
+        if not os.path.isdir(database):
+            raise DatabaseNotFound
+
+        if not os.path.isdir(os.path.join(self.database, 'playerListing', self.region)):
+            os.makedirs(os.path.join(self.database, 'playerListing', self.region))
+
+        if os.path.exists(os.path.join(database, 'playerListing', self.region, 'players')):
+                self.players = pickle.load(open(os.path.join(database, 'playerListing', self.region, 'players'), 'rb'))
         else:
             self.players = {}
             for league in leagues:
                 self.players[league] = []
 
         # to make sure we don't explore several time the same player/ games
-        if os.path.exists(os.path.join(database, 'playerListing', '{}_exploredPlayers'.format(region))):
-            self.exploredPlayers = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredPlayers'.format(region)), 'rb'))
+        if os.path.exists(os.path.join(database, 'playerListing', self.region, 'exploredPlayers')):
+            self.exploredPlayers = pickle.load(open(os.path.join(database, 'playerListing', self.region, 'exploredPlayers'), 'rb'))
         else:
             self.exploredPlayers = []
-        if os.path.exists(os.path.join(database, 'playerListing', '{}_exploredGames'.format(region))):
-            self.exploredGames = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredGames'.format(region)), 'rb'))
+        if os.path.exists(os.path.join(database, 'playerListing', self.region, 'exploredGames')):
+            self.exploredGames = pickle.load(open(os.path.join(database, 'playerListing', self.region, 'exploredGames'), 'rb'))
         else:
             self.exploredGames = []
-        if os.path.exists(os.path.join(database, 'playerListing', '{}_to_explore'.format(region))):
-            self.to_explore = pickle.load(open(os.path.join(database, 'playerListing', '{}_to_explore'.format(region)), 'rb'))
+        if os.path.exists(os.path.join(database, 'playerListing', self.region, 'to_explore')):
+            self.to_explore = pickle.load(open(os.path.join(database, 'playerListing', self.region, self.region, 'to_explore'), 'rb'))
         else:
             self.to_explore = []
-        if os.path.exists(os.path.join(database, 'playerListing', '{}_exploredLeagues'.format(region))):
-            self.exploredLeagues = pickle.load(open(os.path.join(database, 'playerListing', '{}_exploredLeagues'.format(region)), 'rb'))
+        if os.path.exists(os.path.join(database, 'playerListing', self.region, 'exploredLeagues')):
+            self.exploredLeagues = pickle.load(open(os.path.join(database, 'playerListing', self.region, 'exploredLeagues'), 'rb'))
         else:
             self.exploredLeagues = []
 
         if not self.exploredPlayers:
-            print('First time exploration, checking challenger and master leagues', file=sys.stderr)
+            print(region, 'first time exploration, checking challenger and master leagues', file=sys.stderr)
             # only the first time
             if fast:  # only the challenger and master league, no need to explore anything
                 challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
@@ -72,6 +84,7 @@ class PlayerListing:
                 self.exploredPlayers = list(self.to_explore)
 
     def explore(self):
+        print(self.region, len(self.to_explore), 'left to explore', file=sys.stderr)
         while self.to_explore:
             if time.time() > self.nextSave:
                 print(self.region, len(self.to_explore), 'left to explore', file=sys.stderr)
@@ -109,7 +122,7 @@ class PlayerListing:
                 continue
 
             self.players[playerLeagueTier].append(sumID)
-            print('accepted:', self.region, sumID, playerLeagueTier)
+            print('added:', self.region, sumID, playerLeagueTier)
 
             # We add all the people in the same league for exploration
             if playerLeagueName not in self.exploredLeagues:
@@ -152,17 +165,27 @@ class PlayerListing:
         return None  # everything explored
 
     def save(self):
-        if not os.path.isdir(os.path.join(self.database, 'playerListing')):
-            os.makedirs(os.path.join(self.database, 'playerListing'))
-        pickle.dump(self.players, open(os.path.join(self.database, 'playerListing', '{}_players'.format(self.region)), 'wb'))
-        pickle.dump(self.exploredPlayers, open(os.path.join(self.database, 'playerListing', '{}_exploredPlayers'.format(self.region)), 'wb'))
-        pickle.dump(self.exploredLeagues, open(os.path.join(self.database, 'playerListing', '{}_exploredLeagues'.format(self.region)), 'wb'))
-        pickle.dump(self.exploredGames, open(os.path.join(self.database, 'playerListing', '{}_exploredGames'.format(self.region)), 'wb'))
-        pickle.dump(self.to_explore, open(os.path.join(self.database, 'playerListing', '{}_to_explore'.format(self.region)), 'wb'))
+        while True:
+            if not os.path.isdir(self.database):
+                print(self.region, 'Cannot access the database. Is it on an external HD?', file=sys.stderr)
+                time.sleep(DATABASE_WAIT)
+                continue
+
+            try:
+                pickle.dump(self.players, open(os.path.join(self.database, 'playerListing', self.region, 'players'), 'wb'))
+                pickle.dump(self.exploredPlayers, open(os.path.join(self.database, 'playerListing', self.region, 'exploredPlayers'), 'wb'))
+                pickle.dump(self.exploredLeagues, open(os.path.join(self.database, 'playerListing', self.region, 'exploredLeagues'), 'wb'))
+                pickle.dump(self.exploredGames, open(os.path.join(self.database, 'playerListing', self.region, 'exploredGames'), 'wb'))
+                pickle.dump(self.to_explore, open(os.path.join(self.database, 'playerListing', self.region, 'to_explore'), 'wb'))
+            except PickleError:
+                print(self.region, 'saving failed', file=sys.stderr)
+                time.sleep(DATABASE_WAIT)
+                continue
+            break
 
 
 def keepExploring(database, leagues, region, attempts=ATTEMPTS):
-    print('Starting players listing for', region, file=sys.stderr)
+    print(region, 'starting players listing', file=sys.stderr)
     pl = None
     if list(set(leagues) - {'challenger', 'master'}):  # we check it is necessary to look for the leagues
         while True:
@@ -172,7 +195,7 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                 except ApiError403 as e:
                     print('FATAL ERROR', region, e, file=sys.stderr)
                     break
-                except (ApiError, ) as e:
+                except ApiError as e:
                     print(e, file=sys.stderr)
                     attempts -= 1
                     if attempts <= 0:
@@ -180,6 +203,10 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                         break
                     print(region, 'initial connection failed. Retrying in 5 minutes. Attempts left:', attempts, file=sys.stderr)
                     time.sleep(300)
+                    continue
+                except (DatabaseNotFound, PickleError):
+                    print(region, 'Cannot access the database. Is it on an external HD?', file=sys.stderr)
+                    time.sleep(DATABASE_WAIT)
                     continue
 
             e = pl.explore()
@@ -204,6 +231,10 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                         break
                     print(region, 'initial connection failed. Retrying in 5 minutes. Attempts left:', attempts, file=sys.stderr)
                     time.sleep(300)
+                    continue
+                except (DatabaseNotFound, PickleError):
+                    print(region, 'Cannot access the database. Is it on an external HD?', file=sys.stderr)
+                    time.sleep(DATABASE_WAIT)
                     continue
 
             # No need to explore
