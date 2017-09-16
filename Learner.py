@@ -13,8 +13,10 @@ np.set_printoptions(formatter={'float_kind': lambda x: "%.2f" % x}, linewidth=20
 
 
 class dataCollector:
-    def __init__(self, mode, batchSize):
+    def __init__(self, mode, batchSize, partial_drafts=True):
+        self.mode = mode
         self.batchSize = batchSize
+        self.partial_drafts = partial_drafts
         self.i = 0
         if keras.backend.learning_phase() == 1:  # training phase
             self.data_files = [os.path.join(mode.TRAINING_DIR, f) for f in os.listdir(mode.TRAINING_DIR)]
@@ -29,8 +31,20 @@ class dataCollector:
     def batchGenerator(self):
         while True:
             j = min(self.i + self.batchSize, len(self.df))
-            x = self.df.iloc[self.i:j, :-1].values.tolist()
-            y = self.df.iloc[self.i:j, -1:].values.tolist()  # last column is the win value
+            if self.partial_drafts:
+                x = self.df.iloc[self.i:j, :-1].values.tolist()
+                y = self.df.iloc[self.i:j, -1:].values.tolist()  # last column is the win value
+            else:
+                data = self.df.iloc[self.i:j, :].values.tolist()
+                x = []
+                y = []
+                start = len(self.mode.CHAMPIONS_STATUS) * self.mode.CHAMPIONS_SIZE
+                end = start + len(self.mode.CHAMPIONS_POSITION) * self.mode.CHAMPIONS_SIZE
+                for line in data:
+                    # we count how many positions have been set, for a full draft it's 10
+                    if line[start:end].count(1) == 10:
+                        x.append(line[:-1])
+                        y.append(line[-1:])
             if j < len(self.df):
                 self.i = j
             else:
@@ -86,7 +100,7 @@ def training(mode, network, restore, window_size=1000):
     print('-- End of training Session --', file=sys.stderr)
 
 
-def testing(mode, network):
+def testing(mode, network, partial_drafts=True):
     keras.backend.set_learning_phase(0)  # testing phase
 
     model_file = os.path.join(mode.CKPT_DIR, str(network) + '.h5')
@@ -97,7 +111,7 @@ def testing(mode, network):
         print('Cannot find {}'.format(model_file), file=sys.stderr)
         return
     network.model = keras.models.load_model(model_file)
-    collector = dataCollector(mode, network.batch_size)
+    collector = dataCollector(mode, network.batch_size, partial_drafts)
 
     step = 0
     acc = []
@@ -116,6 +130,7 @@ def run(mode, network, restore):
 
     training(mode, network, restore)
     testing(mode, network)
+    testing(mode, network, partial_drafts=False)  # testing on finished drafts
 
 
 if __name__ == '__main__':

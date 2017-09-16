@@ -55,7 +55,7 @@ class PlayerListing:
         else:
             self.exploredGames = []
         if os.path.exists(os.path.join(database, 'player_listing', self.region, 'to_explore')):
-            self.to_explore = pickle.load(open(os.path.join(database, 'player_listing', self.region, self.region, 'to_explore'), 'rb'))
+            self.to_explore = pickle.load(open(os.path.join(database, 'player_listing', self.region, 'to_explore'), 'rb'))
         else:
             self.to_explore = []
         if os.path.exists(os.path.join(database, 'player_listing', self.region, 'exploredLeagues')):
@@ -101,7 +101,7 @@ class PlayerListing:
             except ApiError403 as e:
                 print(e, file=sys.stderr)
                 return e
-            except (ApiError, ) as e:
+            except ApiError as e:
                 print(e, file=sys.stderr)
                 continue
 
@@ -150,7 +150,7 @@ class PlayerListing:
                 except ApiError403 as e:
                     print(e, file=sys.stderr)
                     return e
-                except (ApiError, Exception) as e:
+                except ApiError as e:
                     print(e, file=sys.stderr)
                     continue
 
@@ -210,7 +210,10 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                     time.sleep(DATABASE_WAIT)
                     continue
 
-            e = pl.explore()
+            try:
+                e = pl.explore()
+            except KeyError:  # appends sometime, looks like some data is corrupted
+                continue
             if e is not None:
                 print('FATAL ERROR', region, e, file=sys.stderr)
             else:
