@@ -182,6 +182,10 @@ class App(QDialog):
         yourTeamButtonGroup.buttonClicked['QAbstractButton *'].connect(self.teamChoice)
         bestPicksLayout.addWidget(blueTeamButton, 0, 0)
         bestPicksLayout.addWidget(redTeamButton, 1, 0)
+        resetButton = QPushButton('Reset')
+        resetButton.clicked.connect(lambda: self.teamReset())
+        bestPicksLayout.addWidget(resetButton, 2, 0)
+
         self.evaluateButton = QPushButton('Wait...')
         self.evaluateButton.setEnabled(False)
         # noinspection PyUnresolvedReferences
@@ -197,7 +201,7 @@ class App(QDialog):
         self.results.setColumnCount(3)
         self.results.horizontalHeader().hide()
         self.results.verticalHeader().hide()
-        bestPicksLayout.addWidget(self.results, 2, 0, 1, 2)
+        bestPicksLayout.addWidget(self.results, 3, 0, 1, 2)
 
         bestPicksGB.setLayout(bestPicksLayout)
         mainBoxLayout.addWidget(bestPicksGB, 1, 1, 1, 4)
@@ -215,7 +219,46 @@ class App(QDialog):
 
     def teamChoice(self, button):
         self.yourTeam = button.text()[0]
+        pairs = [(self.player1Pick, self.player6Pick), (self.player1Role, self.player6Role),
+                 (self.player2Pick, self.player7Pick), (self.player2Role, self.player7Role),
+                 (self.player3Pick, self.player8Pick), (self.player3Role, self.player8Role),
+                 (self.player4Pick, self.player9Pick), (self.player4Role, self.player9Role),
+                 (self.player5Pick, self.player10Pick), (self.player5Role, self.player10Role)]
 
+        # mirror blue and red
+        for (b_, r_) in pairs:
+            b_enabled = b_.isEnabled()
+            b_index = b_.currentIndex()
+            b_.setEnabled(r_.isEnabled())
+            b_.setCurrentIndex(r_.currentIndex())
+            r_.setEnabled(b_enabled)
+            r_.setCurrentIndex(b_index)
+
+        # reverse generate button and update your role
+        if self.generateButton.isEnabled():
+            self.generateButton.setEnabled(False)
+            self.yourRole = None
+        else:
+            self.generateButton.setEnabled(True)
+            for pair in pairs:
+                if self.yourRole in pair:
+                    b_, r_ = pair
+                    self.yourRole = b_ if self.yourRole == r_ else r_
+                    break
+
+        # update order
+        if self.yourTeam == 'B':
+            self.pick_order = [self.player1Pick, self.player6Pick, self.player7Pick, self.player2Pick, self.player3Pick, self.player8Pick,
+                               self.player9Pick, self.player4Pick, self.player5Pick, self.player10Pick]
+            self.role_order = [self.player1Role, self.player6Role, self.player7Role, self.player2Role, self.player3Role, self.player8Role,
+                               self.player9Role, self.player4Role, self.player5Role, self.player10Role]
+        else:
+            self.pick_order = [self.player6Pick, self.player1Pick, self.player2Pick, self.player7Pick, self.player8Pick, self.player3Pick,
+                               self.player4Pick, self.player9Pick, self.player10Pick, self.player5Pick]
+            self.role_order = [self.player6Role, self.player1Role, self.player2Role, self.player7Role, self.player8Role, self.player3Role,
+                               self.player4Role, self.player9Role, self.player10Role, self.player5Role]
+
+    def teamReset(self):
         self.player1Pick.setEnabled(False)
         self.player1Pick.setCurrentIndex(0)
         self.player1Role.setEnabled(True)
@@ -288,8 +331,7 @@ class App(QDialog):
         # get the last available combobox, if in player 1-5 then we set self.yourRole, else disable generation
         l = [playerPick.isEnabled() for playerPick in self.pick_order]
         currentPickIndex = -1 if False not in l else l.index(False) - 1
-        if self.pick_order[currentPickIndex] in [self.player1Pick, self.player2Pick, self.player3Pick, self.player4Pick,
-                                                                           self.player5Pick]:
+        if self.pick_order[currentPickIndex] in [self.player1Pick, self.player2Pick, self.player3Pick, self.player4Pick, self.player5Pick]:
             self.generateButton.setEnabled(True)
             self.yourRole = self.role_order[currentPickIndex]
         else:
@@ -443,6 +485,6 @@ def run(mode, network):
 
 
 if __name__ == '__main__':
-    mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
-    network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
-    run(mode, network)
+    m = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
+    n = Networks.DenseUniform(mode=m, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
+    run(m, n)
