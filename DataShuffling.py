@@ -6,32 +6,30 @@ import gc
 import pandas as pd
 import os
 import sys
+
+import time
+
 import Modes
 import shutil
 
 
-def split_to_file(mode, df, nb_files, i):
-    currentFile = os.path.join(mode.TRAINING_DIR, 'data_' + str(i + 1) + '.csv')
-    print(currentFile)
-    index = [k * nb_files + i for k in range(len(df) // nb_files) if k * nb_files + i < len(df)]
-    data = df.iloc[index, :]
-    data.to_csv(currentFile, mode='a', header=False, index=False)
-
-    # We have to manually delete the data in order to not run out of memory
-    # Otherwise the watermarks left by the variable is too big and we eventually get a MemoryError
-    # To give some insight, I run on 8 proc and a RAM of 16 GB. If I don't use the garbage collector or reduce the number of proc, it'll crash.
-    del df, data
-    gc.collect()
-
-
 def shuffling(mode, dataFile, nb_files, cpu):
     df = pd.read_csv(os.path.join(mode.PREPROCESSED_DIR, dataFile), header=None)
-    pool = multiprocessing.Pool(processes=max(cpu, 1))
-    fun = partial(split_to_file, mode, df, nb_files)
-    pool.map(fun, range(nb_files), chunksize=1)
+    pool = multiprocessing.Pool(processes=cpu)
+    for i in range(nb_files):
+        currentFile = os.path.join(mode.TRAINING_DIR, 'data_' + str(i + 1) + '.csv')
+        index = [k * nb_files + i for k in range(len(df) // nb_files) if k * nb_files + i < len(df)]
+        data = df.iloc[index, :]
+        # saving is made async to gain time and keep the disk as busy as we can (it's clearly the limiting factor here)
+        # data is not that big so copying is not time-consuming
+        pool.apply_async(save_in_file, args=(data, currentFile,))
     pool.close()
     pool.join()
-    print(dataFile, 'DONE', file=sys.stderr)
+    print(dataFile, 'shuffled for training')
+
+
+def save_in_file(data, currentFile):
+    data.to_csv(currentFile, mode='a', header=False, index=False)
 
 
 def validationInput(msg, validAns):
@@ -68,7 +66,7 @@ def run(mode, nb_files, keep_for_testing, cpu):
         testing_file = preprocessed_files.pop(0)  # take data away for testing
         # no need to shuffle since it's a test
         shutil.copyfile(os.path.join(mode.PREPROCESSED_DIR, testing_file), os.path.join(mode.TESTING_DIR, testing_file))
-        print(testing_file)
+        print(testing_file, 'stored for testing')
 
     for file in preprocessed_files:
         shuffling(mode, file, nb_files, cpu)
