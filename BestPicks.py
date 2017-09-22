@@ -2,6 +2,8 @@
 
 import os
 import sys
+
+from PyQt5.QtCore import Qt
 import numpy as np
 from PyQt5.QtWidgets import *
 from collections import OrderedDict
@@ -42,6 +44,7 @@ class App(QDialog):
         self.network = network
         self.yourTeam = None
         self.yourRole = None
+        self.yourPick = None
         self.pick_order = None
         self.role_order = None
 
@@ -182,9 +185,6 @@ class App(QDialog):
         yourTeamButtonGroup.buttonClicked['QAbstractButton *'].connect(self.teamChoice)
         bestPicksLayout.addWidget(blueTeamButton, 0, 0)
         bestPicksLayout.addWidget(redTeamButton, 1, 0)
-        resetButton = QPushButton('Reset')
-        resetButton.clicked.connect(lambda: self.teamReset())
-        bestPicksLayout.addWidget(resetButton, 2, 0)
 
         self.evaluateButton = QPushButton('Wait...')
         self.evaluateButton.setEnabled(False)
@@ -196,10 +196,14 @@ class App(QDialog):
         # noinspection PyUnresolvedReferences
         self.generateButton.clicked.connect(lambda: self.generate())
         bestPicksLayout.addWidget(self.generateButton, 1, 1)
+        resetButton = QPushButton('Reset')
+        resetButton.clicked.connect(lambda: self.teamReset())
+        bestPicksLayout.addWidget(resetButton, 2, 1)
 
         self.results = QTableWidget()
-        self.results.setColumnCount(3)
-        self.results.horizontalHeader().hide()
+        self.results.setRowCount(0)  # delete previous data
+        self.results.setColumnCount(0)
+        # self.results.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.results.verticalHeader().hide()
         bestPicksLayout.addWidget(self.results, 3, 0, 1, 2)
 
@@ -215,48 +219,59 @@ class App(QDialog):
         self.show()
 
         self.teamChoice(blueTeamButton)
+        self.teamReset()
         self.buildNetwork()
 
     def teamChoice(self, button):
+        # mirror the position for the other team
+        # for the sake of simplicity, we reset and do as if we selected 1 by 1 the champions
+        if self.yourTeam == button.text()[0]:  # same team. I wonder if it's possible to get there
+            return
         self.yourTeam = button.text()[0]
-        pairs = [(self.player1Pick, self.player6Pick), (self.player1Role, self.player6Role),
-                 (self.player2Pick, self.player7Pick), (self.player2Role, self.player7Role),
-                 (self.player3Pick, self.player8Pick), (self.player3Role, self.player8Role),
-                 (self.player4Pick, self.player9Pick), (self.player4Role, self.player9Role),
-                 (self.player5Pick, self.player10Pick), (self.player5Role, self.player10Role)]
 
-        # mirror blue and red
-        for (b_, r_) in pairs:
-            b_enabled = b_.isEnabled()
-            b_index = b_.currentIndex()
-            b_.setEnabled(r_.isEnabled())
-            b_.setCurrentIndex(r_.currentIndex())
-            r_.setEnabled(b_enabled)
-            r_.setCurrentIndex(b_index)
+        # saving current situation, we already keep in mind who's going where
+        exchanges = [(self.player6Pick, self.player1Pick.currentIndex()),
+                     (self.player7Pick, self.player2Pick.currentIndex()),
+                     (self.player8Pick, self.player3Pick.currentIndex()),
+                     (self.player9Pick, self.player4Pick.currentIndex()),
+                     (self.player10Pick, self.player5Pick.currentIndex()),
+                     (self.player1Pick, self.player6Pick.currentIndex()),
+                     (self.player2Pick, self.player7Pick.currentIndex()),
+                     (self.player3Pick, self.player8Pick.currentIndex()),
+                     (self.player4Pick, self.player9Pick.currentIndex()),
+                     (self.player5Pick, self.player10Pick.currentIndex())]
+        p1r = self.player1Role.currentIndex()
+        p2r = self.player2Role.currentIndex()
+        p3r = self.player3Role.currentIndex()
+        p4r = self.player4Role.currentIndex()
+        p5r = self.player5Role.currentIndex()
+        p6r = self.player6Role.currentIndex()
+        p7r = self.player7Role.currentIndex()
+        p8r = self.player8Role.currentIndex()
+        p9r = self.player9Role.currentIndex()
+        p10r = self.player10Role.currentIndex()
 
-        # reverse generate button and update your role
-        if self.generateButton.isEnabled():
-            self.generateButton.setEnabled(False)
-            self.yourRole = None
-        else:
-            self.generateButton.setEnabled(True)
-            for pair in pairs:
-                if self.yourRole in pair:
-                    b_, r_ = pair
-                    self.yourRole = b_ if self.yourRole == r_ else r_
+        self.teamReset()
+
+        # mirroring roles is straightforward
+        self.player1Role.setCurrentIndex(p6r)
+        self.player2Role.setCurrentIndex(p7r)
+        self.player3Role.setCurrentIndex(p8r)
+        self.player4Role.setCurrentIndex(p9r)
+        self.player5Role.setCurrentIndex(p10r)
+        self.player6Role.setCurrentIndex(p1r)
+        self.player7Role.setCurrentIndex(p2r)
+        self.player8Role.setCurrentIndex(p3r)
+        self.player9Role.setCurrentIndex(p4r)
+        self.player10Role.setCurrentIndex(p5r)
+
+        # now we simply pick according to pick order
+        for p in self.pick_order:
+            for e in exchanges:
+                if p == e[0] and e[1] != 0:
+                    p.setCurrentIndex(e[1])
+                    self.pick(sender=p)
                     break
-
-        # update order
-        if self.yourTeam == 'B':
-            self.pick_order = [self.player1Pick, self.player6Pick, self.player7Pick, self.player2Pick, self.player3Pick, self.player8Pick,
-                               self.player9Pick, self.player4Pick, self.player5Pick, self.player10Pick]
-            self.role_order = [self.player1Role, self.player6Role, self.player7Role, self.player2Role, self.player3Role, self.player8Role,
-                               self.player9Role, self.player4Role, self.player5Role, self.player10Role]
-        else:
-            self.pick_order = [self.player6Pick, self.player1Pick, self.player2Pick, self.player7Pick, self.player8Pick, self.player3Pick,
-                               self.player4Pick, self.player9Pick, self.player10Pick, self.player5Pick]
-            self.role_order = [self.player6Role, self.player1Role, self.player2Role, self.player7Role, self.player8Role, self.player3Role,
-                               self.player4Role, self.player9Role, self.player10Role, self.player5Role]
 
     def teamReset(self):
         self.player1Pick.setEnabled(False)
@@ -308,6 +323,7 @@ class App(QDialog):
             self.role_order = [self.player1Role, self.player6Role, self.player7Role, self.player2Role, self.player3Role, self.player8Role,
                                self.player9Role, self.player4Role, self.player5Role, self.player10Role]
             self.yourRole = self.player1Role  # blue team is first pick
+            self.yourPick = self.player1Pick
         else:
             self.player6Pick.setEnabled(True)
             self.generateButton.setEnabled(False)
@@ -316,10 +332,14 @@ class App(QDialog):
             self.role_order = [self.player6Role, self.player1Role, self.player2Role, self.player7Role, self.player8Role, self.player3Role,
                                self.player4Role, self.player9Role, self.player10Role, self.player5Role]
             self.yourRole = None
+            self.yourPick = None
 
-    def pick(self):
-        i = self.pick_order.index(self.sender())
-        if self.sender().currentIndex() != 0:
+    def pick(self, champ='', sender=None):  # first arg is the combobox text, eg 'aatrox'
+        if sender is None:  # called from button
+            sender = self.sender()
+        i = self.pick_order.index(sender)
+
+        if sender.currentIndex() != 0:
             if i + 1 < len(self.pick_order):
                 self.pick_order[i + 1].setEnabled(True)
         else:
@@ -334,9 +354,11 @@ class App(QDialog):
         if self.pick_order[currentPickIndex] in [self.player1Pick, self.player2Pick, self.player3Pick, self.player4Pick, self.player5Pick]:
             self.generateButton.setEnabled(True)
             self.yourRole = self.role_order[currentPickIndex]
+            self.yourPick = self.pick_order[currentPickIndex]
         else:
             self.generateButton.setEnabled(False)
             self.yourRole = None
+            self.yourPick = None
 
     def buildNetwork(self):
         import keras
@@ -377,6 +399,15 @@ class App(QDialog):
         ]
         print('picks', picks, file=sys.stderr)
 
+        for (p_, r_, _) in picks:
+            if p_[0] != '.' and r_[0] == '.':
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText('Please enter role for {}'.format(p_))
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+                return
+
         currentState = OrderedDict()
         currentState.update([('s_' + champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
         currentState.update([('p_' + champ, 'N') for champ in self.mode.CHAMPIONS_LABEL])
@@ -393,23 +424,33 @@ class App(QDialog):
                 currentState['p_' + pick] = role[0]
 
         data = np.array([self.mode.row_data(currentState, False, True)])
-        print(self.mode.row_data(currentState, False, True))
+        # print(self.mode.row_data(currentState, False, True))
         pred_values = self.network.model.predict(data, batch_size=len(data))[0]
         if self.yourTeam == 'R':
             pred_values = 1 - pred_values
         pred_values *= 100
         self.results.setRowCount(1)
-        self.results.setItem(0, 0, QTableWidgetItem('winrate'))
-        self.results.setItem(0, 1, QTableWidgetItem('%.2f' % pred_values))
+        self.results.setColumnCount(1)
+        self.results.clear()
+        self.results.setHorizontalHeaderLabels(['winrate'])
+        winrate = QTableWidgetItem('%.2f' % pred_values)
+        winrate.setTextAlignment(Qt.AlignRight)
+        self.results.setItem(0, 0, winrate)
+        header = self.results.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
 
     def generate(self):
-        if not self.yourRole:
-            print('Analysis only available for your team', file=sys.stderr)
+        if not self.yourPick or self.yourPick.currentText()[0] != '.':
+            print('Nothing to analyze', file=sys.stderr)
             return
 
         yourRole = str(self.yourRole.currentText())
-        if yourRole == '...':
-            print('You need to select a role!', file=sys.stderr)
+        if yourRole[0] == '.':
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText('You need to enter a role!')
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
             return
         print('generating for:', yourRole, file=sys.stderr)
 
@@ -431,6 +472,15 @@ class App(QDialog):
             (str(self.player10Pick.currentText()), str(self.player10Role.currentText()), 0),
         ]
         print('picks', picks, file=sys.stderr)
+
+        for (p_, r_, _) in picks:
+            if p_[0] != '.' and r_[0] == '.':
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText('Please enter role for {}'.format(p_))
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+                return
 
         currentState = OrderedDict()
         currentState.update([('s_' + champ, 'A') for champ in self.mode.CHAMPIONS_LABEL])
@@ -467,12 +517,24 @@ class App(QDialog):
         pred_values = self.network.model.predict(np.array(data), batch_size=len(data))
         best_champs = [(champions[k], 100 * (pred_values[k] if self.yourTeam == 'B' else 1 - pred_values[k])) for k in range(len(champions))]
         best_champs = sorted(best_champs, key=lambda x: x[1], reverse=True)
-        print(best_champs, file=sys.stderr)
+        # print(best_champs, file=sys.stderr)
         self.results.setRowCount(len(best_champs))
+        self.results.setColumnCount(3)
+        self.results.clear()
+        self.results.setHorizontalHeaderLabels(['Champion', 'Winrate', 'Popularity'])
+
         for k in range(len(best_champs)):
             self.results.setItem(k, 0, QTableWidgetItem(best_champs[k][0]))
-            self.results.setItem(k, 1, QTableWidgetItem('%.2f' % (best_champs[k][1])))
-            self.results.setItem(k, 2, QTableWidgetItem(self.mode.config[yourRole.upper()][best_champs[k][0]]))
+            winrate = QTableWidgetItem('%.2f' % (best_champs[k][1]))
+            winrate.setTextAlignment(Qt.AlignRight)
+            self.results.setItem(k, 1, winrate)
+            popularity = QTableWidgetItem(self.mode.config[yourRole.upper()][best_champs[k][0]])
+            popularity.setTextAlignment(Qt.AlignRight)
+            self.results.setItem(k, 2, popularity)
+        header = self.results.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
 
 
 def run(mode, network):

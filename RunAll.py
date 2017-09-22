@@ -30,8 +30,8 @@ to_execute = [
     # 'RoleUpdater',
     # 'DataProcessing',  # runs on multiple cpu
     # 'DataShuffling',
-    'Learner',  # runs on gpu
-    # 'BestPicks',
+    # 'Learner',  # runs on gpu
+    'BestPicks',
 ]
 
 if __name__ == '__main__':
