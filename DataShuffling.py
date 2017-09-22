@@ -2,7 +2,7 @@
 # it's not a real shuffle from random but it spreads the data as much as possible so its the same
 import multiprocessing
 from functools import partial
-
+import gc
 import pandas as pd
 import os
 import sys
@@ -17,10 +17,16 @@ def split_to_file(mode, df, nb_files, i):
     data = df.iloc[index, :]
     data.to_csv(currentFile, mode='a', header=False, index=False)
 
+    # We have to manually delete the data in order to not run out of memory
+    # Otherwise the watermarks left by the variable is too big and we eventually get a MemoryError
+    # To give some insight, I run on 8 proc and a RAM of 16 GB. If I don't use the garbage collector or reduce the number of proc, it'll crash.
+    del df, data
+    gc.collect()
+
 
 def shuffling(mode, dataFile, nb_files, cpu):
     df = pd.read_csv(os.path.join(mode.PREPROCESSED_DIR, dataFile), header=None)
-    pool = multiprocessing.Pool(processes=max(cpu//2, 1))  # I get MemoryError when running on too many proc, need to find where the leak is.
+    pool = multiprocessing.Pool(processes=max(cpu, 1))
     fun = partial(split_to_file, mode, df, nb_files)
     pool.map(fun, range(nb_files), chunksize=1)
     pool.close()
@@ -62,6 +68,7 @@ def run(mode, nb_files, keep_for_testing, cpu):
         testing_file = preprocessed_files.pop(0)  # take data away for testing
         # no need to shuffle since it's a test
         shutil.copyfile(os.path.join(mode.PREPROCESSED_DIR, testing_file), os.path.join(mode.TESTING_DIR, testing_file))
+        print(testing_file)
 
     for file in preprocessed_files:
         shuffling(mode, file, nb_files, cpu)

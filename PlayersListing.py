@@ -29,7 +29,7 @@ class PlayerListing:
         self.leagues = leagues
         self.region = region
         self.nextSave = time.time() + SAVE_INTERVAL
-        from_scratch = False
+        from_scratch = True
 
         if not os.path.isdir(self.database):
             raise FileNotFoundError(self.database)
@@ -39,8 +39,12 @@ class PlayerListing:
 
         if os.path.exists(os.path.join(database, 'player_listing', self.region, 'players')):
                 self.players = pickle.load(open(os.path.join(database, 'player_listing', self.region, 'players'), 'rb'))
+                for league in leagues:
+                    if self.players[league]:
+                        from_scratch = False
+                        break
+
         else:
-            from_scratch = True
             self.players = {}
             for league in leagues:
                 self.players[league] = []
