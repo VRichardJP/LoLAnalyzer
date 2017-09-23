@@ -3,13 +3,13 @@
 
 ![analysis](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/partial_draft_analysis.PNG)
 
-This small project contains all the tools you will ever need to train and use neural networks for the purpose of draft analysis. In other words, you can use this application to evaluate your own drafts (partial or complete) and find the champions that will maximize your chances of winning the game.
+This small project contains all the tools you will ever need to train and use neural networks for the purpose of draft analysis. Precisely, you can use this application to evaluate your own drafts (partial or complete) and find the champions that will maximize your chances of winning the game.
 
 It is a project I have developed in my spare time. I have tested it as much as I could, but I can't provide you any guarantee you won't ever find any bug. However, if you find some, please let me know. Any feedback is welcome.
 
 I know that most people here are LoL players running on Windows and who would like to have a .exe to double-click and go. Unfortunately, I am using many heavy libraries and making you download a 2GB program instead of a couple scripts is certainly not the way to go. Of course, if you know a way to create a light-weight distributable program, please let me know. Don't worry, even if you don't know a thing about Python or even programming you should not have any trouble installing and using this application.
 
-Most of the scripts here are designed to create a neural network from scratch. Since I guess most people just want to try out the application, I have provided a demo network for the patch 7.17. Updating the network on a daily basis is a huge amount of work I will NOT do. If you want to seriously use this application, you will have to train your own neural network (pr find someone who does.)
+Most of the scripts here are designed to create a neural network from scratch. Since I guess most people just want to try out the application, I have provided a demo network for the patch 7.17. Updating the network on a daily basis is a huge amount of work I will NOT do. If you want to seriously use this application, you will have to train your own neural network (or find someone who will.)
 
 
 ## Introduction
