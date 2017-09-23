@@ -1,7 +1,7 @@
 
 # Using machine learning to find the best pick in a draft (League of Legends)
 
-![analysis](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/analysis.PNG)
+![analysis](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/partial_draft_analysis.PNG)
 
 This small project contains all the tools you will ever need to train and use neural networks for the purpose of draft analysis. In other words, you can use this application to evaluate your own drafts (partial or complete) and find the champions that will maximize your chances of winning the game.
 
