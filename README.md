@@ -9,7 +9,7 @@ It is a project I have developed in my spare time. I have tested it as much as I
 
 I know that most people here are LoL players running on Windows and who would like to have a .exe to double-click and go. Unfortunately, I am using many heavy libraries and making you download a 2GB program instead of a couple scripts is certainly not the way to go. Of course, if you know a way to create a light-weight distributable program, please let me know. Don't worry, even if you don't know a thing about Python or even programming you should not have any trouble installing and using this application.
 
-Most of the scripts here are designed to create a neural network from scratch. Since I guess most people just want to try out the application, I have provided a demo network for the patch 7.17. Updating the network on a daily basis is a huge amount of work I will NOT do. If you want to seriously use this application, you will have to train your own neural network.
+Most of the scripts here are designed to create a neural network from scratch. Since I guess most people just want to try out the application, I have provided a demo network for the patch 7.17. Updating the network on a daily basis is a huge amount of work I will NOT do. If you want to seriously use this application, you will have to train your own neural network (pr find someone who does.)
 
 
 ## Introduction
@@ -22,7 +22,7 @@ Personally, I have been using op.gg for a long time. They provide a wide range o
 
 There's nothing to worry, though: a computer can collect all the draft experience you will ever need. This is where machine learning kicks in.
 
-The strength of a machine learning based system is that it can predict the outcome of games it has never encounter, whereas a statistical tool needs to see the same situation over and over to predict the outcome efficiently. How does it work? Well, its rather simple: let's imagine your team is composed of Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'Maw adc. The system will not learn that Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'Maw adc is a good composition; instead, it will learn that this kind of team composition works well: a lot of cc, peeler and one hyper-carry. In fact, it is what any human would do. You can replace Jarvan for Maokai, Sejuani for Amumu or Kog'Maw for Jinx, it doesn't really change the nature of the team, and from the neural network perspective (and yours), there are almost the same. Hence, if you want the neural network to be strong, the only thing you need to do is to make sure it has been trained with a lot of different drafts. The difference between a human and a computer here is that a machine will learn faster than you, and will be able to digest way more data than you.
+The strength of a machine learning based system is that it can predict the outcome of games it has never encounter, whereas a statistical tool needs to see the same situation over and over to predict the outcome efficiently. How does it work? Well, it's rather simple: let's imagine your team is composed of Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'Maw adc and that you won the game. The system will not learn that Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'Maw adc is a good composition; instead, it will learn that this kind of team composition works well: a lot of cc, peeler and one hyper-carry. In fact, it is what any human would do. You can replace Jarvan for Maokai, Sejuani for Amumu or Kog'Maw for Jinx, it doesn't really change the nature of the team, and from the neural network perspective (and yours), there are almost the same. Hence, if you want the neural network to be strong, the only thing you need to do is to make sure it has been trained with a lot of different drafts. The difference between a human and a computer here is that a machine will learn faster than you, and will be able to digest way more data than you.
 
 
 ## Requirements - Setup
@@ -47,7 +47,7 @@ Now you will need to install some libraries, this can be done easily by using `p
 pip install numpy pandas PyQt5 configparser python-slugify requests keras tensorflow h5py
 ```
 
-Finally, if you plan to build and train your own neural networks you will need a developer API-KEY to interact with Riot's servers: https://developer.riotgames.com/. This is not mandatory if you just want to use the demo network. Keep in may that your API-KEY may expire at some point. The application will notify you in such case you need to generate a new one.
+Finally, if you plan to build and train your own neural networks you will need a developer API-KEY to interact with Riot's servers: https://developer.riotgames.com/. This is not mandatory if you just want to use the demo network. Keep in mind that your API-KEY may expire at some point. In such case you will have to generate a new one from the developer portal.
 
 
 ## Using the scripts - The easy way: using a demo network
@@ -57,9 +57,9 @@ If you plan to go ahead with the example files, keep in mind you have to respect
 - config.ini has to be put in the same folder than the scripts
 - models you download have to be put in YOUR_DATABASE/models/xxx.h5 
 
-YOUR_DATABASE has to be defined in config.ini (edit it with any text editor you like). You set any folder you want, for example: C:\LoLAnalyzerDB. It is not necessary to get an API-KEY if you only want to run a model.
+YOUR_DATABASE has to be defined in config.ini. You can set any folder you want, for example: C:\LoLAnalyzerDB. It is not necessary to get an API-KEY if you only want to run a model.
 
-You may have to change the default model used in BestPicks.py (defined at the end of the file) to make sure it corresponds to the model you want to use. Check the examples/README.md for more the exact parameters.
+You may have to change the default model used in BestPicks.py to make sure it corresponds to the model you want to use (this is defined at the end of the script). Check examples/README.md for the exact parameters.
 
 Finally, you can run the application from a console (make sure the working directory is where all the scripts are):
 ```
@@ -71,12 +71,13 @@ I think the GUI is rather self-explanatory but tell me if you find it hard to us
 
 ## Using the scripts - The hard way: building a neural network from scratch
 
-Simply runs the scripts in the following order (working directory has to be the same as the scripts):
+If you want to build everything from scratch and maintain your own network, simply run the scripts in the following order (working directory has to be the same as the scripts):
 
 1. ConfigUpdater.py : generate your personnal config.ini. It is a simple text file and easy to edit. If you have a basic API-KEY, I recommend you to only select challenger and master leagues. Servers limitations are independant so there's no reason to not collect games from all the servers.
 2. RunAll.py : All the steps from 2 to 8 at once. You can jump steps you've already done by simply commenting lines in the script.
 
 Or in detail:
+1. ConfigUpdater.py : generate your personnal config.ini. It is a simple text file and easy to edit. If you have a basic API-KEY, I recommend you to only select challenger and master leagues. Servers limitations are independant so there's no reason to not collect games from all the servers.
 2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini). I would not recommend taking more than challenger and master if you don't have a decent limit-rate on your API key (or it will takes you ages)
 3. DataDownloader.py : download games played by the listed players
 4. DataExtractor.py : extract and collect all the downloaded data
@@ -85,11 +86,11 @@ Or in detail:
 7. Learner.py: train a neural network. You can accelerate the learning speed by installing tensorflow-gpu
 8. BestPick.py: start a GUI to use the network
 
-Executing all the scripts from scratch will take quite some time. Don't be surprised if it takes a week!
+Starting from scratch will take quite some time. Don't be surprised if it takes a week!
 
 ## Results
 
-You will find in the images/ subfolder some usage examples.
+images/ subfolder contains some screenshot of the application running.
 
 As for the performance, the model given in the examples/ subfolder has reached an overall accuracy of 53.49% (from the ban phase to the full draft) and a full-draft accuracy of 55.57%. The latter number is rather high and shows that you can significantly increase your win rate by simply improving your draft.
 
