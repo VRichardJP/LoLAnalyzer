@@ -1,7 +1,7 @@
 
 # Using machine learning to evaluate the best pick in a draft (League of Legends)
 
-![demo](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo.PNG)
+![analysis](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/analysis.PNG)
 
 
 Warning: I don't guarantee that all the scripts will run on your computer. You will need to install quite a bunch of big libraries to make it work. 
@@ -71,13 +71,9 @@ Note that some parameters of the network are only used for the training and have
 
 ## Demo & Results
 
-Example of fail pick situation. My team is full AD with 3 squishies. Spoiler alert: we /ff @20.  
-Here I use the evaluation function to predict the winner of the game. Normally you would expect the win% between something like 45% and 55%. Note I haven't entered what the banned champions were. This is not that important anymore when the draft is complete.
-![demo_failpick](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo_failpick.PNG)
+You will find in the images/ subfolder some usage examples.
 
-Example of best pick evaluation for a given draft.  
-Here I use the analysis function to predict the best champion to pick. The analysis only works for the player's team (left) and need you to precise what role the player is supposed to take. The results are sorted by win%. The last column shows the popularity of the champion for the role. It is more or less the same alue you can find on op.gg or so and I would recommend you to take this number into account when you take a decision. For instance, you may prefer to pick a popular champ with a lower win% than one which is played by only a couple of zealous OTP (let's say heimer jungle for example). 
-![demo_bestpick](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/demo_bestpick.PNG)
+As for the performance, the model given in the examples/ subfolder has reached an overall accuracy of 53.49% (from the ban phase to the full draft) and a full-draft accuracy of 55.57%. This number is rather high and shows that you can significantly increase your winrate by simply improving your draft.
 
 
 ## Miscellaneous
@@ -93,4 +89,4 @@ Here I use the analysis function to predict the best champion to pick. The analy
 
 ## TODO List
 - Faster player listing (current is really slow)
-- GUI improvwments
+- GUI improvements

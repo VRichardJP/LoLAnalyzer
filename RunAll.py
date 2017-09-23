@@ -29,7 +29,7 @@ to_execute = [
     # 'DataExtractor',  # runs on multiple cpu
     # 'RoleUpdater',
     # 'DataProcessing',  # runs on multiple cpu
-    # 'DataShuffling',
+    # 'DataShuffling',  # runs on multiple cpu
     # 'Learner',  # runs on gpu
     'BestPicks',
 ]
