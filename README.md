@@ -74,7 +74,7 @@ I think the GUI is rather self-explanatory but tell me if you find it hard to us
 If you want to build everything from scratch and maintain your own network, simply run the scripts in the following order (working directory has to be the same as the scripts):
 
 1. ConfigUpdater.py : generate your personnal config.ini. It is a simple text file and easy to edit. If you have a basic API-KEY, I recommend you to only select challenger and master leagues. Servers limitations are independant so there's no reason to not collect games from all the servers.
-2. RunAll.py : All the steps from 2 to 8 at once. You can jump steps you've already done by simply commenting lines in the script.
+2. RunAll.py : All the steps from 2 to 8 at once. You can jump steps you've already done by simply commenting lines in the script. The script is short short and easy to configure so I recommend you to use it.
 
 Or in detail:
 1. ConfigUpdater.py : generate your personnal config.ini. It is a simple text file and easy to edit. If you have a basic API-KEY, I recommend you to only select challenger and master leagues. Servers limitations are independant so there's no reason to not collect games from all the servers.
