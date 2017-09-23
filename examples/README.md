@@ -1,4 +1,4 @@
-Here are some info about the models I provide.
+Here are some info about the models I provide. If you want to use one of these models, don't forget to edit BestPicks.py with the correct parameters (defined at the end of the file)
 
 #### ABR_TJMCS_DenseUniform_5_1024.h5: 
 servers: all  
@@ -10,6 +10,7 @@ testing accuracy full draft: 55.57
 size: 74.8 MB  
 parameters:  
 
-    mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
-    network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
-
+```
+mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
+network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
+```

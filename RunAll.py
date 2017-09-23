@@ -17,45 +17,45 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Look at Modes.py and Networks.py to see the list of available modes/networks
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
-mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
-network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
+m = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
+n = Networks.DenseUniform(mode=m, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
 
 
 # Scripts to execute, comment useless ones
 # In particular, if you just want to run the app, comment all but 'BestPicks'
 to_execute = [
-    # 'PlayersListing',
-    # 'DataDownloader',  # runs on multiple cpu
-    # 'DataExtractor',  # runs on multiple cpu
-    # 'RoleUpdater',
-    # 'DataProcessing',  # runs on multiple cpu
-    # 'DataShuffling',  # runs on multiple cpu
-    # 'Learner',  # runs on gpu
+    'PlayersListing',
+    'DataDownloader',  # runs on multiple cpu
+    'DataExtractor',  # runs on multiple cpu
+    'RoleUpdater',
+    'DataProcessing',  # runs on multiple cpu
+    'DataShuffling',  # runs on multiple cpu
+    'Learner',  # runs on gpu
     'BestPicks',
 ]
 
 if __name__ == '__main__':
     if 'PlayersListing' in to_execute:
         import PlayersListing
-        PlayersListing.run(mode)
+        PlayersListing.run(m)
     if 'DataDownloader' in to_execute:
         import DataDownloader
-        DataDownloader.run(mode)
+        DataDownloader.run(m)
     if 'DataExtractor' in to_execute:
         import DataExtractor
-        DataExtractor.run(mode, cpu)
+        DataExtractor.run(m, cpu)
     if 'RoleUpdater' in to_execute:
         import RoleUpdater
-        RoleUpdater.run(mode)
+        RoleUpdater.run(m)
     if 'DataProcessing' in to_execute:
         import DataProcessing
-        DataProcessing.run(mode, cpu)
+        DataProcessing.run(m, cpu)
     if 'DataShuffling' in to_execute:
         import DataShuffling
-        DataShuffling.run(mode, shuffling_files, keep_for_testing, cpu)
+        DataShuffling.run(m, shuffling_files, keep_for_testing, cpu)
     if 'Learner' in to_execute:
         import Learner
-        Learner.run(mode, network, restore)
+        Learner.run(m, n, restore)
     if 'BestPicks' in to_execute:
         import BestPicks
-        BestPicks.run(mode, network)
+        BestPicks.run(m, n)

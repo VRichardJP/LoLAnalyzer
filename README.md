@@ -1,92 +1,110 @@
 
-# Using machine learning to evaluate the best pick in a draft (League of Legends)
+# Using machine learning to find the best pick in a draft (League of Legends)
 
 ![analysis](https://raw.githubusercontent.com/vingtfranc/LoLAnalyzer/master/images/analysis.PNG)
 
+This small project contains all the tools you will ever need to train and use neural networks for the purpose of draft analysis. In other words, you can use this application to evaluate your own drafts (partial or complete) and find the champions that will maximize your chances of winning the game.
 
-Warning: I don't guarantee that all the scripts will run on your computer. You will need to install quite a bunch of big libraries to make it work. 
+It is a project I have developed in my spare time. I have tested it as much as I could, but I can't provide you any guarantee you won't ever find any bug. However, if you find some, please let me know. Any feedback is welcome.
 
-I know it would be cool to have a .exe to double-click, but python is not that easy to distribute, so I won't provide any executable. Besides, you don't really want to download a 2Gb .exe, do you? (numpy, tensorflow and many others libraries are really heavy). However, I might create a pip package in a near future.
+I know that most people here are LoL players running on Windows and who would like to have a .exe to double-click and go. Unfortunately, I am using many heavy libraries and making you download a 2GB program instead of a couple scripts is certainly not the way to go. Of course, if you know a way to create a light-weight distributable program, please let me know. Don't worry, even if you don't know a thing about Python or even programming you should not have any trouble installing and using this application.
 
-I have provided a demo network for for the patch 7.17, but I can't maintain it updated on a daily basis. I you want to seriously use this app you will have to train your own network. I would even recommend you to test and design your own networks.
+Most of the scripts here are designed to create a neural network from scratch. Since I guess most people just want to try out the application, I have provided a demo network for the patch 7.17. Updating the network on a daily basis is a huge amount of work I will NOT do. If you want to seriously use this application, you will have to train your own neural network.
 
-## Why another tool? and why machine learning?
-I am myself a LoL player. I play ranked a lot, and as many other players I want to become stronger. But becoming stronger is not all about picking Yasuo/Zed, making plays and carrying your team (of course don't forget to spam your champion mastery when you do). Sometimes, getting better at the game is simply about building a better team. Of course, you have your own preference: champions you like, champions you don't like. But how many times have you said to yourself you had lost a game by simply looking at your draft. Sometimes it's not your fault, you are first pick, you can't predict everything. But sometimes it is, and worse, you may not even realize it.
 
-So how can you make sure you're not the fail pick?
+## Introduction
 
-Personally, I have been using op.gg for a long time. They provide a wide range of meaningful statistics for whoever wants to play ranked seriously. They give champions win ratio, matchups information, best builds, etc. But is it enough to choose the perfect champion for your team? Unfortunately, no. The reason is simple: since the analysis is made from large statistics, it does not take into account the most important information of a draft: what your team and the opponent team composition is. For instance, if you're top and op.gg says that Pantheon  has an average of 54.22% win rate and is the best top laner, but your team needs a tank, do you pick Pantheon anyway? The truth is that once you're in a draft, this number is not relevant anymore. 
+I am myself a LoL player. I have been playing this game since season 1 and as many of my fellow players, I love playing ranked games, I want to become stronger and climb the ladder. But becoming stronger is not all about picking Yasuo/Zed, making plays and carrying your team (of course don't forget to spam your mastery when you do). Sometimes, getting better at the game is simply about building a better team. How many times have you said to yourself you had lost a game by simply looking at your draft. Sometimes it's not your fault, you are the first pick, you can't predict everything. But sometimes it is, and worse, you may not even realize it.
 
-My goal is simple: I want a system that can provide me a precise information on my draft, so I know what champion suits the current draft the best. And this is were machine learning is stronger than pure statistics. The strength of a machine learning based system is that it can predict the outcome of games it has never encounter, whereas a statistical tool need to see the same situation over and over to predict the outcome efficiently. How does it work? Well its rather simple: let's imagine your team is composed of Jarvan top, Sejuani jungle, Zilean mid, Janna support and that you won by picking Kog'maw adc. The system will not learn that Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'maw adc is a good composition; instead, it will learn that this kind of team works well: a lot of cc, peels and one hyper-carry. You can replace Jarvan for Maokai, Sejuani for Amumu or Kog'Maw for Vayne, it doesn't chance the nature of the team, and from the neural network perspective, there are almost the same. Hence, the only thing you need to do is to make sure the neural networks has been trained in a lot of different drafts, so it understands what are the characteristics of each champion and what is needed in all kind of situations
+So how can you make sure you're not the fail pick? How can you make sure the champion you pick actually fits the team?
+
+Personally, I have been using op.gg for a long time. They provide a wide range of meaningful statistics for whoever wants to play ranked seriously. They give champions win ratio, matchups information, best builds, etc. But is it enough to choose the perfect champion for your team? Unfortunately, no. The reason is simple: since the analysis is made from large statistics, it does not take into account the most important information of the draft: what your team and the opponent team composition is. For instance, even if Pantheon is reported to be the best top laner on op.gg and to have an average of 54.22% win rate, does it mean it is always a good choice to pick Pantheon top? Of course not. The truth is that once you're in a draft, this number is not that relevant anymore. You have no choice then but to rely mainly on your experience, which will never be perfect, regardless the time you spent in the game.
+
+There's nothing to worry, though: a computer can collect all the draft experience you will ever need. This is where machine learning kicks in.
+
+The strength of a machine learning based system is that it can predict the outcome of games it has never encounter, whereas a statistical tool needs to see the same situation over and over to predict the outcome efficiently. How does it work? Well, its rather simple: let's imagine your team is composed of Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'Maw adc. The system will not learn that Jarvan top, Sejuani jungle, Zilean mid, Janna support and Kog'Maw adc is a good composition; instead, it will learn that this kind of team composition works well: a lot of cc, peeler and one hyper-carry. In fact, it is what any human would do. You can replace Jarvan for Maokai, Sejuani for Amumu or Kog'Maw for Jinx, it doesn't really change the nature of the team, and from the neural network perspective (and yours), there are almost the same. Hence, if you want the neural network to be strong, the only thing you need to do is to make sure it has been trained with a lot of different drafts. The difference between a human and a computer here is that a machine will learn faster than you, and will be able to digest way more data than you.
 
 
 ## Requirements - Setup
 
-You need at least (pip/google is your best friend):
-- Python 3 (for  convenience you can start with package like Anaconda so there are fewer libraries to download)
-- Keras (GPU version recommended if your graphic card is compatible and you plan to train your own network)
-- PyQt5
-- If you want to build your own networks, a developer API-KEY from https://developer.riotgames.com/. If your API-KEY has expired at some point, just get a new one and update the config.ini file.
+This project uses Python 3 (it won't work with Python 2.7). If you are on Windows/Mac OS, you can download it from the official webpage: https://www.python.org/downloads/. If you're on Linux you can install it with the package manager (for example on debian:)
+	
+```
+sudo apt-get update
+sudo apt-get install python3 python3-pip
+```
 
-...you can try this command from a fresh installation of python:
+Keep in mind that on Linux you will have to call `python3` and `pip3` instead of `python` and `pip` (default `python` is for python 2.7 and it's not recommended to change it).
 
-    pip install numpy pandas PyQt5 configparser python-slugify requests keras tensorflow h5py
+You can check your installation of python by opening a console (on Windows Win+R > cmd), typing `python` and checking that the version matches what you have installed. For example:
+```
+Python 3.5.0 |Anaconda custom (64-bit)| (default, Dec  1 2015, 11:46:22) [MSC v.1900 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+```
 
-...but I may have forgotten some libraries, just google/pip if something is missing (if the program crashes during an import)...
+Now you will need to install some libraries, this can be done easily by using `pip` in a console:
+```
+pip install numpy pandas PyQt5 configparser python-slugify requests keras tensorflow h5py
+```
+
+Finally, if you plan to build and train your own neural networks you will need a developer API-KEY to interact with Riot's servers: https://developer.riotgames.com/. This is not mandatory if you just want to use the demo network. Keep in may that your API-KEY may expire at some point. The application will notify you in such case you need to generate a new one.
 
 
-## How to use - The hard way (from scratch)
+## Using the scripts - The easy way: using a demo network
 
-1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. You can also use the one provided as example.
-2. RunAll.py : All the steps from 2 to 8 at once. You can comment steps you've already done (especially if ou just want to run the program, but you can also directly run BestPicks.py)
+If you plan to go ahead with the example files, keep in mind you have to respect the following architecture:
 
-Or in details:
-1. ConfigUpdater.py : generate your personnal config.ini file. It is a simple text file and easy to edit. It determines most of the scripts behaviour.
-2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini). This step is really long if you don't limit yourself to top leagues (challenger & master). I would not recommend to take more than challenger and master if you don't have a decent limit-rate on your API key
-3. DataDownloader.py : download raw game files played by the listed players
+- config.ini has to be put in the same folder than the scripts
+- models you download have to be put in YOUR_DATABASE/models/xxx.h5 
+
+YOUR_DATABASE has to be defined in config.ini (edit it with any text editor you like). You set any folder you want, for example: C:\LoLAnalyzerDB. It is not necessary to get an API-KEY if you only want to run a model.
+
+You may have to change the default model used in BestPicks.py (defined at the end of the file) to make sure it corresponds to the model you want to use. Check the examples/README.md for more the exact parameters.
+
+Finally, you can run the application from a console (make sure the working directory is where all the scripts are):
+```
+python BestPick.py
+```
+
+I think the GUI is rather self-explanatory but tell me if you find it hard to use or not user-friendly.
+
+
+## Using the scripts - The hard way: building a neural network from scratch
+
+Simply runs the scripts in the following order (working directory has to be the same as the scripts):
+
+1. ConfigUpdater.py : generate your personnal config.ini. It is a simple text file and easy to edit. If you have a basic API-KEY, I recommend you to only select challenger and master leagues. Servers limitations are independant so there's no reason to not collect games from all the servers.
+2. RunAll.py : All the steps from 2 to 8 at once. You can jump steps you've already done by simply commenting lines in the script.
+
+Or in detail:
+2. PlayersListing.py : list all the players that meet the level requirements (defined in config.ini). I would not recommend taking more than challenger and master if you don't have a decent limit-rate on your API key (or it will takes you ages)
+3. DataDownloader.py : download games played by the listed players
 4. DataExtractor.py : extract and collect all the downloaded data
-5. DataProcessing.py : pre-process the extrated data
-6. DataShuffling.py : shuffling the data
-7. Learner.py: train a neural network
-8. BestPick.py: a very simple GUI so you can enter your draft and the role you want
+5. DataProcessing.py : pre-process the extracted data
+6. DataShuffling.py : shuffle the data
+7. Learner.py: train a neural network. You can accelerate the learning speed by installing tensorflow-gpu
+8. BestPick.py: start a GUI to use the network
 
+Executing all the scripts from scratch will take quite some time. Don't be surprised if it takes a week!
 
-## How to use - The easy way (from example)
-
-If you plan to go ahead with the example files, keep in mind you have to respect the following architecture: (if you start from scratch the tree will be created automaticaly)
-
-- config.ini has to be in the same folder than the scripts.
-- models you download have to be put in YOUR_DATABASE/models/xxx.h5
-
-It is not necessary to get an API-KEY if you only want to run a model.
-
-You may have to change the default model used in BestPicks.py or RunAll.py to make sure it correspond to the model you are using. For example, if you want to use ABR_TJMCS_DenseUniform_5_1024.h5, makes sure the scripts use these parameters:  
-
-    mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])  
-    network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)  
-
-Then you simply need to run one of the 2 scripts to start the GUI (it is necessary to comment some lines in RunAll.py)
-Note that some parameters of the network are only used for the training and have no impact during evaluation (dropout, batch_size, report)
-
-
-## Demo & Results
+## Results
 
 You will find in the images/ subfolder some usage examples.
 
-As for the performance, the model given in the examples/ subfolder has reached an overall accuracy of 53.49% (from the ban phase to the full draft) and a full-draft accuracy of 55.57%. This number is rather high and shows that you can significantly increase your winrate by simply improving your draft.
+As for the performance, the model given in the examples/ subfolder has reached an overall accuracy of 53.49% (from the ban phase to the full draft) and a full-draft accuracy of 55.57%. The latter number is rather high and shows that you can significantly increase your win rate by simply improving your draft.
 
 
 ## Miscellaneous
 - When there's a new patch, run ConfigUpdater.py
 - You can delete config.ini to start with a clean config but it's easier to simply edit the file
-- You can download games from several patches by listing them in the config.ini file. See the list of all the patches for the synthax and existing patches. In order to download the most recent games first the patches should be ordered from the most recent to the oldest. 
+- You can download games from several patches by listing them in the config.ini file. See the list of all the patches for the syntax and existing patches. In order to download the most recent games first, the patches should be ordered from the most recent to the oldest. 
 - When you download games, you may experience some errors (see https://developer.riotgames.com/response-codes.html), most often: 404/503 if the data was not found/service is unavailable, 403 means your API-KEY has expired (edit config.ini with a new one from https://developer.riotgames.com/).
 - The downloaded games are located under DATABASE_ROOT/patches/PATCH/REGION/. You can change the patch/regions you're downloading games from by simply editing config.ini. 
 - Extracted data location is DATABASE_ROOT/extracted/ and DATABASE_ROOT/extracted.txt and contains all the data you've downloaded (all patches/all regions)
-- Preprocessed data location is DATABASE_ROOT/data_XXXX/.
+- Preprocessed data location is DATABASE_ROOT/data_XXXX/ (the actual name depends on the network you use.)
 - Only DATABASE_ROOT/training_XXXX/ is used for the training, so if you need to free some space on your hard drive you can delete the data files from a patch you've already fully extracted (under DATABASE_ROOT/patches/). Keep in mind if you don't configure the app properly, it may re-download games you've already used for training
 - The models you train are located under DATABASE_ROOT/models.
 
+
 ## TODO List
-- Faster player listing (current is really slow)
-- GUI improvements
+- Faster player listing (current algorithm is rather slow)

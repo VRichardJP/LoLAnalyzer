@@ -12,6 +12,8 @@ import time
 import Modes
 import shutil
 
+import Networks
+
 
 def shuffling(mode, dataFile, nb_files, cpu):
     df = pd.read_csv(os.path.join(mode.PREPROCESSED_DIR, dataFile), header=None)
@@ -72,4 +74,5 @@ def run(mode, nb_files, keep_for_testing, cpu):
         shuffling(mode, file, nb_files, cpu)
 
 if __name__ == '__main__':
-    run(Modes.ABR_TJMCS_Mode(['7.16', '7.17']), 53, 2, cpu=max(multiprocessing.cpu_count() - 1, 1))
+    m = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
+    run(m, 89, 7, cpu=max(multiprocessing.cpu_count() - 1, 1))

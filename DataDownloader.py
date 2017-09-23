@@ -215,4 +215,5 @@ def run(mode):
 
 
 if __name__ == '__main__':
-    run(Base_Mode())
+    m = Base_Mode()
+    run(m)
