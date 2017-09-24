@@ -109,3 +109,4 @@ As for the performance, the model given in the examples/ subfolder has reached a
 
 ## TODO List
 - Faster player listing (current algorithm is rather slow)
+- Policy network for pick prediction and pre-selection evaluation
