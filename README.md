@@ -63,7 +63,7 @@ You may have to change the default model used in BestPicks.py to make sure it co
 
 Finally, you can run the application from a console (make sure the working directory is where all the scripts are):
 ```
-python BestPick.py
+python BestPicks.py
 ```
 
 I think the GUI is rather self-explanatory but tell me if you find it hard to use or not user-friendly.
@@ -84,7 +84,7 @@ Or in detail:
 5. DataProcessing.py : pre-process the extracted data
 6. DataShuffling.py : shuffle the data
 7. Learner.py: train a neural network. You can accelerate the learning speed by installing tensorflow-gpu
-8. BestPick.py: start a GUI to use the network
+8. BestPicks.py: start a GUI to use the network
 
 Starting from scratch will take quite some time. Don't be surprised if it takes a week!
 
