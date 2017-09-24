@@ -11,6 +11,6 @@ size: 74.8 MB
 parameters:  
 
 ```
-mode = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
-network = Networks.DenseUniform(mode=mode, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
+m = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
+n = Networks.DenseUniform(mode=m, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
 ```
