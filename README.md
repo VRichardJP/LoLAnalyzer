@@ -27,7 +27,7 @@ The strength of a machine learning based system is that it can predict the outco
 
 ## Requirements - Setup
 
-This project uses Python 3 (it won't work with Python 2.7). If you are on Windows/Mac OS, you can download it from the official webpage: https://www.python.org/downloads/. If you're on Linux you can install it with the package manager (for example on debian:)
+This project uses Python 3 (it won't work with Python 2.7). If you are on Windows/Mac OS, you can download it from the official webpage: https://www.python.org/downloads/. During installation, makes sure to check "Add Python 3.X to PATH". If you're on Linux you can install it with the package manager (for example on debian:)
 	
 ```
 sudo apt-get update
@@ -41,6 +41,7 @@ You can check your installation of python by opening a console (on Windows Win+R
 Python 3.5.0 |Anaconda custom (64-bit)| (default, Dec  1 2015, 11:46:22) [MSC v.1900 64 bit (AMD64)] on win32
 Type "help", "copyright", "credits" or "license" for more information.
 ```
+If the console tells you it can't find the `python` command, it's usually because you have forgotten to add python to PATH during installation. You can either re-install python or add it to PATH manually (google is your best friend).
 
 Now you will need to install some libraries, this can be done easily by using `pip` in a console:
 ```
