@@ -59,9 +59,15 @@ If you plan to go ahead with the example files, keep in mind you have to respect
 
 YOUR_DATABASE has to be defined in config.ini. You can set any folder you want, for example: C:\LoLAnalyzerDB. It is not necessary to get an API-KEY if you only want to run a model.
 
-You may have to change the default model used in BestPicks.py to make sure it corresponds to the model you want to use (this is defined at the end of the script). Check examples/README.md for the exact parameters.
+You may have to change the default model used in BestPicks.py (it can be opened with any text editor) to make sure it corresponds to the model you want to use (this is defined at the end of the script). Check examples/README.md for the exact parameters.
 
-Finally, you can run the application from a console (make sure the working directory is where all the scripts are):
+
+To run the application, open a new console and set the current working directory to where all the scripts are. You can change the working directory by using `cd` command, like this (you can even drag & drop the folder in the console):
+```
+cd PATH_TO_FOLDER
+```
+
+Finally, you can run the application from a console: 
 ```
 python BestPicks.py
 ```
