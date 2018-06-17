@@ -8,7 +8,7 @@ import requests
 import sys
 import time
 
-DEBUG = False
+DEBUG = False 
 OFFSET = 2
 # OFFSET is just a security to avoid error 429. Prevent also the first request from reaching the rate-limit
 # we have no way to check the rate limit but to request something
@@ -64,6 +64,8 @@ class InterfaceAPI:
         if data:
             for key, value in data.items():
                 uri += '&%s=%s' % (key, value)
+        if DEBUG:
+            print(uri, file=sys.stderr)
         resp = requests.get(uri)
 
         # initialize time limits - only once
@@ -102,9 +104,6 @@ class InterfaceAPI:
                 time.sleep(TIME_LIMIT_WAIT)
                 raise ApiError429('Error %d - GET %s' % (resp.status_code, uri))
             raise ApiError('Error %d - GET %s' % (resp.status_code, uri))
-
-        if DEBUG:
-            print(uri, file=sys.stderr)
 
         return json.loads(resp.content.decode('utf-8'))
 

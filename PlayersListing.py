@@ -103,7 +103,7 @@ class PlayerListing:
                 games = \
                     self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})[
                         'matches']
-                playerLeagueList = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/leagues/by-summoner/%s' % (self.region, sumID))
+                playerLeagueList = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/positions/by-summoner/%s' % (self.region, sumID))
             except ApiError403 as e:
                 print(e, file=sys.stderr)
                 return e
@@ -114,14 +114,14 @@ class PlayerListing:
             # we check that the summoner is in one of the leagues we want
             playerSoloQLeague = None
             for league in playerLeagueList:
-                if league['queue'] == 'RANKED_SOLO_5x5':
+                if league['queueType'] == 'RANKED_SOLO_5x5':
                     playerSoloQLeague = league
                     break
             if not playerSoloQLeague:
                 print('no soloQ rank: ', self.region, sumID)
                 continue
             playerLeagueTier = playerSoloQLeague['tier'].lower()
-            playerLeagueName = playerSoloQLeague['name']
+            playerLeagueId = playerSoloQLeague['leagueId']
             if playerLeagueTier not in self.leagues:
                 print('refused tier:', self.region, sumID, playerLeagueTier)
                 continue
@@ -130,14 +130,30 @@ class PlayerListing:
             print('added:', self.region, sumID, playerLeagueTier)
 
             # We add all the people in the same league for exploration
-            if playerLeagueName not in self.exploredLeagues:
-                self.exploredLeagues.append(playerLeagueName)
-                print('new league found:', self.region, playerLeagueTier, playerLeagueName)
-                for e in playerSoloQLeague['entries']:
+            if playerLeagueId not in self.exploredLeagues:
+                self.exploredLeagues.append(playerLeagueId)
+                print('new league found:', self.region, playerLeagueTier, playerLeagueId)
+                try:
+                    newLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/leagues/%s' % (self.region, playerLeagueId))['accountId']
+                except ApiError403 as e:
+                    print(e, file=sys.stderr)
+                    return e
+                except ApiError as e:
+                    print(e, file=sys.stderr)
+                    continue
+                
+                for e in newLeague['entries']:
                     sumID = int(e['playerOrTeamId'])
                     if sumID not in self.exploredPlayers:
                         self.to_explore.append(sumID)
                         self.exploredPlayers.append(sumID)
+                
+                # old API
+                # for e in playerSoloQLeague['entries']:
+                #     sumID = int(e['playerOrTeamId'])
+                #     if sumID not in self.exploredPlayers:
+                #         self.to_explore.append(sumID)
+                #         self.exploredPlayers.append(sumID)
 
             # We have to explore some games to get to other leagues
             # We hope that at least 1 player of each league has played within the time window
