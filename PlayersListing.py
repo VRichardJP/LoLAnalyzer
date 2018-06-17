@@ -172,7 +172,7 @@ class PlayerListing:
     def save(self):
         while True:
             if not os.path.isdir(self.database):
-                print(self.region, 'cannot access the database', file=sys.stderr)
+                print(self.region, 'cannot access the local database', file=sys.stderr)
                 time.sleep(DATABASE_WAIT)
                 continue
 
@@ -212,7 +212,7 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                     continue
                 except (PickleError,  FileNotFoundError) as e:
                     print(e, file=sys.stderr)
-                    print(region, 'cannot access the database', file=sys.stderr)
+                    print(region, 'cannot access the local database', file=sys.stderr)
                     time.sleep(DATABASE_WAIT)
                     continue
 
@@ -244,7 +244,7 @@ def keepExploring(database, leagues, region, attempts=ATTEMPTS):
                     continue
                 except (PickleError, FileNotFoundError) as e:
                     print(e, file=sys.stderr)
-                    print(region, 'cannot access the database', file=sys.stderr)
+                    print(region, 'cannot access the local database', file=sys.stderr)
                     time.sleep(DATABASE_WAIT)
                     continue
 
