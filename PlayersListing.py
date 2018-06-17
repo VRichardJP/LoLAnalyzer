@@ -71,12 +71,14 @@ class PlayerListing:
             print(region, 'first time exploration, checking challenger and master leagues', file=sys.stderr)
             # only the first time
             if fast:  # only the challenger and master league, no need to explore anything
-                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
-                for e in challLeague['entries']:
-                    self.players['challenger'].append(int(e['playerOrTeamId']))
-                masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
-                for e in masterLeague['entries']:
-                    self.players['master'].append(int(e['playerOrTeamId']))
+                if 'challenger' in self.players:
+                    challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                    for e in challLeague['entries']:
+                        self.players['challenger'].append(int(e['playerOrTeamId']))
+                if 'master' in self.players:
+                    masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                    for e in masterLeague['entries']:
+                        self.players['master'].append(int(e['playerOrTeamId']))
             else:
                 challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in challLeague['entries']:
