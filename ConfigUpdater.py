@@ -43,18 +43,12 @@ def run():
         config['PARAMS']['database'] = input('Database location (eg. C:\LoLAnalyzerDB): ')
         print('Leagues you want to download games from (y/n): ')
         config['LEAGUES']['challenger'] = 'yes' if validationInput('challenger: ', ['y', 'n']) == 'y' else 'no'
-        if config['LEAGUES']['challenger'] == 'yes':
-            config['LEAGUES']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
-        if config['LEAGUES']['master'] == 'yes':
-            config['LEAGUES']['diamond'] = 'yes' if validationInput('diamond (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        if config['LEAGUES']['diamond'] == 'yes':
-            config['LEAGUES']['platinum'] = 'yes' if validationInput('platinum (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        if config['LEAGUES']['platinum'] == 'yes':
-            config['LEAGUES']['gold'] = 'yes' if validationInput('gold (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        if config['LEAGUES']['gold'] == 'yes':
-            config['LEAGUES']['silver'] = 'yes' if validationInput('silver (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        if config['LEAGUES']['silver'] == 'yes':
-            config['LEAGUES']['bronze'] = 'yes' if validationInput('bronze (not recommended): ', ['y', 'n']) == 'y' else 'no'
+        config['LEAGUES']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
+        config['LEAGUES']['diamond'] = 'yes' if validationInput('diamond (not recommended): ', ['y', 'n']) == 'y' else 'no'
+        config['LEAGUES']['platinum'] = 'yes' if validationInput('platinum (not recommended): ', ['y', 'n']) == 'y' else 'no'
+        config['LEAGUES']['gold'] = 'yes' if validationInput('gold (not recommended): ', ['y', 'n']) == 'y' else 'no'
+        config['LEAGUES']['silver'] = 'yes' if validationInput('silver (not recommended): ', ['y', 'n']) == 'y' else 'no'
+        config['LEAGUES']['bronze'] = 'yes' if validationInput('bronze (not recommended): ', ['y', 'n']) == 'y' else 'no'
         print('Regions you want to download games from (the more the better) (y/n):')
         config['REGIONS']['ru'] = 'yes' if validationInput('ru: ', ['y', 'n']) == 'y' else 'no'
         config['REGIONS']['kr'] = 'yes' if validationInput('kr: ', ['y', 'n']) == 'y' else 'no'
