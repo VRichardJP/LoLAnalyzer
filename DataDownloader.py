@@ -35,11 +35,12 @@ class DataDownloader:
         else:
             self.downloadedGames = []
         self.summonerIDs = []
-        players = pickle.load(open(os.path.join(database, 'player_listing', region, 'players'), 'rb'))
-        for league in leagues:
-            self.summonerIDs.extend(players[league])
+        if os.path.isfile(os.path.join(database, 'player_listing', region, 'players')):
+            players = pickle.load(open(os.path.join(database, 'player_listing', region, 'players'), 'rb'))
+            for league in leagues:
+                self.summonerIDs.extend(players[league])
 
-        random.shuffle(self.summonerIDs)
+            random.shuffle(self.summonerIDs)
 
     def downloadData(self):
         while self.summonerIDs:  # if the API in unavailable, or the sumID is unreachable for w/e reason, just take the skip to the next
