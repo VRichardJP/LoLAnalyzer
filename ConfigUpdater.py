@@ -38,29 +38,37 @@ def run():
         config.add_section('SUPPORT')
 
         print("No config file found. Let's set up a few parameters (you may change them anytime by manually editing config.ini).")
-        API_KEY = input('API-KEY (https://developer.riotgames.com/): ')
+        API_KEY = input('- API-KEY (https://developer.riotgames.com/): ')
         config['PARAMS']['api-key'] = API_KEY
-        config['PARAMS']['database'] = input('Database location (eg. C:\LoLAnalyzerDB): ')
+        config['PARAMS']['database'] = input('- Database location (eg. C:\LoLAnalyzerDB): ')
         print('Leagues you want to download games from (y/n): ')
-        config['LEAGUES']['challenger'] = 'yes' if validationInput('challenger: ', ['y', 'n']) == 'y' else 'no'
-        config['LEAGUES']['master'] = 'yes' if validationInput('master: ', ['y', 'n']) == 'y' else 'no'
-        config['LEAGUES']['diamond'] = 'yes' if validationInput('diamond (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        config['LEAGUES']['platinum'] = 'yes' if validationInput('platinum (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        config['LEAGUES']['gold'] = 'yes' if validationInput('gold (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        config['LEAGUES']['silver'] = 'yes' if validationInput('silver (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        config['LEAGUES']['bronze'] = 'yes' if validationInput('bronze (not recommended): ', ['y', 'n']) == 'y' else 'no'
-        print('Regions you want to download games from (the more the better) (y/n):')
-        config['REGIONS']['ru'] = 'yes' if validationInput('ru: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['kr'] = 'yes' if validationInput('kr: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['br1'] = 'yes' if validationInput('br1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['oc1'] = 'yes' if validationInput('oc1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['jp1'] = 'yes' if validationInput('jp1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['na1'] = 'yes' if validationInput('na1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['eun1'] = 'yes' if validationInput('eun1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['euw1'] = 'yes' if validationInput('euw1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['tr1'] = 'yes' if validationInput('tr1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['la1'] = 'yes' if validationInput('la1: ', ['y', 'n']) == 'y' else 'no'
-        config['REGIONS']['la2'] = 'yes' if validationInput('la2: ', ['y', 'n']) == 'y' else 'no'
+        print('challenger league enabled by default')
+        config['LEAGUES']['challenger'] = 'yes'
+        config['LEAGUES']['master'] = 'yes' if validationInput('- master: ', ['y', 'n']) == 'y' else 'no'
+        if config['LEAGUES']['master'] == 'yes' :
+            print('Lower leagues are not recommended unless you have a high rate API-KEY (not given by default)')
+            config['LEAGUES']['diamond'] = 'yes' if validationInput('- diamond: ', ['y', 'n']) == 'y' else 'no'
+            if config['LEAGUES']['diamond'] == 'yes' :
+                config['LEAGUES']['platinum'] = 'yes' if validationInput('- platinum: ', ['y', 'n']) == 'y' else 'no'
+                if config['LEAGUES']['platinum'] == 'yes' :
+                    config['LEAGUES']['gold'] = 'yes' if validationInput('- gold: ', ['y', 'n']) == 'y' else 'no'
+                    if config['LEAGUES']['gold'] == 'yes' :
+                        config['LEAGUES']['silver'] = 'yes' if validationInput('- silver: ', ['y', 'n']) == 'y' else 'no'
+                        if config['LEAGUES']['silver'] == 'yes' :
+                            config['LEAGUES']['bronze'] = 'yes' if validationInput('- bronze: ', ['y', 'n']) == 'y' else 'no'
+        print('Regions you want to download games from (y/n):')
+        print('API-KEY limitations are server-bounded, so you will download way more games enabling everything')
+        config['REGIONS']['ru'] = 'yes' if validationInput('- ru: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['kr'] = 'yes' if validationInput('- kr: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['br1'] = 'yes' if validationInput('- br1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['oc1'] = 'yes' if validationInput('- oc1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['jp1'] = 'yes' if validationInput('- jp1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['na1'] = 'yes' if validationInput('- na1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['eun1'] = 'yes' if validationInput('- eun1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['euw1'] = 'yes' if validationInput('- euw1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['tr1'] = 'yes' if validationInput('- tr1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['la1'] = 'yes' if validationInput('- la1: ', ['y', 'n']) == 'y' else 'no'
+        config['REGIONS']['la2'] = 'yes' if validationInput('- la2: ', ['y', 'n']) == 'y' else 'no'
 
     # Update to current patch & champions list
     # euw1 is used as reference
