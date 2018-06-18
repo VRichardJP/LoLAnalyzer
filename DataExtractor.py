@@ -239,7 +239,7 @@ def analyze_game(ex, gamePaths):
         elif b_toFillCount == 1:
             fill_index = list(b_roles.keys())[list(b_roles.values()).index('?')]
             possible_roles = ['T', 'J', 'M', 'C']  
-            missing_roles = list(set(possible_roles)-set(b_roles))
+            missing_roles = list(set(possible_roles)-set(b_roles.values()))
             if len(missing_roles) == 1:
                 # non-bot role
                 b_roles[fill_index] = missing_roles[0]
@@ -258,7 +258,7 @@ def analyze_game(ex, gamePaths):
         elif r_toFillCount == 1:
             fill_index = list(r_roles.keys())[list(r_roles.values()).index('?')]
             possible_roles = ['T', 'J', 'M', 'C']  
-            missing_roles = list(set(possible_roles)-set(r_roles))
+            missing_roles = list(set(possible_roles)-set(r_roles.values()))
             if len(missing_roles) == 1:
                 # non-bot role
                 r_roles[fill_index] = missing_roles[0]
