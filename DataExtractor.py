@@ -229,7 +229,7 @@ def analyze_game(ex, gamePaths):
                 else:
                     raise Exception(p, lane)
 
-        # Fill missing role 'F'
+        # Fill missing role '?'
         # target at this point is something like 'T', 'J', 'M', 'C', 'C'
         b_toFillCount = Counter(b_roles.values())['?']
         if b_toFillCount > 1:
