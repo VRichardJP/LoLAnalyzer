@@ -211,6 +211,8 @@ def analyze_game(ex, gamePaths):
                     b_roles[i] = 'M'
                 elif lane == 'BOTTOM':
                     b_roles[i] = 'C'
+                elif lane == 'NONE':
+                    b_roles[i] = '?' # Fill missing lane if possible
                 else:
                     raise Exception(p, lane)
             else:
@@ -222,10 +224,55 @@ def analyze_game(ex, gamePaths):
                     r_roles[i] = 'M'
                 elif lane == 'BOTTOM':
                     r_roles[i] = 'C'
+                elif lane == 'NONE':
+                    r_roles[i] = '?' # Fill missing lane if possible
                 else:
                     raise Exception(p, lane)
 
+        # Fill missing role 'F'
+        # target at this point is something like 'T', 'J', 'M', 'C', 'C'
+        b_toFillCount = Counter(b_roles.values())['?']
+        if b_toFillCount > 1:
+            print(gamePath, 'fucked up roles', b_roles, file=sys.stderr)
+            ex.writing_q.put(gamePath)
+            continue
+        elif b_toFillCount == 1:
+            fill_index = list(b_roles.keys())[list(b_roles.values()).index('?')]
+            possible_roles = ['T', 'J', 'M', 'C']  
+            missing_roles = list(set(possible_roles)-set(b_roles))
+            if len(missing_roles) == 1:
+                # non-bot role
+                b_roles[fill_index] = missing_roles[0]
+            elif len(missing_roles) == 0:
+                # bot, whether it is support will be determined later
+                b_roles[fill_index] = 'C'
+            else:
+                print(gamePath, 'fucked up roles', b_roles, file=sys.stderr)
+                ex.writing_q.put(gamePath)
+                continue
+        r_toFillCount = Counter(r_roles.values())['?']
+        if r_toFillCount > 1:
+            print(gamePath, 'fucked up roles', r_roles, file=sys.stderr)
+            ex.writing_q.put(gamePath)
+            continue
+        elif r_toFillCount == 1:
+            fill_index = list(r_roles.keys())[list(r_roles.values()).index('?')]
+            possible_roles = ['T', 'J', 'M', 'C']  
+            missing_roles = list(set(possible_roles)-set(r_roles))
+            if len(missing_roles) == 1:
+                # non-bot role
+                r_roles[fill_index] = missing_roles[0]
+            elif len(missing_roles) == 0:
+                # bot, whether it is support will be determined later
+                r_roles[fill_index] = 'C'
+            else:
+                print(gamePath, 'fucked up roles', r_roles, file=sys.stderr)
+                ex.writing_q.put(gamePath)
+                continue
+
         # need to find the support in both team
+        # a lane will appear twice, most likely 'C'
+        # the support will either be tagged as 'SUPPORT' or have a low cs count 
         b_doubleRole = Counter(b_roles.values()).most_common(1)[0][0]
         b_doublei = [i for i, r in b_roles.items() if r == b_doubleRole]
         if len(b_doublei) > 2:
