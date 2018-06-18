@@ -28,7 +28,7 @@ def run(mode):
             s += role_count[role[0]]
         role_ratio = {}
         for role in POSSIBLE_ROLES:
-            role_ratio[role] = 0 if role[0] not in role_count else role_count[role[0]] / s
+            role_ratio[role] = 0 if s == 0 else role_count[role[0]] / s
         rr = role_ratio.items()
         print(champ, sorted(rr, key=lambda t: t[1], reverse=True))
         for role in role_ratio:
