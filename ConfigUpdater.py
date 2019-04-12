@@ -73,14 +73,14 @@ def run():
     # Update to current patch & champions list
     # euw1 is used as reference
     api = InterfaceAPI(API_KEY)
-    PATCHES = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/versions')
+    PATCHES = api.getData('https://ddragon.leagueoflegends.com/api/versions.json')
     PATCHES = ['.'.join(s.split('.')[:2]) for s in reversed(PATCHES)]
     config['PARAMS']['download_patches'] = PATCHES[-1]
     print('Current patch set to:', config['PARAMS']['download_patches'])
     PATCHES = OrderedDict((x, True) for x in PATCHES).keys()
     config['PARAMS']['patches'] = ','.join(PATCHES)
     print('Patch list updated')
-    json_data = api.getData('https://euw1.api.riotgames.com/lol/static-data/v3/champions', data={'locale': 'en_US', 'dataById': 'true'})
+    json_data = api.getData('http://ddragon.leagueoflegends.com/cdn/9.7.1/data/en_US/champion.json', data={'locale': 'en_US', 'dataById': 'true'})
     CHAMPIONS = json_data['data']
     sortedChamps = []
     for champ_id, champ_info in CHAMPIONS.items():
