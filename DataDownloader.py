@@ -46,9 +46,9 @@ class DataDownloader:
         while self.summonerIDs:  # if the API in unavailable, or the sumID is unreachable for w/e reason, just take the skip to the next
             sumID = self.summonerIDs.pop()
             try:
-                accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
+                accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v4/summoners/%s' % (self.region, sumID))['accountId']
                 games = \
-                    self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})[
+                    self.api.getData('https://%s.api.riotgames.com/lol/match/v4/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})[
                         'matches']
             except ApiError403 as e:
                 print(e, file=sys.stderr)
@@ -80,7 +80,7 @@ class DataDownloader:
                     continue  # need to go further
 
                 try:
-                    gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
+                    gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v4/matches/%s' % (self.region, gameID))
                 except ApiError403 as e:
                     print(e, file=sys.stderr)
                     return e
