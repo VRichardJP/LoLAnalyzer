@@ -359,5 +359,5 @@ def analyze_game(ex, gamePaths):
 
 
 if __name__ == '__main__':
-    m = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
+    m = Modes.ABR_TJMCS_Mode(['9.1','9.2','9.3','9.4','9.5','9.6','9.7'])
     run(m, max(multiprocessing.cpu_count() - 1, 1))

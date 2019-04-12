@@ -8,7 +8,7 @@ import Modes
 cpu = max(multiprocessing.cpu_count() - 1, 1)  # The number of cpu the scripts will use. I always leave 1 free so I can still use my computer
 # I recommend to leave at least 1 cpu free so you can still work on your computer
 shuffling_files = 89  # prime number to maximize spreading. Take a prime higher to the number of data files to limit the file size
-keep_for_testing = 7  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
+keep_for_testing = 1  # Number of files that will be kept for testing only. Increase this number as you get more files (10% is standard)
 # Keep in mind testing on games that were not used for training is the only we can be sure the neural network is not recognizing games but has
 # actually learned to predict the winner.
 restore = False  # leave this to False, or your model will overfit the data (it will recognize the game and not learn why the game is won/loss)
@@ -17,7 +17,7 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Look at Modes.py and Networks.py to see the list of available modes/networks
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
-m = Modes.ABR_TJMCS_Mode(['8.11', '8.12'])
+m = Modes.ABR_TJMCS_Mode(['9.1','9.2','9.3','9.4','9.5','9.6','9.7'])
 n = Networks.DenseUniform(mode=m, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
 
 
@@ -41,21 +41,21 @@ if __name__ == '__main__':
     if 'DataDownloader' in to_execute:
         import DataDownloader
         DataDownloader.run(m)
-    if 'DataExtractor' in to_execute:
-        import DataExtractor
-        DataExtractor.run(m, cpu)
-    if 'RoleUpdater' in to_execute:
-        import RoleUpdater
-        RoleUpdater.run(m)
-    if 'DataProcessing' in to_execute:
-        import DataProcessing
-        DataProcessing.run(m, cpu)
-    if 'DataShuffling' in to_execute:
-        import DataShuffling
-        DataShuffling.run(m, shuffling_files, keep_for_testing, cpu)
-    if 'Learner' in to_execute:
-        import Learner
-        Learner.run(m, n, restore)
-    if 'BestPicks' in to_execute:
-        import BestPicks
-        BestPicks.run(m, n)
+    #if 'DataExtractor' in to_execute:
+    #    import DataExtractor
+    #    DataExtractor.run(m, cpu)
+    #if 'RoleUpdater' in to_execute:
+    #    import RoleUpdater
+    #    RoleUpdater.run(m)
+    #if 'DataProcessing' in to_execute:
+    #    import DataProcessing
+    #    DataProcessing.run(m, cpu)
+    #if 'DataShuffling' in to_execute:
+    #    import DataShuffling
+    #    DataShuffling.run(m, shuffling_files, keep_for_testing, cpu)
+    #if 'Learner' in to_execute:
+    #    import Learner
+    #    Learner.run(m, n, restore)
+    #if 'BestPicks' in to_execute:
+    #    import BestPicks
+    #    BestPicks.run(m, n)
