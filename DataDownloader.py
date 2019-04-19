@@ -1,3 +1,4 @@
+#!python
 # Download games from the Riot API from Challenger/Master players
 
 import configparser

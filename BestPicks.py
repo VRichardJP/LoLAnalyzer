@@ -1,3 +1,4 @@
+#!python
 # Evaluate the best pick for the given role and team
 
 import os

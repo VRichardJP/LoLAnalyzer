@@ -1,3 +1,4 @@
+#!python
 # Define all the shared constants among the scripts
 
 import configparser

@@ -1,3 +1,4 @@
+#!python
 # Build and train a neural network to predict the game result
 
 import os

@@ -1,3 +1,4 @@
+#!python
 # Update the working patch and champions list
 
 from __future__ import print_function
@@ -41,9 +42,12 @@ def run():
         API_KEY = input('- API-KEY (https://developer.riotgames.com/): ')
         config['PARAMS']['api-key'] = API_KEY
         config['PARAMS']['database'] = input('- Database location (eg. C:\LoLAnalyzerDB): ')
+        if not os.path.isdir(config['PARAMS']['database']):
+            os.makedirs(config['PARAMS']['database'])
         print('Leagues you want to download games from (y/n): ')
-        print('challenger league enabled by default')
+        print('challenger and grandmaster league enabled by default')
         config['LEAGUES']['challenger'] = 'yes'
+        config['LEAGUES']['grandmaster'] = 'yes'
         config['LEAGUES']['master'] = 'yes' if validationInput('- master: ', ['y', 'n']) == 'y' else 'no'
         if config['LEAGUES']['master'] == 'yes' :
             print('Lower leagues are not recommended unless you have a high rate API-KEY (not given by default)')
@@ -83,9 +87,9 @@ def run():
     json_data = api.getData('http://ddragon.leagueoflegends.com/cdn/9.7.1/data/en_US/champion.json', data={'locale': 'en_US', 'dataById': 'true'})
     CHAMPIONS = json_data['data']
     sortedChamps = []
-    for champ_id, champ_info in CHAMPIONS.items():
+    for _, champ_info in CHAMPIONS.items():
         slugname = slugify(champ_info['name'], separator='')
-        config['CHAMPIONS'][slugname] = champ_id
+        config['CHAMPIONS'][slugname] = champ_info['key']
         sortedChamps.append(slugname)
     # We need to sort champions by release for the neural network
     # This is really important for the compatibility of the system over the patches

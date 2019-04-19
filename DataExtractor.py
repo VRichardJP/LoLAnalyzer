@@ -1,3 +1,4 @@
+#!python
 # Extract the useful data from game files (json)
 # Append the useful data to a csv file
 

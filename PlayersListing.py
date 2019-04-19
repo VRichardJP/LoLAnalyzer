@@ -1,3 +1,4 @@
+#!python
 # Collect for each region the list of players by league
 # Strategy: we go through the list of all the known players and check their games
 # As a starting list, we can take master/challenger players
@@ -18,7 +19,7 @@ MAX_DAYS = 1  # up to how many days we look up
 MAX_DEPTH = 1000 * (time.time() - 86400 * MAX_DAYS)
 ATTEMPTS = 6
 ATTEMPTS_WAIT = 300
-SAVE_INTERVAL = 600  # save every 10 minutes
+SAVE_INTERVAL = 60  # save every minute
 DATABASE_WAIT = 60  # if the database cannot be reached, wait
 
 
