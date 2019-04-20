@@ -1,3 +1,4 @@
+#!python
 # moving consecutive lines from the same file in different files
 # it's not a real shuffle from random but it spreads the data as much as possible so its the same
 import multiprocessing
@@ -74,5 +75,5 @@ def run(mode, nb_files, keep_for_testing, cpu):
         shuffling(mode, file, nb_files, cpu)
 
 if __name__ == '__main__':
-    m = Modes.ABR_TJMCS_Mode(['7.16', '7.17'])
-    run(m, 89, 7, cpu=max(multiprocessing.cpu_count() - 1, 1))
+    m = Modes.ABR_TJMCS_Mode(['9.1','9.2','9.3','9.4','9.5','9.6','9.7'])
+    run(m, 89, 1, cpu=max(multiprocessing.cpu_count() - 1, 1))

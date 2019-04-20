@@ -1,3 +1,4 @@
+#!python
 # Collect for each region the list of players by league
 # Strategy: we go through the list of all the known players and check their games
 # As a starting list, we can take master/challenger players
@@ -18,7 +19,7 @@ MAX_DAYS = 1  # up to how many days we look up
 MAX_DEPTH = 1000 * (time.time() - 86400 * MAX_DAYS)
 ATTEMPTS = 6
 ATTEMPTS_WAIT = 300
-SAVE_INTERVAL = 600  # save every 10 minutes
+SAVE_INTERVAL = 60  # save every minute
 DATABASE_WAIT = 60  # if the database cannot be reached, wait
 
 
@@ -72,20 +73,27 @@ class PlayerListing:
             # only the first time
             if fast:  # only the challenger and master league, no need to explore anything
                 if 'challenger' in self.players:
-                    challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                    challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                     for e in challLeague['entries']:
-                        self.players['challenger'].append(int(e['playerOrTeamId']))
+                        self.players['challenger'].append(e['summonerId'])
+                if 'grandmaster' in self.players:
+                    grandmasterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                    for e in grandmasterLeague['entries']:
+                        self.players['grandmaster'].append(e['summonerId'])
                 if 'master' in self.players:
-                    masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                    masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                     for e in masterLeague['entries']:
-                        self.players['master'].append(int(e['playerOrTeamId']))
+                        self.players['master'].append(e['summonerId'])
             else:
-                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                challLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in challLeague['entries']:
-                    self.to_explore.append(int(e['playerOrTeamId']))
-                masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                    self.to_explore.append(e['summonerId'])
+                grandmasterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
+                for e in grandmasterLeague['entries']:
+                    self.to_explore.append(e['summonerId'])
+                masterLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/masterleagues/by-queue/RANKED_SOLO_5x5' % self.region)
                 for e in masterLeague['entries']:
-                    self.to_explore.append(int(e['playerOrTeamId']))
+                    self.to_explore.append(e['summonerId'])
                 self.exploredPlayers = list(self.to_explore)
 
     def explore(self):
@@ -99,11 +107,11 @@ class PlayerListing:
 
             sumID = self.to_explore.pop(0)  # strongest players first
             try:
-                accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v3/summoners/%s' % (self.region, sumID))['accountId']
+                accountID = self.api.getData('https://%s.api.riotgames.com/lol/summoner/v4/summoners/%s' % (self.region, sumID))['accountId']
                 games = \
-                    self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})[
+                    self.api.getData('https://%s.api.riotgames.com/lol/match/v4/matchlists/by-account/%s' % (self.region, accountID), {'queue': 420})[
                         'matches']
-                playerLeagueList = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/positions/by-summoner/%s' % (self.region, sumID))
+                playerLeagueList = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/positions/by-summoner/%s' % (self.region, sumID))
             except ApiError403 as e:
                 print(e, file=sys.stderr)
                 return e
@@ -134,7 +142,7 @@ class PlayerListing:
                 self.exploredLeagues.append(playerLeagueId)
                 print('new league found:', self.region, playerLeagueTier, playerLeagueId)
                 try:
-                    newLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v3/leagues/%s' % (self.region, playerLeagueId))['accountId']
+                    newLeague = self.api.getData('https://%s.api.riotgames.com/lol/league/v4/leagues/%s' % (self.region, playerLeagueId))['accountId']
                 except ApiError403 as e:
                     print(e, file=sys.stderr)
                     return e
@@ -143,14 +151,14 @@ class PlayerListing:
                     continue
                 
                 for e in newLeague['entries']:
-                    sumID = int(e['playerOrTeamId'])
+                    sumID = int(e['summonerId'])
                     if sumID not in self.exploredPlayers:
                         self.to_explore.append(sumID)
                         self.exploredPlayers.append(sumID)
                 
                 # old API
                 # for e in playerSoloQLeague['entries']:
-                #     sumID = int(e['playerOrTeamId'])
+                #     sumID = int(e['summonerId'])
                 #     if sumID not in self.exploredPlayers:
                 #         self.to_explore.append(sumID)
                 #         self.exploredPlayers.append(sumID)
@@ -168,7 +176,7 @@ class PlayerListing:
                     break
 
                 try:
-                    gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v3/matches/%s' % (self.region, gameID))
+                    gameData = self.api.getData('https://%s.api.riotgames.com/lol/match/v4/matches/%s' % (self.region, gameID))
                 except ApiError403 as e:
                     print(e, file=sys.stderr)
                     return e
@@ -209,7 +217,7 @@ class PlayerListing:
 def keepExploring(database, leagues, region, attempts=ATTEMPTS):
     print(region, 'starting player listing', file=sys.stderr)
     pl = None
-    if list(set(leagues) - {'challenger', 'master'}):  # we check it is necessary to look for the leagues
+    if list(set(leagues) - {'challenger', 'grandmaster', 'master'}):  # we check it is necessary to look for the leagues
         while True:
             if not pl:
                 try:

@@ -1,3 +1,4 @@
+#!python
 # Implement a lot of different networks
 
 from abc import ABC, abstractmethod

@@ -1,3 +1,4 @@
+#!python
 # All script can be called at once from here
 
 import multiprocessing
@@ -17,7 +18,7 @@ restore = False  # leave this to False, or your model will overfit the data (it 
 # Look at Modes.py and Networks.py to see the list of available modes/networks
 # Feel free to build/tune your own networks
 # BUT, keep in mind that more complex networks require more data and take more time to train.
-m = Modes.ABR_TJMCS_Mode(['8.11', '8.12'])
+m = Modes.ABR_TJMCS_Mode(['9.6','9.7','9.8'])
 n = Networks.DenseUniform(mode=m, n_hidden_layers=5, NN=1024, dropout=0.2, batch_size=1000, report=1)
 
 

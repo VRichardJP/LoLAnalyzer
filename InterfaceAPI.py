@@ -1,3 +1,4 @@
+#!python
 # Send requests while respecting rate_limit
 # Return data as dict (API send json)
 
@@ -13,7 +14,7 @@ OFFSET = 2
 # OFFSET is just a security to avoid error 429. Prevent also the first request from reaching the rate-limit
 # we have no way to check the rate limit but to request something
 TIME_LIMIT_WAIT = 60  # If we still get an error 429, wait a little. It's painful so it's better to not have to deal with this
-BYPASS_FIRST_WAIT = False  # Warning: only use if you haven't used the script for a while and you know there has been a reset.
+BYPASS_FIRST_WAIT = True  # Warning: only use if you haven't used the script for a while and you know there has been a reset.
 
 
 # The scripts have different behaviour depending on the errors
