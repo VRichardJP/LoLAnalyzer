@@ -79,7 +79,7 @@ def training(mode, network, restore, window_size=1000):
     windowed_acc = []
     for x, y in collector.batchGenerator():
         step += 1
-        res = network.model.train_on_batch(x, y)
+        res = network.model.train_on_batch([x], [y])
 
         windowed_loss.append(res[0])
         if len(windowed_loss) > window_size:
@@ -118,7 +118,7 @@ def testing(mode, network, partial_drafts=True):
     acc = []
     for x, y in collector.batchGenerator():
         step += 1
-        res = network.model.evaluate(x, y, verbose=0)
+        res = network.model.evaluate([x], [y], verbose=0)
         acc.append(res[1])
         if step % network.report == 0:
             mean_acc = sum(acc) / len(acc)

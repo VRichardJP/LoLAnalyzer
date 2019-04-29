@@ -156,9 +156,9 @@ def keepDownloading(database, patches, region, leagues, timestamped_patches, att
                     continue
 
             e = dd.downloadData()
-            if e is not None:
+            while e is not None:
                 print('FATAL ERROR', patch, region, e, file=sys.stderr)
-                return
+                e = dd.downloadData()
             print(region, patch, 'all games downloaded', file=sys.stderr)
             break
     print(region, 'download complete')
